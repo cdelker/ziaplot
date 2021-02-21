@@ -1,29 +1,14 @@
-# README #
+# ziaplot
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Ziaplot is for easy, lightweight, and Pythonic plotting of data in SVG format.
 
-### What is this repository for? ###
+In ziaplot, a plot is made from one or more Series added to an Axis.
+Below, a Line series is added to an XyPlot axis.
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+        import ziaplot as zp
+        p = zp.XyPlot()
+        p += zp.Line([1, 2, 3], [1, 4, 9])
+        p
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+Ziaplot can plot discrete XY data, callable functions, histograms, pie charts, and bar charts.
+Data can also be displayed in polar form or on a Smith Chart.
