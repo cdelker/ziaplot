@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name = 'ziaplot',
-    version = '0.1',
+    version = '0.2',
     description = 'Draw light-weight plots, graphs, and charts',
     author = 'Collin J. Delker',
     author_email = 'ziaplot@collindelker.com',
