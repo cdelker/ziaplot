@@ -18,6 +18,15 @@ For the optional cairosvg dependency (for saving images in formats other than SV
 
     pip install ziaplot[cairosvg]
 
+Or to enable math expression rendering (via `ziamath <https://ziamath.readthedocs.io>`_), install using:
+
+.. code-block:: bash
+
+    pip install ziaplot[math]
+
+Math rendering interprets any string label enclosed in $..$ to be Latex math.
+
+
 .. jupyter-execute::
     :hide-code:
 

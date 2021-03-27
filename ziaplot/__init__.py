@@ -7,3 +7,4 @@ from .pie import Pie
 from .bar import BarChart
 from .layout import Hlayout, Vlayout
 from . import styles
+from .text import settextmode

@@ -19,7 +19,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     keywords = ['plot', 'chart', 'graph', 'smith chart', 'bar', 'pie'],
     install_requires=[],
-    extras_require={'cairo':  ['cairosvg']},
+    extras_require={'cairo':  ['cairosvg'],
+                    'math': ['ziamath', 'ziafont', 'latex2mathml']},
     classifiers = [
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',

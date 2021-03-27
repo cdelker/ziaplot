@@ -6,6 +6,8 @@ import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
+
+
 from . import text
 from .styletypes import MarkerTypes, DashTypes
 
@@ -13,7 +15,7 @@ from .styletypes import MarkerTypes, DashTypes
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
 Halign = Literal['left', 'center', 'right']
-Valign = Literal['top', 'center', 'bottom']
+Valign = Literal['top', 'center', 'baseline', 'bottom']
 
 
 def getdash(dash: DashTypes=':', linewidth: float=2) -> str:
@@ -321,7 +323,7 @@ class Canvas:
              halign: Halign='left',
              valign: Valign='bottom',
              rotate: float=None,
-             dataview: ViewBox=None) -> ET.Element:
+             dataview: ViewBox=None) -> None:
         ''' Add text to the canvas
 
             Args:
@@ -336,48 +338,18 @@ class Canvas:
                 rotate: Rotation angle in degrees
                 dataview: ViewBox for transforming x, y into SVG coordinates
         '''
-        debug = False
         if dataview:
             xform = Transform(dataview, self.viewbox)
             x, y = xform.apply(x, y)
 
         y = self.flipy(y)
-        anchor = {'center': 'middle',
-                  'left': 'start',
-                  'right': 'end'}.get(halign, 'left')
-        baseline = {'center': 'middle',
-                    'bottom': 'auto',
-                    'top': 'hanging'}.get(valign, 'bottom')
-
-        attrib = {'x': str(x),
-                  'y': str(y),
-                  'fill': color,
-                  'font-size': str(size),
-                  'font-family': font,
-                  'text-anchor': anchor,
-                  'dominant-baseline': baseline}
-
-        if rotate:
-            attrib['transform'] = f' rotate({-rotate} {x} {y})'
-
-        txt = ET.SubElement(self.group, 'text', attrib=attrib)
-        txt.text = s
-
-        if debug:  # Draw bounding box around text for testing
-            w = text.text_width(s, font=font, fontsize=size)
-            if halign == 'right':
-                x -= w
-            if halign == 'center':
-                x -= w/2
-            if valign == 'top':
-                y -= size
-            if valign == 'center':
-                y -= size/2
-            attrib = {'x': str(x), 'y': str(y), 'width': str(w),
-                      'height': str(size), 'stroke': 'blue',
-                      'stroke-width': '1.0', 'fill': 'none'}
-            ET.SubElement(self.group, 'rect', attrib=attrib)
-        return txt
+        text.draw_text(x, y, s, self.group,
+                       color=color,
+                       font=font,
+                       size=size,
+                       halign=halign,
+                       valign=valign,
+                       rotate=rotate)
 
     def poly(self, points: Sequence[tuple[float, float]], color: str='black',
              strokecolor: str='red', strokewidth: float=1, alpha: float=1.0,

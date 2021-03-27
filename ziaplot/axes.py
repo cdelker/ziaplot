@@ -199,15 +199,15 @@ class BasePlot(Drawable):
         boxh = 0.
         boxw = 0.
         markw = 40
+        square = 10
 
         for s in series:
-            width = text.text_width(
+            width, height = text.text_size(
                 s._name, fontsize=self.style.legend.text.size,
                 font=self.style.legend.text.font)
             boxw = max(boxw, markw + width + 5)
-            boxh += self.style.legend.text.size + 2
-
-        boxh += 4  # Top and bottom pad
+            boxh += max(height, square+4) + 3
+        boxh += 8  # Top and bottom pad
         return boxw, boxh
 
     def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float) -> tuple[float, float]:
@@ -243,6 +243,8 @@ class BasePlot(Drawable):
 
         boxw, boxh = self._legendsize()
         markw = 40
+        square = 10
+
         ytop, xright = self._legendloc(axisbox, ticks, boxw)
 
         # Draw the box
@@ -256,14 +258,14 @@ class BasePlot(Drawable):
                         fill=self.style.legend.fill)
 
         # Draw each line
+        yytext = ytop - 4
         for i, s in enumerate(series):
-            yytext = ytop - 4 - i*(self.style.legend.text.size+2)
-            yyline = yytext - self.style.legend.text.size/2
+            textw, texth = text.text_size(s._name, self.style.legend.text.size)
+            yytext -= max(texth/2, square/2+2)
+            yyline = yytext
             if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz']:
-                square = 10
-                yytext = ytop - 4 - i*(self.style.legend.text.size+2)
-                yysquare = yytext - square
-                canvas.text(boxl + square + 8, yytext,
+                yysquare = yytext - square/2
+                canvas.text(boxl + square + 8, yytext + texth/2,
                             s._name,
                             font=self.style.legend.text.font,
                             size=self.style.legend.text.size,
@@ -274,10 +276,11 @@ class BasePlot(Drawable):
 
             else:
                 canvas.text(xright-boxw+markw, yytext,
-                            s._name, color=self.style.axis.color,
+                            s._name,
+                            color=self.style.axis.color,
                             font=self.style.legend.text.font,
                             size=self.style.legend.text.size,
-                            halign='left', valign='top')
+                            halign='left', valign='center')
                 linebox = ViewBox(boxl+5, ytop-boxh, markw-10, boxh)
                 canvas.setviewbox(linebox)  # Clip
                 canvas.path([boxl-10, boxl+markw/2, boxl+markw+10],
@@ -287,6 +290,7 @@ class BasePlot(Drawable):
                                 markerid=s._markername,
                                 stroke=s.style.line.stroke)
                 canvas.resetviewbox()
+            yytext -= max(texth/2, square/2+2) + 3
 
 
 class XyPlot(BasePlot):
@@ -341,9 +345,9 @@ class XyPlot(BasePlot):
         # Calculate width of y names for padding left side of figure
         ywidth = 0.
         for tick in ynames:
-            ywidth = max(ywidth, text.text_width(tick,
+            ywidth = max(ywidth, text.text_size(tick,
                          fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font))
+                         font=self.style.tick.text.font).width)
 
         # Add minor ticks
         xminor: Optional[Sequence[float]]
@@ -390,25 +394,31 @@ class XyPlot(BasePlot):
         legw, _ = self._legendsize()
         leftborder = ticks.ywidth + self.style.tick.length + self.style.tick.textofst
         if self.yname:
-            leftborder += self.style.axis.yname.size + self.style.tick.textofst
+            _, h = text.text_size(self.yname, fontsize=self.style.axis.yname.size,
+                                  font=self.style.axis.yname.font)
+            leftborder += h + self.style.tick.textofst
         if self.legend == 'left':
             leftborder += legw + self.style.tick.textofst
 
         botborder = self.style.tick.length + self.style.tick.text.size + 4
         if self.xname:
-            botborder += self.style.axis.xname.size + 2
+            botborder += text.text_size(
+                self.xname, fontsize=self.style.axis.xname.size,
+                font=self.style.axis.xname.font).height + 2
 
         topborder = self.style.axis.framelinewidth + 5
         if self.title:
-            topborder += self.style.axis.title.size
+            topborder += text.text_size(
+                self.title, fontsize=self.style.axis.title.size,
+                font=self.style.axis.title.font).height
 
         rightborder = self.style.axis.framelinewidth + 5
         if self.legend == 'right':
             rightborder += legw + 5
         else:
-            rightborder += text.text_width(
+            rightborder += text.text_size(
                 ticks.xnames[-1], fontsize=self.style.tick.text.size,
-                font=self.style.tick.text.font)
+                font=self.style.tick.text.font).width
 
         return ViewBox(fullframe.x + leftborder,
                        fullframe.y + botborder,
@@ -646,9 +656,9 @@ class XyGraph(XyPlot):
             topborder += self.style.axis.yname.size + 2
 
         if self.xname:
-            rightborder += text.text_width(
+            rightborder += text.text_size(
                 self.xname, font=self.style.axis.xname.font,
-                fontsize=self.style.axis.xname.size)
+                fontsize=self.style.axis.xname.size).width
 
         if self.title:
             topborder += self.style.axis.title.size

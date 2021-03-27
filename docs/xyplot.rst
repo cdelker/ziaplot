@@ -176,6 +176,15 @@ Plain text labels can be added at any data point using the :py:class:`ziaplot.da
     p += zp.Arrow((.70, 2.3), (.6, 3), 'Arrow', strofst=(-.05, .1)).color('black')
     p
 
+If `ziamath <https://ziamath.readthedocs.io>`_ is installed, math expressions can be
+drawn in any label. The expressions are entered in Latex style delimited by $..$.
+
+.. jupyter-execute::
+
+    zp.XyPlot(title=r'Math: $\sqrt{a^2 + b^2}$',
+              xname=r'Frequency, $\frac{1}{s}$',
+              yname=r'Acceleration, $m/s^2$')
+
 
 Function Series
 ---------------

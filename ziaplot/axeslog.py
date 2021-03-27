@@ -78,9 +78,9 @@ class LogYPlot(XyPlot):
 
         ywidth = 0.
         for tick in ynames:
-            ywidth = max(ywidth, text.text_width(tick,
+            ywidth = max(ywidth, text.text_size(tick,
                          fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font))
+                         font=self.style.tick.text.font).width)
 
         ticks = Ticks(ticks.xticks, yticks, ticks.xnames,
                       ynames, ywidth, ticks.xrange, yrange,
@@ -214,9 +214,9 @@ class LogXYPlot(XyPlot):
 
         ywidth = 0.
         for tick in ynames:
-            ywidth = max(ywidth, text.text_width(tick,
+            ywidth = max(ywidth, text.text_size(tick,
                          fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font))
+                         font=self.style.tick.text.font).width)
 
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)

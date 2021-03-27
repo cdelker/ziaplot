@@ -101,8 +101,8 @@ class Pie(Drawable):
         square = 16.
 
         for name in names:
-            width = text.text_width(name, fontsize=self.style.legend.text.size,
-                                    font=self.style.legend.text.font)
+            width = text.text_size(name, fontsize=self.style.legend.text.size,
+                                    font=self.style.legend.text.font).width
             boxw = max(boxw, square + width + 5)
             boxh += self.style.legend.text.size + 2
         boxh += 4  # Top and bottom
