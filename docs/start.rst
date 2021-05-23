@@ -71,6 +71,18 @@ Other image formats can be obtained if the `cairosvg <https://cairosvg.org/>`_ p
 Byte-data for all supported formats can be obtained by calling `p.imagebytes()`.
 
 
+SVG Version Compatibility
+-------------------------
+
+Some SVG renderers, including recent versions of Inkscape and some OS built-in image viewers, are not fully compatible with the SVG 2.0 specification.
+Set `svg2=False` using `settextmode` to use SVG 1.x specifications for better compatibility.
+This may result in larger file sizes as each glyph is included as its own <path> element rather than being reused with <symbol> and <use> elements.
+
+.. code-block:: python
+
+    zp.settextmode('path', svg2=False)  # Draw text as <path> using SVG1.x
+
+
 Customizing
 -----------
 

@@ -23,9 +23,10 @@ Valign = Literal['top', 'center', 'baseline', 'bottom']
 Size = namedtuple('Size', ['width', 'height'])
 
 textmode: TextModeType = 'path' if ziamath is not None else 'text'
+svg2mode: bool = True
 
 
-def settextmode(mode: TextModeType) -> None:
+def settextmode(mode: TextModeType, svg2=True) -> None:
     ''' Set the mode for rendering text.
 
         In 'text' mode, text is drawn as SVG <text> elements
@@ -37,13 +38,21 @@ def settextmode(mode: TextModeType) -> None:
         of math expressions, but also requires the
         ziafont/ziamath packages.
 
+        svg2 mode can be disabled for better compatibility
+        with some SVG rendering software (Inkscape, etc.)
+        that does not fully support SVG 2.0. Only applies
+        when using ziamath for math text.
+
         Args:
             mode: Text Mode.
+            svg2: Use SVG 2.0 elements
     '''
     if mode == 'path' and ziamath is None:
         raise ValueError('Path mode requires ziamath package')
     global textmode
+    global svg2mode
     textmode = mode
+    svg2mode = svg2
 
 
 def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
@@ -84,7 +93,8 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
         if style == 'sans-serif':
             style = 'sans'  # Convert to MathML's name
 
-    math = ziamath.Math.fromlatextext(s, size=size, font=fontfile, textstyle=style, mathstyle=style)
+    math = ziamath.Math.fromlatextext(s, size=size, font=fontfile, textstyle=style,
+                                      mathstyle=style, svg2=svg2mode)
     textelm = math.drawon(x, y, svgelm, color=color, halign=halign, valign=valign)
     if rotate:
         textelm.attrib['transform'] = f' rotate({-rotate} {x} {y})'
@@ -137,7 +147,7 @@ def text_size(st: str, fontsize: float=12, font: str='Arial') -> Size:
 
     
 def text_size_zia(st: str, fontsize: float=12, font: str='sans') -> Size:
-    text = ziamath.Math.fromlatextext(st, size=fontsize)
+    text = ziamath.Math.fromlatextext(st, size=fontsize, svg2=svg2mode)
     try:
         return Size(*text.getsize())
     except AttributeError:
