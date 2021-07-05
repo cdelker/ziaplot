@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name = 'ziaplot',
-    version = '0.2',
+    version = '0.3',
     description = 'Draw light-weight plots, graphs, and charts',
     author = 'Collin J. Delker',
     author_email = 'ziaplot@collindelker.com',
@@ -20,7 +20,9 @@ setuptools.setup(
     keywords = ['plot', 'chart', 'graph', 'smith chart', 'bar', 'pie'],
     install_requires=[],
     extras_require={'cairo':  ['cairosvg'],
-                    'math': ['ziamath', 'ziafont', 'latex2mathml']},
+                    'math': ['ziamath>=0.3',
+                             'ziafont>=0.2',
+                             'latex2mathml']},
     classifiers = [
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
