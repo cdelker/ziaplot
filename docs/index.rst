@@ -51,6 +51,9 @@ If you appreciate Ziaplot, buy me a coffee to show your support!
 
 |
 
+
+Source code is available on `Bitbucket <https://bitbucket.org/cdelker/ziaplot>`_.
+
 ----
 
 
