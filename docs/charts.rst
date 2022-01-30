@@ -10,6 +10,7 @@ Charts (Pie and Bar)
 
 In Ziaplot, the term "chart" is used for figures where the x value is qualitative. This includes Pie charts and bar charts.
 
+|
 
 Bar Chart
 ---------
@@ -36,6 +37,7 @@ Bar charts may also be drawn with horizontal bars.
     p.bar((2, 1, 5, 4)).name('Cherry')
     p
 
+|
 
 Pie Chart
 ---------

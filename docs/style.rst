@@ -32,7 +32,7 @@ To use the style for all plots, set the default style using :py:meth:`ziaplot.st
 
     zp.styles.setdefault(sty)
 
-
+|
 
 Themes
 ------
@@ -72,6 +72,7 @@ For example, to enable the "Taffy" theme for all plots, use:
         fig = zp.Vlayout(l1, l2)
         return fig
 
+|
 
 Default
 *******
@@ -86,6 +87,7 @@ Default
     
     teststyle()
 
+|
 
 Taffy
 *****
@@ -100,6 +102,7 @@ Taffy
     zp.styles.setdefault(zp.styles.Taffy)
     teststyle()
 
+|
 
 Pastel
 ******
@@ -114,6 +117,7 @@ Pastel
     zp.styles.setdefault(zp.styles.Pastel)
     teststyle()
 
+|
 
 Bold
 *****
@@ -128,6 +132,7 @@ Bold
     zp.styles.setdefault(zp.styles.Bold)
     teststyle()
 
+|
 
 Dark
 *****
@@ -142,6 +147,7 @@ Dark
     zp.styles.setdefault(zp.styles.Dark)
     teststyle()
 
+|
 
 Dark Taffy
 **********
@@ -156,6 +162,7 @@ Dark Taffy
     zp.styles.setdefault(zp.styles.DarkTaffy)
     teststyle()
 
+|
 
 Dark Bold
 *********
@@ -170,7 +177,7 @@ Dark Bold
     zp.styles.setdefault(zp.styles.DarkBold)
     teststyle()
 
-
+|
 
 Style Dataclass
 ---------------

@@ -33,6 +33,7 @@ Math rendering interprets any string label enclosed in $..$ to be Latex math.
     import ziaplot as zp
     zp.styles.setdefault(zp.styles.DocStyle)
 
+|
 
 Quick Example
 -------------
@@ -54,6 +55,7 @@ Here, an `XyPlot` axis is created, and a `Line` is added to it.
 
 Note the x and y arrays could more easily be created as Numpy arrays, but Ziaplot does not require Numpy as a dependency so this documentation does not use it.
 
+|
 
 Use in Jupyter Notebooks
 ------------------------
@@ -62,6 +64,7 @@ Ziaplot is optimized for use in Jupyter, as every drawable object has a Jupyter 
 
 Nearly everything in Ziaplot can be drawn (inherits from the `Drawable` class). A `Line` can be drawn by itself from the representation of zp.Line, but in this case, the Line will be added to an empty XyPlot.
 
+|
 
 Use outside Jupyter
 -------------------
@@ -70,6 +73,7 @@ Outside Jupyter, the raw SVG output can be accessed by calling `p.svg()`.
 Other image formats can be obtained if the `cairosvg <https://cairosvg.org/>`_ package is installed.
 Byte-data for all supported formats can be obtained by calling `p.imagebytes()`.
 
+|
 
 SVG Version Compatibility
 -------------------------
@@ -82,6 +86,7 @@ This may result in larger file sizes as each glyph is included as its own <path>
 
     zp.settextmode('path', svg2=False)  # Draw text as <path> using SVG1.x
 
+|
 
 Customizing
 -----------
@@ -96,6 +101,7 @@ all return the Line instance itself, so the series can be set up on a single lin
 
 See :ref:`styles` for additional styling options and global plot themes.
 
+|
 
 Why another plotting library?
 -----------------------------

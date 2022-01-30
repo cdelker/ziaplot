@@ -51,6 +51,7 @@ Note: cairosvg needs extra import hooks to work with PyInstaller. See `guitk.py`
     gui = Window(root)
     root.mainloop()
 
+|
 
 PyQt5
 -----

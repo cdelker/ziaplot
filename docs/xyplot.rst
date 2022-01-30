@@ -25,6 +25,8 @@ The (0, 0) origin can be anywhere, even outside the plot area.
 
 In terms of adding and displaying data series, the two are identical.
 
+|
+
 Basic Plotting
 --------------
 
@@ -55,6 +57,7 @@ Notice the color of each series cycles through the default set of theme colors i
     p += zp.Line(x, y4).color('purple').strokewidth(4)
     p
 
+|
 
 Line Options
 ************
@@ -99,6 +102,7 @@ Markers can also be oriented tangent to the data line, for example to show arrow
     p += zp.Line(t, tsq2).endmarkers(start='square', end='arrow')
     p
 
+|
 
 Fading Colors
 *************
@@ -117,6 +121,7 @@ Color fading requires hex string colors.
         p += zp.Line(xf, yf)
     p
 
+|
 
 X-Y Data Series
 ---------------
@@ -153,7 +158,7 @@ And :py:class:`ziaplot.dataseries.LineFill` works like an errorbar but draws a f
 
     zp.LineFill(x, ymin=y, ymax=y2).color('black').fill('blue', alpha=.3)
 
-
+|
 
 Annotations
 -----------
@@ -185,6 +190,7 @@ drawn in any label. The expressions are entered in Latex style delimited by $..$
               xname=r'Frequency, $\frac{1}{s}$',
               yname=r'Acceleration, $m/s^2$')
 
+|
 
 Function Series
 ---------------
@@ -206,6 +212,7 @@ Lambda functions work well here, such as
 
     p += zp.Function(lambda x: x**2)
 
+|
 
 Histogram Series
 ----------------
@@ -221,6 +228,7 @@ The data can also be weighted, or plotted as a probability density instead of da
     v = [random.normalvariate(100, 5) for k in range(1000)]
     zp.Histogram(v)
 
+|
 
 Log-scale Axes
 --------------
@@ -245,6 +253,7 @@ Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`
     vbox2 = zp.Vlayout(p2, p4)
     zp.Hlayout(vbox1, vbox2, sep=-20)
 
+|
 
 Data Limits and Ticks
 ---------------------

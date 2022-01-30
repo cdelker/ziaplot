@@ -38,6 +38,23 @@ Ziaplot is written in pure-Python, with no dependencies.
 An optional dependency of `cairosvg` can be installed to convert
 ziaplot's SVG figures into PNG or other formats.
 
+|
+
+Support
+-------
+
+If you appreciate Ziaplot, buy me a coffee to show your support!
+
+.. raw:: html
+
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="cdelker" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+
+|
+
+----
+
+
+
 
 .. toctree::
    :maxdepth: 2
