@@ -93,12 +93,11 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
         if style == 'sans-serif':
             style = 'sans'  # Convert to MathML's name
 
-    math = ziamath.Math.fromlatextext(s, size=size, font=fontfile, textstyle=style,
-                                      mathstyle=style, svg2=svg2mode)
-    textelm = math.drawon(x, y, svgelm, color=color, halign=halign, valign=valign)
+    math = ziamath.Text(s, size=size, textfont=fontfile, mathstyle=style,
+                        svg2=svg2mode)
+    textelm = math.drawon(svgelm, x, y, halign=halign, valign=valign, color=color)
     if rotate:
         textelm.attrib['transform'] = f' rotate({-rotate} {x} {y})'
-
 
 def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
                    color: str='black',
