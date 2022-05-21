@@ -38,7 +38,7 @@ def setaxiscolor(st: styletypes.Style, color: str='black'):
     st.pie.strokecolor = color
 
 
-def Default():
+def Default() -> styletypes.Style:
     ''' Get the default style as configured by setdefault. '''
     if callable(_default):
         return _default()
@@ -51,7 +51,7 @@ def Lobo() -> styletypes.Style:
     return styletypes.Style()
 
 
-def Taffy():
+def Taffy() -> styletypes.Style:
     ''' Taffy theme '''
     s = styletypes.Style()
     s.colorcycle = ColorCycle('#00a4bd', '#ff7a59', '#00bda5',
@@ -61,7 +61,7 @@ def Taffy():
     return s
 
 
-def Pastel():
+def Pastel() -> styletypes.Style:
     ''' Pastel colors '''
     s = styletypes.Style()
     s.axis.bgcolor = '#fafafa'
@@ -75,7 +75,7 @@ def Pastel():
     return s
 
 
-def Bold():
+def Bold() -> styletypes.Style:
     ''' Bold colors '''
     s = styletypes.Style()
     s.colorcycle = ColorCycle('red', 'orange', 'yellow', 'lime',
@@ -84,7 +84,7 @@ def Bold():
     return s
 
 
-def Dark():
+def Dark() -> styletypes.Style:
     ''' Dark background theme - white on black, but same
         colors as Lobo theme.
     '''
@@ -99,7 +99,7 @@ def Dark():
     return s
 
 
-def DarkBold():
+def DarkBold() -> styletypes.Style:
     ''' Bold colors on dark background '''
     s = Dark()
     setaxiscolor(s, '#bbbbbb')
@@ -116,7 +116,7 @@ def DarkBold():
     return s    
 
 
-def DarkTaffy():
+def DarkTaffy() -> styletypes.Style:
     ''' Dark Taffy Style '''
     s = Dark()
     s.colorcycle = ColorCycle('#00a4bd', '#ff7a59', '#00bda5',
@@ -126,7 +126,7 @@ def DarkTaffy():
     return s
 
 
-def DocStyle():
+def DocStyle() -> styletypes.Style:
     ''' Style for ziaplot documentation '''
     s = Style()
     s.canvasw = 400

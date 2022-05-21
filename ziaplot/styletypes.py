@@ -252,3 +252,11 @@ class Style:
     canvash: float = 400
     bgcolor: str = 'none'
     colorcycle: ColorCycle = field(default_factory=ColorCycle)
+
+    @property
+    def size(self):
+        return self.canvasw, self.canvash
+
+    @size.setter
+    def size(self, wh):
+        self.canvasw, self.canvash = wh
