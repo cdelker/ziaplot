@@ -504,7 +504,7 @@ class XyPlot(BasePlot):
                         font=self.style.tick.text.font,
                         size=self.style.tick.text.size,
                         halign='right', valign='center')
-
+            
         if ticks.yminor:
             for yminor in ticks.yminor:
                 if yminor in ticks.yticks: continue  # Don't double-draw

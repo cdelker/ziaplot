@@ -226,7 +226,7 @@ class Smith(Polar):
         canvas.setviewbox(dest, clippad=5)
 
         # Arcs of constant reactance
-        for b, rmax, rmin, major in self.style.smith.grid.get(self.grid).arcs:
+        for b, rmax, rmin, major in self.style.smith.grid.get(self.grid).arcs:    # type: ignore
             arc = const_react_arc(b, rmin, rmax)
             color = self.style.smith.majorcolor if major else self.style.smith.minorcolor
             width = self.style.smith.majorwidth if major else self.style.smith.minorwidth
@@ -258,7 +258,7 @@ class Smith(Polar):
                             dataview=src)
 
         # Circles of constant resistance
-        for a, xmax, xmin, major in self.style.smith.grid.get(self.grid).circles:
+        for a, xmax, xmin, major in self.style.smith.grid.get(self.grid).circles:  # type: ignore
             if xmin == 0:
                 xmin = -xmax
             arc = const_resist_circle(a, xmin, xmax)

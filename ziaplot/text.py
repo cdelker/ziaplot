@@ -78,7 +78,7 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
                   font: str='sans',
                   size: float=12,
                   halign: Halign='left',
-                  valign: Valign='bottom',
+                  valign: Valign='base',
                   rotate: float=None):
     style: Optional[str]
     fontfile: Optional[str]
@@ -146,11 +146,8 @@ def text_size(st: str, fontsize: float=12, font: str='Arial') -> Size:
 
     
 def text_size_zia(st: str, fontsize: float=12, font: str='sans') -> Size:
-    text = ziamath.Math.fromlatextext(st, size=fontsize, svg2=svg2mode)
-    try:
-        return Size(*text.getsize())
-    except AttributeError:
-        return Size(*text.strsize())
+    text = ziamath.Text(st, size=fontsize, svg2=svg2mode)
+    return Size(*text.getsize())
 
 
 def text_size_text(st: str, fontsize: float=12, font: str='Arial') -> Size:
