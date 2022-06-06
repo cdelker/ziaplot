@@ -8,5 +8,6 @@ from .bar import BarChart
 from .layout import Hlayout, Vlayout
 from . import styles
 from .text import settextmode
+from .config import config
 
 __version__ = '0.3'

@@ -8,6 +8,7 @@ import os
 import string
 from collections import namedtuple
 from xml.etree import ElementTree as ET
+import warnings
 
 try:
     import ziamath
@@ -15,18 +16,20 @@ try:
 except ImportError:
     ziamath = None  # type: ignore
 
-DEBUG = False
+from .config import config, TextMode
 
-TextModeType = Literal['text', 'path']
 Halign = Literal['left', 'center', 'right']
-Valign = Literal['top', 'center', 'baseline', 'bottom']
+Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
 Size = namedtuple('Size', ['width', 'height'])
 
-textmode: TextModeType = 'path' if ziamath is not None else 'text'
-svg2mode: bool = True
+def fmt(f: float) -> str:
+    ''' String format, stripping trailing zeros '''
+    p = f'.{config.precision}f'
+    s = format(float(f), p)
+    return s.rstrip('0').rstrip('.')  # Strip trailing zeros
 
 
-def settextmode(mode: TextModeType, svg2=True) -> None:
+def settextmode(mode: TextMode, svg2=True) -> None:
     ''' Set the mode for rendering text.
 
         In 'text' mode, text is drawn as SVG <text> elements
@@ -47,12 +50,11 @@ def settextmode(mode: TextModeType, svg2=True) -> None:
             mode: Text Mode.
             svg2: Use SVG 2.0 elements
     '''
+    warnings.warn('settextmode is deprecated. Use ziamath.config.',  DeprecationWarning)
     if mode == 'path' and ziamath is None:
         raise ValueError('Path mode requires ziamath package')
-    global textmode
-    global svg2mode
-    textmode = mode
-    svg2mode = svg2
+    config.svg2 = svg2
+    config.text = mode
 
 
 def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
@@ -63,7 +65,7 @@ def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
               valign: Valign='bottom',
               rotate: float=None):
 
-    if textmode == 'path':
+    if config.text == 'path':
         draw_text_zia(x, y, s, svgelm=svgelm,
                       color=color, font=font, size=size,
                       halign=halign, valign=valign, rotate=rotate)
@@ -80,24 +82,12 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
                   halign: Halign='left',
                   valign: Valign='base',
                   rotate: float=None):
-    style: Optional[str]
-    fontfile: Optional[str]
-    if (font.endswith('ttf') or font.endswith('otf')) and os.path.exists(font):
-        # font is a font file
-        style = None
-        ftonfile = font
-    else:
-        # font is describing the style
-        style = font
-        fontfile = None
-        if style == 'sans-serif':
-            style = 'sans'  # Convert to MathML's name
-
-    math = ziamath.Text(s, size=size, textfont=fontfile, mathstyle=style,
-                        svg2=svg2mode)
-    textelm = math.drawon(svgelm, x, y, halign=halign, valign=valign, color=color)
+    math = ziamath.Text(s, size=size, textfont=font)
+    textelm = math.drawon(svgelm, x, y, halign=halign,
+                          valign=valign, color=color)
     if rotate:
-        textelm.attrib['transform'] = f' rotate({-rotate} {x} {y})'
+        textelm.attrib['transform'] = f' rotate({-rotate} {fmt(x)} {fmt(y)})'
+
 
 def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
                    color: str='black',
@@ -113,8 +103,8 @@ def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
                     'bottom': 'auto',
                     'top': 'hanging'}.get(valign, 'bottom')
 
-        attrib = {'x': str(x),
-                  'y': str(y),
+        attrib = {'x': fmt(x),
+                  'y': fmt(y),
                   'fill': color,
                   'font-size': str(size),
                   'font-family': font,
@@ -122,7 +112,7 @@ def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
                   'dominant-baseline': baseline}
 
         if rotate:
-            attrib['transform'] = f' rotate({-rotate} {x} {y})'
+            attrib['transform'] = f' rotate({-rotate} {fmt(x)} {fmt(y)})'
 
         txt = ET.SubElement(svgelm, 'text', attrib=attrib)
         txt.text = s
@@ -139,14 +129,14 @@ def text_size(st: str, fontsize: float=12, font: str='Arial') -> Size:
         Returns:
             Estimated width of string
     '''
-    if textmode == 'path':
+    if config.text == 'path':
         return text_size_zia(st, fontsize, font)
     else:
         return text_size_text(st, fontsize, font)
 
     
 def text_size_zia(st: str, fontsize: float=12, font: str='sans') -> Size:
-    text = ziamath.Text(st, size=fontsize, svg2=svg2mode)
+    text = ziamath.Text(st, size=fontsize)
     return Size(*text.getsize())
 
 

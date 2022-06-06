@@ -9,13 +9,22 @@ import xml.etree.ElementTree as ET
 
 
 from . import text
+from .config import config
 from .styletypes import MarkerTypes, DashTypes
 
 
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
 Halign = Literal['left', 'center', 'right']
-Valign = Literal['top', 'center', 'baseline', 'bottom']
+Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
+
+
+def fmt(f: float) -> str:
+    ''' String format, stripping trailing zeros '''
+    p = f'.{config.precision}f'
+    s = format(float(f), p)
+    return s.rstrip('0').rstrip('.')  # Strip trailing zeros
+
 
 
 def getdash(dash: DashTypes=':', linewidth: float=2) -> str:
@@ -45,7 +54,7 @@ class Transform:
         self.yshift = self.dest.y - self.src.y*self.yscale
 
     def __repr__(self):
-        return f'Transform(scale=({self.xscale},{self.yscale}); shift=({self.xshift},{self.yshift}))'
+        return f'Transform(scale=({fmt(self.xscale)},{fmt(self.yscale)}); shift=({fmt(self.xshift)},{fmt(self.yshift)}))'
 
     def apply(self, x: float, y: float) -> tuple[float, float]:
         ''' Apply the transformation to the x, y point '''
@@ -75,7 +84,7 @@ class Canvas:
         attrib = {'xmlns': 'http://www.w3.org/2000/svg',
                   'height': str(height),
                   'width': str(width),
-                  'viewBox': '0 0 {} {}'.format(width, height)}
+                  'viewBox': f'0 0 {fmt(width)} {fmt(height)}'}
         self.root = ET.Element('svg', attrib=attrib)
         if fill:
             attrib = {'width': '100%', 'height': '100%', 'fill': fill}
@@ -111,9 +120,9 @@ class Canvas:
         clip = ET.SubElement(self.defs, 'clipPath', attrib={'id': name})
         y = self.flipy(self.viewbox.y) - self.viewbox.h
 
-        attrib = {'x': str(self.viewbox.x-clippad), 'y': str(y-clippad),
-                  'width': str(self.viewbox.w+2*clippad),
-                  'height': str(self.viewbox.h+2*clippad)}
+        attrib = {'x': fmt(self.viewbox.x-clippad), 'y': str(y-clippad),
+                  'width': fmt(self.viewbox.w+2*clippad),
+                  'height': fmt(self.viewbox.h+2*clippad)}
         ET.SubElement(clip, 'rect', attrib=attrib)
         self.clip = name
 
@@ -182,7 +191,9 @@ class Canvas:
         elif shape in ['+', 'x']:
             sh = ET.SubElement(mark, 'polygon')
             k = diam/3
-            sh.attrib['points'] = f'{k},0 {2*k},0 {2*k},{k}, {diam},{k} {diam},{2*k} {2*k},{2*k} {2*k},{diam} {k},{diam} {k},{2*k} 0,{2*k} 0,{k} {k},{k}'
+            ks = fmt(k)
+            ks2 = fmt(k*2)
+            sh.attrib['points'] = f'{ks},0 {ks2},0 {ks2},{ks}, {diam},{ks} {diam},{ks2} {ks2},{ks2} {ks2},{diam} {ks},{diam} {ks},{ks2} 0,{ks2} 0,{ks} {ks},{ks}'
             if shape == 'x':
                 sh.attrib['transform'] = f'rotate(45 {radius} {radius})'
         else:
@@ -227,9 +238,9 @@ class Canvas:
         y = [self.flipy(yy) for yy in y]
 
         path = ET.SubElement(self.group, 'path')
-        pointstr = 'M {},{} '.format(x[0], y[0])
+        pointstr = f'M {fmt(x[0])},{fmt(y[0])} '
         pointstr += 'L '
-        pointstr += ' '.join('{},{}'.format(xx, yy) for xx, yy in zip(x[1:], y[1:]))
+        pointstr += ' '.join(f'{fmt(xx)},{fmt(yy)}' for xx, yy in zip(x[1:], y[1:]))
         path.attrib['d'] = pointstr
         path.attrib['stroke'] = color
         path.attrib['stroke-width'] = str(width)
@@ -274,8 +285,8 @@ class Canvas:
 
         y = self.flipy(y) - h  # xy is top-left corner
         fill = 'none' if fill is None else fill
-        attrib = {'x': str(x), 'y': str(y),
-                  'width': str(w), 'height': str(h),
+        attrib = {'x': fmt(x), 'y': fmt(y),
+                  'width': fmt(w), 'height': fmt(h),
                   'fill': fill, 'stroke': strokecolor,
                   'stroke-width': str(strokewidth)}
         if rcorner:
@@ -306,7 +317,7 @@ class Canvas:
             radius = radius * self.viewbox.w/dataview.w
 
         y = self.flipy(y)
-        attrib = {'cx': str(x), 'cy': str(y), 'r': str(radius),
+        attrib = {'cx': fmt(x), 'cy': fmt(y), 'r': fmt(radius),
                   'stroke': strokecolor, 'fill': color,
                   'stroke-width': str(strokewidth)}
         if stroke != '-' and stroke not in [None, 'none', '']:
@@ -372,7 +383,7 @@ class Canvas:
         y = [self.flipy(yy) for yy in y]
         pointstr = ''
         for px, py in zip(x, y):
-            pointstr += '{},{} '.format(px, py)
+            pointstr += f'{fmt(px)},{fmt(py)} '
         attrib = {'points': pointstr,
                   'stroke': strokecolor,
                   'fill': color,
@@ -407,8 +418,8 @@ class Canvas:
 
         flag = 1 if theta > math.pi else 0
         path = ET.SubElement(self.group, 'path')
-        pointstr = f'M {cx},{cy} L {x1},{y1} '
-        pointstr += f'A {radius} {radius} 0 {flag} 1 {x2} {y2} Z'
+        pointstr = f'M {fmt(cx)},{fmt(cy)} L {fmt(x1)},{fmt(y1)} '
+        pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 1 {fmt(x2)} {fmt(y2)} Z'
         path.attrib['d'] = pointstr
         path.attrib['stroke'] = strokecolor
         path.attrib['stroke-width'] = str(strokewidth)
@@ -447,8 +458,8 @@ class Canvas:
 
         flag = 1 if theta2-theta1 > math.pi else 0
         path = ET.SubElement(self.group, 'path')
-        pointstr = f'M {x1},{y1} '
-        pointstr += f'A {radius} {radius} 0 {flag} 0 {x2} {y2}'
+        pointstr = f'M {fmt(x1)},{fmt(y1)} '
+        pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 0 {fmt(x2)} {fmt(y2)}'
         path.attrib['d'] = pointstr
         path.attrib['stroke'] = strokecolor
         path.attrib['stroke-width'] = str(strokewidth)

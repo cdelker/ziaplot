@@ -1,4 +1,4 @@
 jupyter_sphinx
-ziamath
-ziafont
+ziamath>=0.5
+ziafont>=0.3.1
 latex2mathml
