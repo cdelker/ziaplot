@@ -10,4 +10,4 @@ from . import styles
 from .text import settextmode
 from .config import config
 
-__version__ = '0.3'
+__version__ = '0.4'
