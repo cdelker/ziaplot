@@ -82,9 +82,10 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
                   halign: Halign='left',
                   valign: Valign='base',
                   rotate: float=None):
-    math = ziamath.Text(s, size=size, textfont=font)
-    textelm = math.drawon(svgelm, x, y, halign=halign,
-                          valign=valign, color=color)
+    math = ziamath.Text(s, size=size, textfont=font, color=color,
+                        halign=halign, valign=valign)
+    textelm = math.drawon(svgelm, x, y)
+
     if rotate:
         textelm.attrib['transform'] = f' rotate({-rotate} {fmt(x)} {fmt(y)})'
 
