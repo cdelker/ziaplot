@@ -1,6 +1,5 @@
 ''' Color cylces '''
 
-from typing import Sequence
 
 class ColorCycle:
     ''' Color cycle for changing colors of plot lines
@@ -40,7 +39,7 @@ class ColorFade(ColorCycle):
                 or '#FFFFFF' hex values
     '''
     def __init__(self, *colors: str):
-        if not all([c[0] == '#' for c in colors]):
+        if not all(c[0] == '#' for c in colors):
             raise ValueError('ColorFade colors must be #FFFFFF format.')
         self.colors = colors
         self.steps(len(self.colors))
@@ -73,4 +72,4 @@ class ColorFade(ColorCycle):
             g.append(int(g1 + gstep * i))
             b.append(int(b1 + bstep * i))
 
-        self.cycle = tuple([f'#{rr:02x}{gg:02x}{bb:02x}' for rr, gg, bb in zip(r, g, b)])
+        self.cycle = tuple(f'#{rr:02x}{gg:02x}{bb:02x}' for rr, gg, bb in zip(r, g, b))

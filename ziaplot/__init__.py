@@ -4,10 +4,10 @@ from .axeslog import LogYPlot, LogXPlot, LogXYPlot
 from .polar import Polar, LinePolar
 from .smith import Smith, SmithConstResistance, SmithConstReactance
 from .pie import Pie
-from .bar import BarChart
+from .bar import BarChart, BarChartGrouped
 from .layout import Hlayout, Vlayout
 from . import styles
 from .text import settextmode
 from .config import config
 
-__version__ = '0.4'
+__version__ = '0.5a0'

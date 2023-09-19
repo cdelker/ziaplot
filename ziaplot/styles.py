@@ -30,7 +30,7 @@ def settextcolor(st: styletypes.Style, color: str):
     st.pie.label.color = color
 
 
-def setaxiscolor(st: styletypes.Style, color: str='black'):
+def setaxiscolor(st: styletypes.Style, color: str = 'black'):
     ''' Change color of all axes, ticks, and labels '''
     settextcolor(st, color)
     st.axis.color = color

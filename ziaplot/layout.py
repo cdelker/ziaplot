@@ -1,6 +1,5 @@
 ''' Layouts for creating multi-axis plots '''
 
-from typing import Union
 import xml.etree.ElementTree as ET
 
 from .axes import XyPlot
@@ -17,12 +16,12 @@ class Layout(Drawable):
             width: Width of the figure/layout
             height: Height of the figure/layout
             sep: Distance between subplots
-            
+
         Note:
             height and width are ignored if the layout is
             added to another layout.
     '''
-    def __init__(self, *axes: Drawable, width: float=600, height: float=400, sep: float=10):
+    def __init__(self, *axes: Drawable, width: float = 600, height: float = 400, sep: float = 10):
         self.axes = axes
         self.sep: float = sep
         self.width: float = width
@@ -30,7 +29,7 @@ class Layout(Drawable):
         self.x: float = 0
         self.y: float = 0
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         canvas = Canvas(self.width, self.height)
         self._xml(canvas)
@@ -55,7 +54,7 @@ class Hlayout(Layout):
             height and width are ignored if the layout is
             added to another layout.
     '''
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> ET.Element:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> ET.Element:
         ''' Add XML elements to the canvas '''
         N = len(self.axes)
         axwidth = (self.width - self.sep*(N-1)) / N
@@ -108,7 +107,7 @@ class Vlayout(Layout):
             height and width are ignored if the layout is
             added to another layout.
     '''
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> ET.Element:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> ET.Element:
         ''' Add XML elements to the canvas '''
         N = len(self.axes)
         axheight = (self.height - self.sep*(N-1)) / N

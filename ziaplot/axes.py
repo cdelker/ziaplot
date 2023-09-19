@@ -1,7 +1,7 @@
 ''' Axes for plotting one or more data series '''
 
 from __future__ import annotations
-from typing import Union, Sequence, Optional, Literal
+from typing import Sequence, Optional, Literal
 import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
@@ -15,7 +15,7 @@ from . import text
 from .drawable import Drawable
 
 Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
-                            'ywidth', 'xrange', 'yrange', 'xminor', 'yminor'])
+                             'ywidth', 'xrange', 'yrange', 'xminor', 'yminor'])
 
 LegendLoc = Literal['left', 'right']
 
@@ -29,15 +29,15 @@ def zrange(start: float, stop: float, step: float) -> list[float]:
     return vals
 
 
-def linspace(start: float, stop: float, num: int=50) -> list[float]:
+def linspace(start: float, stop: float, num: int = 50) -> list[float]:
     ''' Generate list of evenly spaced points '''
     if num < 2:
         return [stop]
     diff = (float(stop) - start)/(num - 1)
-    return [diff * i + start  for i in range(num)]
+    return [diff * i + start for i in range(num)]
 
 
-def getticks(vmin: float, vmax: float, maxticks: int=9, fmt: str='g') -> list[float]:
+def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> list[float]:
     ''' Attempt to find reasonable tick locations given data bounds
 
         Args:
@@ -89,8 +89,8 @@ class BasePlot(Drawable):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, title: str=None, xname: str=None, yname: str=None,
-                 legend: LegendLoc='left', style: Style=None):
+    def __init__(self, title: str = None, xname: str = None, yname: str = None,
+                 legend: LegendLoc = 'left', style: Style = None):
         self.title = title
         self.xname = xname
         self.yname = yname
@@ -121,16 +121,16 @@ class BasePlot(Drawable):
         self._yrange = ymin, ymax
         return self
 
-    def xticks(self, values: Sequence[float], names: Sequence[str]=None,
-               minor: Sequence[float]=None) -> BasePlot:
+    def xticks(self, values: Sequence[float], names: Sequence[str] = None,
+               minor: Sequence[float] = None) -> BasePlot:
         ''' Set x axis tick values and names '''
         self._xtickvalues = values
         self._xticknames = names
         self._xtickminor = minor
         return self
 
-    def yticks(self, values: Sequence[float], names: Sequence[str]=None,
-               minor: Sequence[float]=None) -> BasePlot:
+    def yticks(self, values: Sequence[float], names: Sequence[str] = None,
+               minor: Sequence[float] = None) -> BasePlot:
         ''' Set y axis tick values and names '''
         self._ytickvalues = values
         self._yticknames = names
@@ -153,7 +153,7 @@ class BasePlot(Drawable):
         ''' Add a data series to the axis '''
         self.series.append(series)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         canvas = Canvas(self.style.canvasw, self.style.canvash)
         self._xml(canvas)
@@ -284,11 +284,11 @@ class BasePlot(Drawable):
                 linebox = ViewBox(boxl+5, ytop-boxh, markw-10, boxh)
                 canvas.setviewbox(linebox)  # Clip
                 canvas.path([boxl-10, boxl+markw/2, boxl+markw+10],
-                                [yyline, yyline, yyline],
-                                color=s.style.line.color,
-                                width=s.style.line.width,
-                                markerid=s._markername,
-                                stroke=s.style.line.stroke)
+                            [yyline, yyline, yyline],
+                            color=s.style.line.color,
+                            width=s.style.line.width,
+                            markerid=s._markername,
+                            stroke=s.style.line.stroke)
                 canvas.resetviewbox()
             yytext -= max(texth/2, square/2+2) + 3
 
@@ -375,7 +375,7 @@ class XyPlot(BasePlot):
                   xmax + dx*self.style.axis.xdatapad)
         yrange = (ymin - dy*self.style.axis.ydatapad,
                   ymax + dy*self.style.axis.ydatapad)
-        
+
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)
         return ticks
@@ -462,7 +462,9 @@ class XyPlot(BasePlot):
             x, _ = xform.apply(xtick, 0)
             y1 = axisbox.y
             y2 = y1 - self.style.tick.length
-            if (self.style.axis.xgrid and x > axisbox.x+self.style.axis.framelinewidth and x < axisbox.x+axisbox.w-self.style.axis.framelinewidth):
+            if (self.style.axis.xgrid
+                    and x > axisbox.x+self.style.axis.framelinewidth
+                    and x < axisbox.x+axisbox.w-self.style.axis.framelinewidth):
                 canvas.path([x, x], [axisbox.y, axisbox.y+axisbox.h],
                             color=self.style.axis.gridcolor,
                             stroke=self.style.axis.gridstroke,
@@ -478,19 +480,22 @@ class XyPlot(BasePlot):
                         halign='center', valign='top')
         if ticks.xminor:
             for xminor in ticks.xminor:
-                if xminor in ticks.xticks: continue  # Don't double-draw
+                if xminor in ticks.xticks:
+                    continue  # Don't double-draw
                 x, _ = xform.apply(xminor, 0)
                 y1 = axisbox.y
                 y2 = y1 - self.style.tick.minorlength
                 canvas.path([x, x], [y1, y2], color=self.style.axis.color,
                             width=self.style.tick.minorwidth)
-            
+
         for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
             _, y = xform.apply(0, ytick)
             x1 = axisbox.x
             x2 = axisbox.x - self.style.tick.length
 
-            if (self.style.axis.ygrid and y > axisbox.y+self.style.axis.framelinewidth and y < axisbox.y+axisbox.h-self.style.axis.framelinewidth):
+            if (self.style.axis.ygrid
+                    and y > axisbox.y+self.style.axis.framelinewidth
+                    and y < axisbox.y+axisbox.h-self.style.axis.framelinewidth):
                 canvas.path([axisbox.x, axisbox.x+axisbox.w], [y, y],
                             color=self.style.axis.gridcolor,
                             stroke=self.style.axis.gridstroke,
@@ -504,10 +509,11 @@ class XyPlot(BasePlot):
                         font=self.style.tick.text.font,
                         size=self.style.tick.text.size,
                         halign='right', valign='center')
-            
+
         if ticks.yminor:
             for yminor in ticks.yminor:
-                if yminor in ticks.yticks: continue  # Don't double-draw
+                if yminor in ticks.yticks:
+                    continue  # Don't double-draw
                 _, y = xform.apply(0, yminor)
                 x1 = axisbox.x
                 x2 = axisbox.x - self.style.tick.minorlength
@@ -580,7 +586,7 @@ class XyPlot(BasePlot):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         if self.style.bgcolor not in [None, 'none']:
             canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
@@ -616,9 +622,9 @@ class XyGraph(XyPlot):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, centerorigin: bool=True, title: str=None,
-                 xname: str='x', yname: str='y',
-                 legend: LegendLoc='left', style: Style=None):
+    def __init__(self, centerorigin: bool = True, title: str = None,
+                 xname: str = 'x', yname: str = 'y',
+                 legend: LegendLoc = 'left', style: Style = None):
         super().__init__(title=title, xname=xname, yname=yname,
                          legend=legend, style=style)
         self.centerorigin = centerorigin
@@ -751,7 +757,8 @@ class XyGraph(XyPlot):
                     startmarker=startmark, endmarker=endmark)
 
         for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
-            if xtick == 0: continue
+            if xtick == 0:
+                continue
             x, _ = xform.apply(xtick, 0)
             y1 = xleft[1] + self.style.tick.length/2
             y2 = xleft[1] - self.style.tick.length/2
@@ -770,7 +777,8 @@ class XyGraph(XyPlot):
                         halign='center', valign='top')
         if ticks.xminor:
             for xminor in ticks.xminor:
-                if xminor in ticks.xticks: continue  # Don't double-draw
+                if xminor in ticks.xticks:
+                    continue  # Don't double-draw
                 x, _ = xform.apply(xminor, 0)
                 y1 = xleft[1] + self.style.tick.minorlength/2
                 y2 = xleft[1] - self.style.tick.minorlength/2
@@ -778,7 +786,8 @@ class XyGraph(XyPlot):
                             width=self.style.tick.minorwidth)
 
         for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
-            if ytick == 0: continue
+            if ytick == 0:
+                continue
             _, y = xform.apply(0, ytick)
             x1 = ytop[0] + self.style.tick.length/2
             x2 = ytop[0] - self.style.tick.length/2
@@ -797,7 +806,8 @@ class XyGraph(XyPlot):
                         halign='right', valign='center')
         if ticks.yminor:
             for yminor in ticks.yminor:
-                if yminor in ticks.yticks: continue  # Don't double-draw
+                if yminor in ticks.yticks:
+                    continue  # Don't double-draw
                 _, y = xform.apply(0, yminor)
                 x1 = ytop[0] + self.style.tick.minorlength/2
                 x2 = ytop[0] - self.style.tick.minorlength/2
@@ -837,7 +847,7 @@ class XyGraph(XyPlot):
                         size=self.style.axis.title.size,
                         halign='left', valign='bottom')
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         if self.style.bgcolor not in [None, 'none']:
             canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,

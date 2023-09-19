@@ -6,8 +6,6 @@ import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
-
-
 from . import text
 from .config import config
 from .styletypes import MarkerTypes, DashTypes
@@ -26,8 +24,7 @@ def fmt(f: float) -> str:
     return s.rstrip('0').rstrip('.')  # Strip trailing zeros
 
 
-
-def getdash(dash: DashTypes=':', linewidth: float=2) -> str:
+def getdash(dash: DashTypes = ':', linewidth: float = 2) -> str:
     ''' Convert dash style into a stroke-dasharray tag for SVG path '''
     if dash in [':', 'dotted']:
         dash = f'{linewidth} {linewidth}'
@@ -54,7 +51,8 @@ class Transform:
         self.yshift = self.dest.y - self.src.y*self.yscale
 
     def __repr__(self):
-        return f'Transform(scale=({fmt(self.xscale)},{fmt(self.yscale)}); shift=({fmt(self.xshift)},{fmt(self.yshift)}))'
+        return (f'Transform(scale=({fmt(self.xscale)},{fmt(self.yscale)}); '
+                f'shift=({fmt(self.xshift)},{fmt(self.yshift)}))')
 
     def apply(self, x: float, y: float) -> tuple[float, float]:
         ''' Apply the transformation to the x, y point '''
@@ -62,7 +60,7 @@ class Transform:
                 y*self.yscale + self.yshift)
 
     def apply_list(self, x: Sequence[float], y: Sequence[float]) -> tuple[list[float], list[float]]:
-        ''' Applyt the transofrmation to a list of x, y points '''
+        ''' Apply the transofrmation to a list of x, y points '''
         xy = [self.apply(xx, yy) for xx, yy in zip(x, y)]
         x = [z[0] for z in xy]
         y = [z[1] for z in xy]
@@ -77,7 +75,7 @@ class Canvas:
             height: Pixel height of the canvas
             fill: Fill color for canvas background
     '''
-    def __init__(self, width: float, height: float, fill: str=None):
+    def __init__(self, width: float, height: float, fill: str = None):
         self.canvaswidth = width
         self.canvasheight = height
         self.viewbox = ViewBox(0, 0, width, height)
@@ -108,7 +106,7 @@ class Canvas:
         self.viewbox = ViewBox(0, 0, self.canvaswidth, self.canvasheight)
         self.clip = None
 
-    def setviewbox(self, viewbox: ViewBox, clippad: float=0) -> None:
+    def setviewbox(self, viewbox: ViewBox, clippad: float = 0) -> None:
         ''' Set the viewbox for canvas drawing. '''
         self.viewbox = viewbox
         if self.defs is None:
@@ -131,8 +129,9 @@ class Canvas:
         self.group = ET.SubElement(self.root, 'g')
         return self.group
 
-    def definemarker(self, shape: MarkerTypes='round', radius: float=4, color: str='red',
-                     strokecolor: str='black', strokewidth: float=1, orient: bool=False) -> str:
+    def definemarker(self, shape: MarkerTypes = 'round', radius: float = 4, color: str = 'red',
+                     strokecolor: str = 'black', strokewidth: float = 1,
+                     orient: bool = False) -> str:
         ''' Define a new marker in SVG <defs>.
 
             Args:
@@ -143,7 +142,7 @@ class Canvas:
                 strokewidth: Marker border width
                 orient: Rotate the marker to the same angle as its line
         '''
-        name = 'dot{}'.format(len(self._marknames)+1)
+        name = f'dot{len(self._marknames)+1}'
         self._marknames.append(name)
 
         if self.defs is None:
@@ -193,7 +192,9 @@ class Canvas:
             k = diam/3
             ks = fmt(k)
             ks2 = fmt(k*2)
-            sh.attrib['points'] = f'{ks},0 {ks2},0 {ks2},{ks}, {diam},{ks} {diam},{ks2} {ks2},{ks2} {ks2},{diam} {ks},{diam} {ks},{ks2} 0,{ks2} 0,{ks} {ks},{ks}'
+            sh.attrib['points'] = (f'{ks},0 {ks2},0 {ks2},{ks}, {diam},{ks} '
+                                   f'{diam},{ks2} {ks2},{ks2} {ks2},{diam} {ks},{diam} '
+                                   f'{ks},{ks2} 0,{ks2} 0,{ks} {ks},{ks}')
             if shape == 'x':
                 sh.attrib['transform'] = f'rotate(45 {radius} {radius})'
         else:
@@ -213,10 +214,10 @@ class Canvas:
         ''' Flip the y coordinate because SVG defines y=0 at the top '''
         return self.canvasheight - y
 
-    def path(self, x: Sequence[float], y: Sequence[float], stroke: DashTypes='-',
-             color: str='black', width: float=2, markerid: str=None,
-             startmarker: str=None, endmarker: str=None,
-             dataview: ViewBox=None):
+    def path(self, x: Sequence[float], y: Sequence[float], stroke: DashTypes = '-',
+             color: str = 'black', width: float = 2, markerid: str = None,
+             startmarker: str = None, endmarker: str = None,
+             dataview: ViewBox = None):
         ''' Add a path to the SVG
 
             Args:
@@ -260,9 +261,9 @@ class Canvas:
         if self.clip:
             path.attrib['clip-path'] = f'url(#{self.clip})'
 
-    def rect(self, x: float, y: float, w: float, h: float, fill: str=None,
-             strokecolor: str='black', strokewidth: float=2,
-             rcorner: float=0, dataview: ViewBox=None) -> ET.Element:
+    def rect(self, x: float, y: float, w: float, h: float, fill: str = None,
+             strokecolor: str = 'black', strokewidth: float = 2,
+             rcorner: float = 0, dataview: ViewBox = None) -> ET.Element:
         ''' Add a rectangle to the canvas
 
             Args:
@@ -297,9 +298,9 @@ class Canvas:
         rect = ET.SubElement(self.group, 'rect', attrib=attrib)
         return rect
 
-    def circle(self, x: float, y: float, radius: float, color: str='black',
-               strokecolor: str='red', strokewidth: float=1,
-               stroke: DashTypes='-', dataview: ViewBox=None):
+    def circle(self, x: float, y: float, radius: float, color: str = 'black',
+               strokecolor: str = 'red', strokewidth: float = 1,
+               stroke: DashTypes = '-', dataview: ViewBox = None):
         ''' Add a circle to the canvas
 
             Args:
@@ -328,13 +329,13 @@ class Canvas:
         return circ
 
     def text(self, x: float, y: float, s: str,
-             color: str='black',
-             font: str='sans-serif',
-             size: float=12,
-             halign: Halign='left',
-             valign: Valign='bottom',
-             rotate: float=None,
-             dataview: ViewBox=None) -> None:
+             color: str = 'black',
+             font: str = 'sans-serif',
+             size: float = 12,
+             halign: Halign = 'left',
+             valign: Valign = 'bottom',
+             rotate: float = None,
+             dataview: ViewBox = None) -> None:
         ''' Add text to the canvas
 
             Args:
@@ -362,9 +363,9 @@ class Canvas:
                        valign=valign,
                        rotate=rotate)
 
-    def poly(self, points: Sequence[tuple[float, float]], color: str='black',
-             strokecolor: str='red', strokewidth: float=1, alpha: float=1.0,
-             dataview: ViewBox=None):
+    def poly(self, points: Sequence[tuple[float, float]], color: str = 'black',
+             strokecolor: str = 'red', strokewidth: float = 1, alpha: float = 1.0,
+             dataview: ViewBox = None):
         ''' Add a polygon to the canvas
 
             Args:
@@ -396,8 +397,8 @@ class Canvas:
         return poly
 
     def wedge(self, cx: float, cy: float, radius: float, theta: float,
-              starttheta: float=0, color: str='red',
-              strokecolor: str='black', strokewidth: float=1) -> ET.Element:
+              starttheta: float = 0, color: str = 'red',
+              strokecolor: str = 'black', strokewidth: float = 1) -> ET.Element:
         ''' Add a wedge/filled arc (ie pie chart slice)
 
             Args:
@@ -428,9 +429,9 @@ class Canvas:
             path.attrib['clip-path'] = f'url(#{self.clip})'
         return path
 
-    def arc(self, cx: float, cy: float, radius: float, theta1: float=0,
-              theta2: float=3.14, strokecolor: str='black',
-            strokewidth: float=1, dataview: ViewBox=None) -> ET.Element:
+    def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
+            theta2: float = 3.14, strokecolor: str = 'black',
+            strokewidth: float = 1, dataview: ViewBox = None) -> ET.Element:
         ''' Add an open arc
 
             Args:
@@ -447,10 +448,10 @@ class Canvas:
             cx, cy = xform.apply(cx, cy)
             radius = radius * self.viewbox.w / dataview.w
         cy = self.flipy(cy)
-        
+
         theta1 = math.radians((theta1 + 360) % 360)
         theta2 = math.radians((theta2 + 360) % 360)
-        
+
         x1 = cx + radius * math.cos(-theta1)
         y1 = cy + radius * math.sin(-theta1)
         x2 = cx + radius * math.cos(-theta2)

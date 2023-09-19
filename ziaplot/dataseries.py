@@ -26,7 +26,7 @@ class Line(Series):
         self.startmark: MarkerTypes = None
         self.endmark: MarkerTypes = None
 
-    def endmarkers(self, start: MarkerTypes='<', end: MarkerTypes='>') -> 'Line':
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Line':
         ''' Define markers to show at the start and end of the line. Use defaults
             to show arrowheads pointing outward in the direction of the line.
         '''
@@ -38,7 +38,7 @@ class Line(Series):
         ''' Get range of data '''
         return DataRange(min(self.x), max(self.x), min(self.y), max(self.y))
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None):
+    def _xml(self, canvas: Canvas, databox: ViewBox = None):
         ''' Add XML elements to the canvas '''
         markname = None
         if self.style.marker.shape:
@@ -77,7 +77,7 @@ class Line(Series):
                     endmarker=endmark,
                     dataview=databox)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
         ax = axes.XyPlot()
         ax.add(self)
@@ -94,7 +94,7 @@ class Function(Line):
             n: Number of datapoints for discrete representation
     '''
     def __init__(self, func: Callable[[float], float],
-                 xmin: float=-5, xmax: float=5, n: int=200):
+                 xmin: float = -5, xmax: float = 5, n: int = 200):
         step = (xmax-xmin) / n
         x = axes.zrange(xmin, xmax, step)
         y = [func(x0) for x0 in x]
@@ -114,7 +114,7 @@ class Xy(Line):
         self.style.line.width = 0
         self.style.marker.shape = 'round'
 
-        
+
 class ErrorBar(Line):
     ''' An X-Y Line with Error Bars in X and/or Y
 
@@ -125,7 +125,7 @@ class ErrorBar(Line):
             xerr: X errors
     '''
     def __init__(self, x: Sequence[float], y: Sequence[float],
-                 yerr: Sequence[float]=None, xerr: Sequence[float]=None):
+                 yerr: Sequence[float] = None, xerr: Sequence[float] = None):
         super().__init__(x, y)
         self.yerr = yerr
         self.xerr = xerr
@@ -148,8 +148,8 @@ class ErrorBar(Line):
 
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def yerrmarker(self, marker: MarkerTypes='-', length: float=None,
-                   width: float=None, stroke: DashTypes=None) -> 'ErrorBar':
+    def yerrmarker(self, marker: MarkerTypes = '-', length: float = None,
+                   width: float = None, stroke: DashTypes = None) -> 'ErrorBar':
         ''' Set marker and linestyle for y-error bars
 
             Args:
@@ -167,8 +167,8 @@ class ErrorBar(Line):
             self.style.yerror.stroke = stroke
         return self
 
-    def xerrmarker(self, marker: MarkerTypes='|', length: float=None,
-                   width: float=None, stroke: DashTypes=None) -> 'ErrorBar':
+    def xerrmarker(self, marker: MarkerTypes = '|', length: float = None,
+                   width: float = None, stroke: DashTypes = None) -> 'ErrorBar':
         ''' Set marker and linestyle for x-error bars
 
             Args:
@@ -186,7 +186,7 @@ class ErrorBar(Line):
             self.style.xerror.stroke = stroke
         return self
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         if self.yerr is not None:
@@ -231,7 +231,7 @@ class LineFill(Line):
             ymax: Y-values defining upper limit of region
             ymin: Y-values defining lower limit of region. Defaults to 0.
     '''
-    def __init__(self, x: Sequence[float], ymax: Sequence[float], ymin: Sequence[float]=None):
+    def __init__(self, x: Sequence[float], ymax: Sequence[float], ymin: Sequence[float] = None):
         super().__init__(x, ymax)
         self.x = x
         self.ymax = ymax
@@ -246,7 +246,7 @@ class LineFill(Line):
                          min(min(self.ymax), min(self.ymin)),
                          max(max(self.ymax), max(self.ymin)))
 
-    def fill(self, color: str, alpha: float=None) -> 'LineFill':
+    def fill(self, color: str, alpha: float = None) -> 'LineFill':
         ''' Set the region fill color and transparency
 
             Args:
@@ -258,7 +258,7 @@ class LineFill(Line):
             self.style.fillalpha = alpha
         return self
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None):
+    def _xml(self, canvas: Canvas, databox: ViewBox = None):
         ''' Add XML elements to the canvas '''
         # Draw in two parts - filled part doesn't have a stroke
         # because we don't want lines on the left/right edge.
@@ -271,7 +271,7 @@ class LineFill(Line):
         alpha = self.style.fillalpha
         if fill is None:
             fill = self.style.line.color
-        
+
         canvas.poly(xy, color=fill,
                     alpha=alpha,
                     strokecolor='none',
@@ -300,7 +300,7 @@ class LineFill(Line):
                     markerid=markname,
                     dataview=databox)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
         ax = axes.XyPlot()
         ax.add(self)
@@ -318,8 +318,8 @@ class Text(Series):
             valign: Vertical alignment
             rotate: Rotation angle, in degrees
     '''
-    def __init__(self, x: float, y: float, s: str, halign: Halign='left',
-                 valign: Valign='bottom', rotate: float=None):
+    def __init__(self, x: float, y: float, s: str, halign: Halign = 'left',
+                 valign: Valign = 'bottom', rotate: float = None):
         super().__init__()
         self.style = SeriesStyle()
         self.x = x
@@ -338,7 +338,7 @@ class Text(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, None, None)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         canvas.text(self.x, self.y, self.s,
                     color=self.style.text.color,
@@ -363,8 +363,8 @@ class Arrow(Line):
             tailmarker: Arrowhead tail marker
     '''
     def __init__(self, xy: Sequence[float], xytail: Sequence[float],
-                 s: str='', strofst: Sequence[float]=(0, 0),
-                 marker: MarkerTypes='arrow', tailmarker: MarkerTypes=None):
+                 s: str = '', strofst: Sequence[float] = (0, 0),
+                 marker: MarkerTypes = 'arrow', tailmarker: MarkerTypes = None):
         self.xy = xy
         self.xytail = xytail
         self.strofst = strofst
@@ -372,10 +372,10 @@ class Arrow(Line):
 
         super().__init__([self.xytail[0], self.xy[0]], [self.xytail[1], self.xy[1]])
         self.style = SeriesStyle()
-        self.style.marker.strokewidth=0
+        self.style.marker.strokewidth = 0
         self.endmarkers(start=tailmarker, end=marker)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         super()._xml(canvas, databox)
         x = self.xytail[0] + self.strofst[0]
@@ -401,7 +401,7 @@ class HLine(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, self.y, self.y)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
         color = self.style.line.color
@@ -425,7 +425,7 @@ class VLine(Series):
         ''' Get x-y datarange '''
         return DataRange(self.x, self.x, None, None)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
         color = self.style.line.color
@@ -446,8 +446,8 @@ class Bars(Series):
             width: Width of all bars
             align: Bar position in relation to x value
     '''
-    def __init__(self, x: Sequence[float], y: Sequence[float], y2: Sequence[float]=None,
-                 width: float=None, align: Halign='center'):
+    def __init__(self, x: Sequence[float], y: Sequence[float], y2: Sequence[float] = None,
+                 width: float = None, align: Halign = 'center'):
         super().__init__()
         self.x = x
         self.y = y
@@ -466,7 +466,7 @@ class Bars(Series):
             xmin, xmax = min(self.x)-self.width, max(self.x)
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         for x, y, y2 in zip(self.x, self.y, self.y2):
@@ -481,7 +481,7 @@ class Bars(Series):
                         strokewidth=self.style.line.strokewidth,
                         dataview=databox)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
         ax = axes.XyPlot()
         ax.add(self)
@@ -495,7 +495,7 @@ class BarsHoriz(Bars):
         rng = super().datarange()  # Transpose it
         return DataRange(rng.ymin, rng.ymax, rng.xmin, rng.xmax)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         for x, y, y2 in zip(self.x, self.y, self.y2):
@@ -522,9 +522,9 @@ class Histogram(Bars):
             density: Normalize the histogram
             weights: Weights to apply to each x value
     '''
-    def __init__(self, x: Sequence[float], bins: int=None,
-                 binrange: tuple[float, float, float]=None,
-                 density: bool=False, weights: Sequence[float]=None):
+    def __init__(self, x: Sequence[float], bins: int = None,
+                 binrange: tuple[float, float, float] = None,
+                 density: bool = False, weights: Sequence[float] = None):
         xmin = min(x)
         if binrange is not None:
             binleft = binrange[0]

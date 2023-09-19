@@ -11,11 +11,11 @@ class Drawable:
     ''' Drawable SVG/XML object. Implements common XML and SVG functions,
         plus _repr_ for Jupyter
     '''
-    def _xml(self, canvas: Canvas, databox: ViewBox=None):
+    def _xml(self, canvas: Canvas, databox: ViewBox = None):
         ''' Get XML elements '''
         return canvas.xml()
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for a standalone SVG '''
         canvas = Canvas(600, 400)
         if border:
@@ -30,9 +30,9 @@ class Drawable:
         ''' Representer function for Jupyter '''
         return self.svg()
 
-    def imagebytes(self, fmt: Literal['svg', 'eps', 'pdf', 'png']='svg') -> bytes:
+    def imagebytes(self, fmt: Literal['svg', 'eps', 'pdf', 'png'] = 'svg') -> bytes:
         ''' Get byte data for image
-        
+
             Args:
                 ext: File format extension. Will be extracted from
                     fname if not provided.
@@ -48,7 +48,8 @@ class Drawable:
             elif fmt == 'png':
                 img = cairosvg.svg2png(img)
             else:
-                raise ValueError(f'Cannot convert to {fmt} format. Supported formats: svg, eps, pdf, png')
+                raise ValueError(
+                    f'Cannot convert to {fmt} format. Supported formats: svg, eps, pdf, png')
         return img
 
     def save(self, fname: str):

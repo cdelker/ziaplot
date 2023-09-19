@@ -12,7 +12,7 @@ TextMode = Literal['text', 'path']
 
 class Config:
     ''' Global configuration options for Ziaplot
-    
+
         Attributes
         ----------
         text: How to represent text elements in SVG. Either 'text'
@@ -27,7 +27,7 @@ class Config:
 
     def __repr__(self):
         return f'ZPconfig(text={self.text}; svg2={self.svg2}; precision={self.precision})'
-    
+
     @property
     def svg2(self) -> bool:
         if zfconfig is not None:
@@ -48,7 +48,7 @@ class Config:
             return zfconfig.precision
         else:
             return self._precision
-    
+
     @precision.setter
     def precision(self, value: float) -> None:
         if zfconfig is not None:

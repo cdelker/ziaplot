@@ -63,9 +63,9 @@ For example, to enable the "Taffy" theme for all plots, use:
         p3 += zp.Line(x, [yi*4 for yi in y]).marker('arrow', orient=True)
         p3 += zp.Line(x, [yi*3 for yi in y]).stroke('--')
 
-        p4 = zp.BarChart(('a', 'b', 'c', 'd'))
-        p4.bar((2, 2, 4, 3))
-        p4.bar((2, 3, 1, 4))
+        p4 = zp.BarChartGrouped(('a', 'b', 'c', 'd'))
+        p4.bar_series((2, 2, 4, 3))
+        p4.bar_series((2, 3, 1, 4))
 
         l1 = zp.Hlayout(p3, p4)
         l2 = zp.Hlayout(p2, p)

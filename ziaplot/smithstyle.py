@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 @dataclass
 class SmithGrid:
     ''' Grid specification for Smith Charts
-    
+
         Attributes:
             circles: list of (R, xmax, xmin, major)
             arcs: list of (X, rmax, rmin, major)

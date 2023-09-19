@@ -59,8 +59,8 @@ class TextStyle:
             size: Font point size
             color: Font color
     '''
-    font: str = 'sans-serif'
-    size: float = 14
+    font: str = 'sans'
+    size: float = 16
     color: str = 'black'
 
 
@@ -158,7 +158,7 @@ class TickStyle:
     '''
     length: float = 9.0
     width: float = 2.0
-    text: TextStyle = field(default_factory=lambda: TextStyle(size=14))
+    text: TextStyle = field(default_factory=lambda: TextStyle(size=16))
     textofst: float = 4
     xstrformat: str = 'g'
     ystrformat: str = 'g'

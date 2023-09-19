@@ -15,15 +15,28 @@ In Ziaplot, the term "chart" is used for figures where the x value is qualitativ
 Bar Chart
 ---------
 
-To build a bar chart from :py:class:`ziaplot.bar.BarChart`, the x values must be provided when the BarChart is instantiated.
-Sets of bars are added using :py:meth:`ziaplot.bar.BarChart.bar`, which automatically creates and adds a :py:class:`ziaplot.dataseries.Bars` series.
+A bar chart with a single series of data is made using :py:class:`ziaplot.bar.BarChart`, which takes x-values as strings and y-values (bar heights) for each bar.
 
 .. jupyter-execute::
 
-    p = zp.BarChart(['January', 'February', 'March'])
-    p.bar((4, 4, 5, 6)).name('Apple')
-    p.bar((3, 4, 4, 5)).name('Blueberry')
-    p.bar((2, 1, 5, 4)).name('Cherry')
+    p = zp.BarChart(xvalues=['January', 'February', 'March', 'April'],
+                    yvalues=[3,5,4,8])
+    p.xname = 'Month'
+    p.yname = 'Number'
+    p.title = 'Single Series Bar Chart'
+    p
+
+
+A :py:class:`ziaplot.bar.BarChartGrouped` creates a bar chart with multiple data series, grouped by x-value.
+The x values must be provided when the BarChart is instantiated.
+Sets of bars are then added using :py:meth:`ziaplot.bar.BarChart.bar_series`, which automatically creates and adds a :py:class:`ziaplot.dataseries.Bars` series.
+
+.. jupyter-execute::
+
+    p = zp.BarChartGrouped(['January', 'February', 'March', 'April'])
+    p.bar_series((4, 4, 5, 6)).name('Apple')
+    p.bar_series((3, 4, 4, 5)).name('Blueberry')
+    p.bar_series((2, 1, 5, 4)).name('Cherry')
     p
 
 
@@ -31,10 +44,10 @@ Bar charts may also be drawn with horizontal bars.
 
 .. jupyter-execute::
 
-    p = zp.BarChart(['January', 'February', 'March'], horiz=True)
-    p.bar((4, 4, 5, 6)).name('Apple')
-    p.bar((3, 4, 4, 5)).name('Blueberry')
-    p.bar((2, 1, 5, 4)).name('Cherry')
+    p = zp.BarChartGrouped(['January', 'February', 'March', 'April'], horiz=True)
+    p.bar_series((4, 4, 5, 6)).name('Apple')
+    p.bar_series((3, 4, 4, 5)).name('Blueberry')
+    p.bar_series((2, 1, 5, 4)).name('Cherry')
     p
 
 |

@@ -34,9 +34,9 @@ class Pie(Drawable):
             legend: Location for legend
             style: Plotting style
     '''
-    def __init__(self, title: str=None,
-                 labels: Literal['name', 'percent', 'value', None]='name',
-                 legend: str=None, style: Style=None):
+    def __init__(self, title: str = None,
+                 labels: Literal['name', 'percent', 'value', None] = 'name',
+                 legend: str = None, style: Style = None):
         self.style = style if style is not None else styles.Default()
         self.legend = legend
         self.labels = labels   # 'name', 'value', or 'percent'
@@ -55,9 +55,9 @@ class Pie(Drawable):
             w.name = n
         return self
 
-    def wedge(self, value: float, name: str='', color: str=None,
-              strokecolor: str=None, strokewidth: float=None,
-              extrude: bool=False) -> Pie:
+    def wedge(self, value: float, name: str = '', color: str = None,
+              strokecolor: str = None, strokewidth: float = None,
+              extrude: bool = False) -> Pie:
         ''' Add a wedge to the pie.
 
             Args:
@@ -102,7 +102,7 @@ class Pie(Drawable):
 
         for name in names:
             width = text.text_size(name, fontsize=self.style.legend.text.size,
-                                    font=self.style.legend.text.font).width
+                                   font=self.style.legend.text.font).width
             boxw = max(boxw, square + width + 5)
             boxh += self.style.legend.text.size + 2
         boxh += 4  # Top and bottom
@@ -111,7 +111,8 @@ class Pie(Drawable):
     def _drawlegend(self, canvas: Canvas):
         ''' Draw legend on the canvas '''
         wedges = [w for w in self.wedgelist if w.name]
-        if len(wedges) == 0: return
+        if len(wedges) == 0:
+            return
 
         canvas.newgroup()
         boxw, boxh = self._legendsize()
@@ -144,7 +145,7 @@ class Pie(Drawable):
             canvas.rect(xleft+4, yysquare, square, square,
                         fill=wedge.color, strokewidth=1)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         values = [w.value for w in self.wedgelist]
         total = sum(values)
@@ -156,7 +157,7 @@ class Pie(Drawable):
         radius = (min(canvas.viewbox.w, canvas.viewbox.h) / 2 -
                   self.style.pie.edgepad*2)
 
-        if any([w.extrude for w in self.wedgelist]):
+        if any(w.extrude for w in self.wedgelist):
             radius -= self.style.pie.extrude
 
         if self.title:
@@ -189,7 +190,7 @@ class Pie(Drawable):
                     labeltext = f'{w.value/total*100:.1f}%'
                 else:
                     labeltext = ''
-                
+
                 canvas.text(cx + radius * math.cos(math.pi/4),
                             cy + radius * math.sin(math.pi/4),
                             labeltext,
@@ -246,7 +247,7 @@ class Pie(Drawable):
         if self.legend:
             self._drawlegend(canvas)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         canvas = Canvas(self.style.canvasw, self.style.canvash,
                         fill=self.style.bgcolor)

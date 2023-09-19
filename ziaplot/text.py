@@ -2,9 +2,8 @@
     paths via ziamath library
 '''
 
-from typing import Literal, Optional
+from typing import Literal
 
-import os
 import string
 from collections import namedtuple
 from xml.etree import ElementTree as ET
@@ -15,12 +14,16 @@ try:
     import ziafont
 except ImportError:
     ziamath = None  # type: ignore
+else:
+    ziamath.config.math.variant = 'sans'
+
 
 from .config import config, TextMode
 
 Halign = Literal['left', 'center', 'right']
 Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
 Size = namedtuple('Size', ['width', 'height'])
+
 
 def fmt(f: float) -> str:
     ''' String format, stripping trailing zeros '''
@@ -58,12 +61,12 @@ def settextmode(mode: TextMode, svg2=True) -> None:
 
 
 def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
-              color: str='black',
-              font: str='sans-serif',
-              size: float=12,
-              halign: Halign='left',
-              valign: Valign='bottom',
-              rotate: float=None):
+              color: str = 'black',
+              font: str = 'sans-serif',
+              size: float = 14,
+              halign: Halign = 'left',
+              valign: Valign = 'bottom',
+              rotate: float = None):
 
     if config.text == 'path':
         draw_text_zia(x, y, s, svgelm=svgelm,
@@ -76,12 +79,12 @@ def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
 
 
 def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
-                  color: str='black',
-                  font: str='sans',
-                  size: float=12,
-                  halign: Halign='left',
-                  valign: Valign='base',
-                  rotate: float=None):
+                  color: str = 'black',
+                  font: str = 'sans',
+                  size: float = 14,
+                  halign: Halign = 'left',
+                  valign: Valign = 'base',
+                  rotate: float = None):
     math = ziamath.Text(s, size=size, textfont=font, color=color,
                         halign=halign, valign=valign)
     textelm = math.drawon(svgelm, x, y)
@@ -91,35 +94,35 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
 
 
 def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
-                   color: str='black',
-                   font: str='sans-serif',
-                   size: float=12,
-                   halign: Halign='left',
-                   valign: Valign='bottom',
-                   rotate: float=None):
-        anchor = {'center': 'middle',
-                  'left': 'start',
-                  'right': 'end'}.get(halign, 'left')
-        baseline = {'center': 'middle',
-                    'bottom': 'auto',
-                    'top': 'hanging'}.get(valign, 'bottom')
+                   color: str = 'black',
+                   font: str = 'sans-serif',
+                   size: float = 14,
+                   halign: Halign = 'left',
+                   valign: Valign = 'bottom',
+                   rotate: float = None):
+    anchor = {'center': 'middle',
+              'left': 'start',
+              'right': 'end'}.get(halign, 'left')
+    baseline = {'center': 'middle',
+                'bottom': 'auto',
+                'top': 'hanging'}.get(valign, 'bottom')
 
-        attrib = {'x': fmt(x),
-                  'y': fmt(y),
-                  'fill': color,
-                  'font-size': str(size),
-                  'font-family': font,
-                  'text-anchor': anchor,
-                  'dominant-baseline': baseline}
+    attrib = {'x': fmt(x),
+              'y': fmt(y),
+              'fill': color,
+              'font-size': str(size),
+              'font-family': font,
+              'text-anchor': anchor,
+              'dominant-baseline': baseline}
 
-        if rotate:
-            attrib['transform'] = f' rotate({-rotate} {fmt(x)} {fmt(y)})'
+    if rotate:
+        attrib['transform'] = f' rotate({-rotate} {fmt(x)} {fmt(y)})'
 
-        txt = ET.SubElement(svgelm, 'text', attrib=attrib)
-        txt.text = s
+    txt = ET.SubElement(svgelm, 'text', attrib=attrib)
+    txt.text = s
 
 
-def text_size(st: str, fontsize: float=12, font: str='Arial') -> Size:
+def text_size(st: str, fontsize: float = 14, font: str = 'Arial') -> Size:
     ''' Estimate string width based on individual characters
 
         Args:
@@ -136,12 +139,12 @@ def text_size(st: str, fontsize: float=12, font: str='Arial') -> Size:
         return text_size_text(st, fontsize, font)
 
     
-def text_size_zia(st: str, fontsize: float=12, font: str='sans') -> Size:
+def text_size_zia(st: str, fontsize: float = 14, font: str = 'sans') -> Size:
     text = ziamath.Text(st, size=fontsize)
     return Size(*text.getsize())
 
 
-def text_size_text(st: str, fontsize: float=12, font: str='Arial') -> Size:
+def text_size_text(st: str, fontsize: float = 14, font: str = 'Arial') -> Size:
     ''' Estimate string width based on individual characters
 
         Args:

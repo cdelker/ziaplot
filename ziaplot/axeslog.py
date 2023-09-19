@@ -102,7 +102,7 @@ class LogYPlot(XyPlot):
                 s.y = [math.log10(y) for y in s.y]
             elif isinstance(s, (Text, HLine)):
                 s.y = math.log10(s.y)
-            
+
         super()._drawseries(canvas, axisbox, databox)
         self.series = seriesbackup
 
@@ -164,7 +164,7 @@ class LogXPlot(XyPlot):
                     s.width = math.log10(s.x[1]) - math.log10(s.x[0])
             elif isinstance(s, (Text, VLine)):
                 s.x = math.log10(s.x)
-            
+
         super()._drawseries(canvas, axisbox, databox)
         self.series = seriesbackup
 

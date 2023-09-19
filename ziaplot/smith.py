@@ -65,7 +65,7 @@ def circle_intersect_theta(c1: tuple[float, float], c2: tuple[float, float],
     return math.degrees(max(theta1, theta2, key=abs))  # type: ignore
 
 
-def const_resist_circle(r: float, xmin: float=-math.inf, xmax: float=math.inf) -> ArcType:
+def const_resist_circle(r: float, xmin: float = -math.inf, xmax: float = math.inf) -> ArcType:
     ''' Circle of constant resistance
 
         Args:
@@ -116,8 +116,8 @@ def const_resist_circle(r: float, xmin: float=-math.inf, xmax: float=math.inf) -
     return ArcType(centerx, centery, radius, theta2, theta1)
 
 
-def const_react_arc(x: float, rmin: float=0,
-                    rmax: float=math.inf) -> ArcType:
+def const_react_arc(x: float, rmin: float = 0,
+                    rmax: float = math.inf) -> ArcType:
     ''' Arc of constant reactance
 
         Args:
@@ -163,11 +163,12 @@ class Smith(Polar):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, grid: str='coarse', title: str=None,
-                 legend: LegendLoc='left', style: Style=None):
+    def __init__(self, grid: str = 'coarse', title: str = None,
+                 legend: LegendLoc = 'left', style: Style = None):
         super().__init__(title=title, legend=legend, style=style)
         if grid not in self.style.smith.grid:
-            raise ValueError(f'Undefined grid type {grid}. Avaliable grids are ' + ', '.join(self.style.smith.grid.keys()))
+            raise ValueError(f'Undefined grid type {grid}. Avaliable grids are '
+                             + ', '.join(self.style.smith.grid.keys()))
         self.grid = grid
 
     def _maketicks(self, datarange: DataRange) -> Ticks:
@@ -342,7 +343,7 @@ class Smith(Polar):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         datarange = self.datarange()
         ticks = self._maketicks(datarange)
@@ -351,7 +352,7 @@ class Smith(Polar):
         self._drawseries(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         canvas = Canvas(self.style.canvasw, self.style.canvash,
                         fill=self.style.bgcolor)
@@ -375,13 +376,13 @@ class SmithConstResistance(Series):
         Notes:
             Leave xmin and xmax at inf to draw full circle
     '''
-    def __init__(self, resistance: float, xmin: float=-math.inf, xmax: float=math.inf):
+    def __init__(self, resistance: float, xmin: float = -math.inf, xmax: float = math.inf):
         super().__init__()
         self.resistance = resistance
         self.xmin = xmin
         self.xmax = xmax
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None):
+    def _xml(self, canvas: Canvas, databox: ViewBox = None):
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         arc = const_resist_circle(self.resistance, self.xmin, self.xmax)
@@ -406,13 +407,13 @@ class SmithConstReactance(Series):
             rmax: maximum resistance intersection value
             rmin: minimum resistance intersection value
     '''
-    def __init__(self, reactance: float, rmax: float=math.inf, rmin: float=0):
+    def __init__(self, reactance: float, rmax: float = math.inf, rmin: float = 0):
         super().__init__()
         self.reactance = abs(reactance)
         self.rmax = rmax
         self.rmin = rmin
 
-    def _xml(self, canvas: Canvas, databox: ViewBox=None):
+    def _xml(self, canvas: Canvas, databox: ViewBox = None):
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         arc = const_react_arc(self.reactance, rmax=self.rmax, rmin=self.rmin)

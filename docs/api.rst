@@ -43,6 +43,10 @@ Axes
 .. autoclass:: ziaplot.bar.BarChart
     :members:
 
+.. autoclass:: ziaplot.bar.BarChartGrouped
+    :members:
+
+
 Data Series
 -----------
 

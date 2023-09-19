@@ -3,7 +3,6 @@
 from __future__ import annotations
 from typing import Sequence
 import math
-from collections import namedtuple
 import xml.etree.ElementTree as ET
 
 from .axes import BasePlot, getticks, LegendLoc, Ticks
@@ -25,8 +24,8 @@ class Polar(BasePlot):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, labeldeg: bool=True, title: str=None, legend: LegendLoc='left',
-                 style: Style=None):
+    def __init__(self, labeldeg: bool = True, title: str = None, legend: LegendLoc = 'left',
+                 style: Style = None):
         super().__init__(title=title, legend=legend, style=style)
         self.labeldegrees = labeldeg
 
@@ -88,7 +87,8 @@ class Polar(BasePlot):
                       strokewidth=self.style.axis.framelinewidth)
 
         for i, rname in enumerate(ticks.xnames):
-            if i in [0, len(ticks.xnames)-1]: continue
+            if i in [0, len(ticks.xnames)-1]:
+                continue
             r = radius / (len(ticks.xticks)-1) * i
             canvas.circle(cx, cy, r, strokecolor=self.style.axis.gridcolor,
                           strokewidth=self.style.axis.gridlinewidth,
@@ -161,8 +161,8 @@ class Polar(BasePlot):
         for s in self.series:
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
-        
-    def _xml(self, canvas: Canvas, databox: ViewBox=None) -> None:
+
+    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
         datarange = self.datarange()
         ticks = self._maketicks(datarange)
@@ -171,7 +171,7 @@ class Polar(BasePlot):
         self._drawseries(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)
 
-    def svgxml(self, border: bool=False) -> ET.Element:
+    def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         canvas = Canvas(self.style.canvasw, self.style.canvash,
                         fill=self.style.bgcolor)
@@ -192,7 +192,7 @@ class LinePolar(Line):
             theta: The theta values to plot, in degres or radians
             deg: Interpret theta as degrees instead of radians
     '''
-    def __init__(self, radius: Sequence[float], theta: Sequence[float], deg: bool=False):
+    def __init__(self, radius: Sequence[float], theta: Sequence[float], deg: bool = False):
         self.radius = radius
         self.theta = theta
         if deg:
