@@ -8,6 +8,10 @@ from .canvas import Canvas, ViewBox
 from .drawable import Drawable
 
 
+class LayoutGap(Drawable):
+    ''' Empty placeholder for layout '''
+
+
 class Layout(Drawable):
     ''' Base class for multi-axis plots.
 

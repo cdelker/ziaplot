@@ -29,3 +29,12 @@ Here, two columns are created, each using Vlayouts. Then the two Vlayouts are ar
     col1 = zp.Vlayout(line, line)
     col2 = zp.Vlayout(line, line, line)
     zp.Hlayout(col1, col2)
+
+
+Use :py:class:`ziaplot.layout.LayoutGap` to leave an empty spot in a layout.
+
+.. jupyter-execute::
+
+    col1 = zp.Vlayout(line, line, zp.LayoutGap())
+    col2 = zp.Vlayout(line, line, line)
+    zp.Hlayout(col1, col2)
