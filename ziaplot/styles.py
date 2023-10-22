@@ -24,6 +24,7 @@ def settextcolor(st: styletypes.Style, color: str):
     st.axis.yname.color = color
     st.tick.text.color = color
     st.series.text.color = color
+    st.series.colorbar.text.color = color
     st.legend.text.color = color
     st.polar.title.color = color
     st.pie.title.color = color
@@ -36,6 +37,7 @@ def setaxiscolor(st: styletypes.Style, color: str = 'black'):
     st.axis.color = color
     st.legend.border = color
     st.pie.strokecolor = color
+    st.series.colorbar.bordercolor = color
 
 
 def Default() -> styletypes.Style:

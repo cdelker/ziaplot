@@ -79,7 +79,30 @@ class ErrorBarStyle:
     length: float = 7.0
     width: float = 2.0
     
+
+@dataclass
+class ColorBarStyle:
+    ''' Style for contour colorbars
     
+        Args:
+            text: Text style
+            bordercolor: Color for colorbar border
+            borderwidth: Width of colorbar border
+            width: Pixel width of colorbar
+            xpad: Horizontal distance from colorbar to axis
+            ypad: Vertical distance from colorbar to axis
+            formatter: Text format for colorbar labels
+    '''
+    text: TextStyle = field(default_factory=lambda: TextStyle(size=12))
+    colors: ColorFade = field(default_factory=lambda: ColorFade('#007a86', '#ba0c2f'))
+    bordercolor: str = 'black'
+    borderwidth: float = 1.0
+    width: float = 20.
+    xpad: float = 20.
+    ypad: float = 5.
+    formatter = '.3g'
+
+
 @dataclass
 class SeriesStyle:
     ''' Style for generic data series
@@ -100,8 +123,9 @@ class SeriesStyle:
     xerror: ErrorBarStyle = field(default_factory=lambda: ErrorBarStyle(marker='|'))
     fillcolor: Optional[str] = None  # Fill for LineFill areas
     fillalpha: float = 0.3  # Alpha for LineFill areas
+    colorbar: ColorBarStyle = field(default_factory=ColorBarStyle)
 
-        
+
 @dataclass
 class AxisStyle:
     ''' Style for X/Y Axis

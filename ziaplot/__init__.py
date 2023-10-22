@@ -5,6 +5,7 @@ from .polar import Polar, LinePolar
 from .smith import Smith, SmithConstResistance, SmithConstReactance
 from .pie import Pie
 from .bar import BarChart, BarChartGrouped
+from .contour import Contour
 from .layout import Hlayout, Vlayout, LayoutGap
 from . import styles
 from .text import settextmode
