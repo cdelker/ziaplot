@@ -1,4 +1,6 @@
 ''' Utility Functions. Most are pure-python replacements for numpy functions '''
+from __future__ import annotations
+
 from typing import Sequence
 import bisect
 

@@ -40,6 +40,8 @@ class ColorFade(ColorCycle):
         Args:
             colors: List of string colors, either SVG-compatible names
                 or '#FFFFFF' hex values
+            stops: List of stop positions for each color in the
+                gradient, starting with 0 and ending with 1.
     '''
     def __init__(self, *colors: str, stops: Sequence[float] = None):
         if not all(c[0] == '#' for c in colors):

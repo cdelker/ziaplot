@@ -122,17 +122,15 @@ class BasePlot(Drawable):
         self._ytickminor = minor
         return self
 
-    def colorfade(self, c1: str, c2: str) -> None:
-        ''' Define the color cycle evenly fading between two colors.
-            `c1` will always be the color of the first series, and
-            `c2` the color of the last series, with an even gradient
-            for series in between.
+    def colorfade(self, *colors: str, stops: Sequence[float] = None) -> None:
+        ''' Define the color cycle evenly fading between multiple colors.
 
             Args:
-                c1: Starting color
-                c2: Ending color
+                colors: List of colors in #FFFFFF format
+                stops: List of stop positions for each color in the
+                    gradient, starting with 0 and ending with 1.
         '''
-        self.style.colorcycle = colors.ColorFade(c1, c2)
+        self.style.colorcycle = colors.ColorFade(*colors, stops)
 
     def add(self, series: Series) -> None:
         ''' Add a data series to the axis '''
