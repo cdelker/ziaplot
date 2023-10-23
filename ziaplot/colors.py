@@ -1,4 +1,7 @@
 ''' Color cylces '''
+from typing import Sequence
+
+from .util import interp, linspace
 
 
 class ColorCycle:
@@ -38,14 +41,48 @@ class ColorFade(ColorCycle):
             colors: List of string colors, either SVG-compatible names
                 or '#FFFFFF' hex values
     '''
-    def __init__(self, *colors: str):
+    def __init__(self, *colors: str, stops: Sequence[float] = None):
         if not all(c[0] == '#' for c in colors):
             raise ValueError('ColorFade colors must be #FFFFFF format.')
         self.colors = colors
+        self.stops = stops
+        if self.stops is not None:
+            if len(self.stops) != len(colors):
+                raise ValueError('Stops must be same length as colors')
+            if self.stops[0] != 0 or self.stops[-1] != 1:
+                raise ValueError('First stop must be 0 and last stop must be 1')
+
         self.steps(len(self.colors))
         super().__init__(*self.colors)
 
     def steps(self, n: int) -> None:
+        ''' Set number of steps between start and end color '''
+        self._steps = n
+
+        if n < 2:
+            self.cycle = self.colors
+            return
+
+        if self.stops is None:
+            self.stops = linspace(0, 1, len(self.colors))  # Evenly spaced colors...
+
+        norm_steps = linspace(0, 1, self._steps)
+
+        stop_r = [int(c[1:3], 16) for c in self.colors]
+        stop_g = [int(c[3:5], 16) for c in self.colors]
+        stop_b = [int(c[5:7], 16) for c in self.colors]
+
+        R = interp(norm_steps, self.stops, stop_r)
+        G = interp(norm_steps, self.stops, stop_g)
+        B = interp(norm_steps, self.stops, stop_b)
+        R = [int(x) for x in R]
+        G = [int(x) for x in G]
+        B = [int(x) for x in B]
+        self.cycle = tuple(f'#{rr:02x}{gg:02x}{bb:02x}' for rr, gg, bb in zip(R, G, B))
+            
+            
+            
+    def steps_old(self, n: int) -> None:
         ''' Set number of steps between start and end color '''
         self._steps = n
 

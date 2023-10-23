@@ -13,28 +13,13 @@ from . import colors
 from .canvas import Canvas, Transform, ViewBox, DataRange
 from . import text
 from .drawable import Drawable
+from .util import zrange, linspace
+
 
 Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
                              'ywidth', 'xrange', 'yrange', 'xminor', 'yminor'])
 
 LegendLoc = Literal['left', 'right']
-
-
-def zrange(start: float, stop: float, step: float) -> list[float]:
-    ''' Like builtin range, but works with floats '''
-    assert step > 0
-    vals = [start]
-    while abs(vals[-1] - stop)/step > .1:  # Wiggle room for float precision
-        vals.append(vals[-1] + step)
-    return vals
-
-
-def linspace(start: float, stop: float, num: int = 50) -> list[float]:
-    ''' Generate list of evenly spaced points '''
-    if num < 2:
-        return [stop]
-    diff = (float(stop) - start)/(num - 1)
-    return [diff * i + start for i in range(num)]
 
 
 def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> list[float]:

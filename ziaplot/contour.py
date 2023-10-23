@@ -36,11 +36,11 @@ class Contour(Series):
         self.levels = levels
         self.contours: list[float] = []
         self.colorbar = colorbar
-        self.colorfade = self.style.colorbar.colors
+        self.style.colorbar.colors
 
     def colors(self, start: str, end: str) -> 'Contour':
         ''' Set the start and end colors for the contours '''
-        self.colorfade = ColorFade(start, end)
+        self.style.colorbar.colors = ColorFade(start, end)
         return self
 
     def datarange(self) -> DataRange:
@@ -59,14 +59,16 @@ class Contour(Series):
     def _xml(self, canvas: Canvas, databox: ViewBox = None):
         ''' Add XML elements to the canvas '''
         segments = self._build_contours()
-        colors = self.colorfade
+        colors = self.style.colorbar.colors
         colors.steps(len(segments))
-        for (xs, ys), color in zip(segments, colors):
-            canvas.path(xs, ys,
-                        stroke=self.style.line.stroke,
-                        color=color,
-                        width=self.style.line.width,
-                        dataview=databox)
+        for (xsegs, ysegs), color in zip(segments, colors):
+            if len(xsegs) > 0:
+                for xs, ys in zip(xsegs, ysegs):
+                    canvas.path(xs, ys,
+                                stroke=self.style.line.stroke,
+                                color=color,
+                                width=self.style.line.width,
+                                dataview=databox)
         if self.colorbar:
             self._draw_colorbar(canvas, databox)
 
@@ -91,6 +93,8 @@ class Contour(Series):
 
         segments = []
         for contour in contours:
+            segmentx = []
+            segmenty = []
             try:
                 z0 = self.z < contour  # z is Numpy array
                 Y = self.y[:, 0]
@@ -153,8 +157,9 @@ class Contour(Series):
                         x2 = blockx + blockw*(contour-corners[0][0])/(corners[0][1]-corners[0][0])
                         y2 = blocky + blockh
                     if x1 is not None:
-                        segments.append(((x1-blockhalfw, x2-blockhalfw),
-                                        (y1-blockhalfh, y2-blockhalfw)))
+                        segmentx.append((x1-blockhalfw, x2-blockhalfw))
+                        segmenty.append((y1-blockhalfh, y2-blockhalfw))
+            segments.append((segmentx, segmenty))
         return segments
 
     def _draw_colorbar(self, canvas: Canvas, databox: ViewBox = None):
@@ -163,7 +168,8 @@ class Contour(Series):
         xpad = self.style.colorbar.xpad
         ypad = self.style.colorbar.ypad
         width = self.style.colorbar.width
-        self.colorfade.steps(nlevels)
+        colorfade = self.style.colorbar.colors
+        colorfade.steps(nlevels)
 
         if self.colorbar in ['top', 'bottom']:
             length = canvas.viewbox.w - xpad*2
@@ -177,7 +183,7 @@ class Contour(Series):
                 y = canvas.viewbox.y + ypad
                 y2 = y+width
 
-            for i, (level, color) in enumerate(zip(self.contours, self.colorfade)):
+            for i, (level, color) in enumerate(zip(self.contours, colorfade)):
                 barx = x + barwidth*(i + 0.5)
                 canvas.path([barx, barx], [y, y2],
                             width=barwidth, color=color)
@@ -204,7 +210,7 @@ class Contour(Series):
                 x = canvas.viewbox.w - xpad//2
                 x2 = x+width
 
-            for i, (level, color) in enumerate(zip(self.contours, self.colorfade)):
+            for i, (level, color) in enumerate(zip(self.contours, colorfade)):
                 bary = y + barwidth*(i + 0.5)
                 canvas.path([x, x2], [bary, bary],
                             width=barwidth, color=color)
