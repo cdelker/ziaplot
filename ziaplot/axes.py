@@ -14,6 +14,7 @@ from .canvas import Canvas, Transform, ViewBox, DataRange
 from . import text
 from .drawable import Drawable
 from .util import zrange, linspace
+from . import axis_stack
 
 
 Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
@@ -90,6 +91,25 @@ class BasePlot(Drawable):
         self._ytickminor: Optional[Sequence[float]] = None
         self.series: list[Series] = []   # List of XY lines/series
         self.legend = legend
+        axis_stack.push_series(self)
+
+    def __enter__(self):
+        axis_stack.push_axis(self)
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        ''' Exit context manager - save to file and display '''
+        axis_stack.push_series(None)
+        axis_stack.pop_axis(self)
+        if axis_stack.current_axis() is None:
+            # Display if not inside another layout
+            try:
+                display(self)
+            except NameError:  # Not in Jupyter/IPython
+                pass
+
+    def __contains__(self, series: Series):
+        return series in self.series
 
     def __iadd__(self, series: Series):
         ''' Allow += notation for adding series '''
@@ -122,7 +142,7 @@ class BasePlot(Drawable):
         self._ytickminor = minor
         return self
 
-    def colorfade(self, *colors: str, stops: Sequence[float] = None) -> None:
+    def colorfade(self, *clrs: str, stops: Sequence[float] = None) -> None:
         ''' Define the color cycle evenly fading between multiple colors.
 
             Args:
@@ -130,7 +150,7 @@ class BasePlot(Drawable):
                 stops: List of stop positions for each color in the
                     gradient, starting with 0 and ending with 1.
         '''
-        self.style.colorcycle = colors.ColorFade(*colors, stops)
+        self.style.colorcycle = colors.ColorFade(*clrs, stops=stops)
 
     def add(self, series: Series) -> None:
         ''' Add a data series to the axis '''

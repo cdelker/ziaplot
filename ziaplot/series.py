@@ -1,17 +1,28 @@
 ''' Series of X-Y Data, base class '''
 
+from copy import deepcopy
+
 from .styletypes import MarkerTypes, DashTypes
 from .styles import Default
 from .drawable import Drawable
 from .canvas import DataRange
+from . import axis_stack
 
 
 class Series(Drawable):
     ''' Base class for data series, defining a single line in a plot '''
     def __init__(self):
         self._name = ''
-        self.style = Default().series  # Default series style
+        axis = axis_stack.current_axis()
+        if axis and hasattr(axis, 'style'):
+            self.style = deepcopy(axis.style.series)
+            self._axisstyle = axis.style
+        else:
+            self._axisstyle = Default()
+            self.style = self._axisstyle.series
+
         self._markername = None  # SVG ID of marker
+        axis_stack.push_series(self)
 
     def datarange(self) -> DataRange:
         return DataRange(None, None, None, None)

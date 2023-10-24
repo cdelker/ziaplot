@@ -6,10 +6,14 @@ from .axes import XyPlot
 from .series import Series
 from .canvas import Canvas, ViewBox
 from .drawable import Drawable
+from . import axis_stack
 
 
 class LayoutGap(Drawable):
     ''' Empty placeholder for layout '''
+    def __init__(self):
+        axis_stack.push_series(self)
+        super().__init__()
 
 
 class Layout(Drawable):
@@ -26,13 +30,35 @@ class Layout(Drawable):
             added to another layout.
     '''
     def __init__(self, *axes: Drawable, width: float = 600, height: float = 400, sep: float = 10):
-        self.axes = axes
+        self.axes = list(axes)
         self.sep: float = sep
         self.width: float = width
         self.height: float = height
         self.x: float = 0
         self.y: float = 0
 
+    def __contains__(self, axis: Drawable):
+        return axis in self.axes
+
+    def __enter__(self):
+        axis_stack.push_series(self)
+        axis_stack.push_axis(self)
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        ''' Exit context manager - save to file and display '''
+        axis_stack.push_series(None)
+        axis_stack.pop_axis(self)
+        if axis_stack.current_axis() is None:
+            # Display if not inside another layout
+            try:
+                display(self)
+            except NameError:  # Not in Jupyter/IPython
+                pass
+    
+    def add(self, axis: Drawable) -> None:
+        self.axes.append(axis)
+    
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         canvas = Canvas(self.width, self.height)

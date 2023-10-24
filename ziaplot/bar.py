@@ -6,6 +6,7 @@ from .dataseries import Bars, BarsHoriz
 from .axes import XyPlot, LegendLoc
 from .styletypes import Style
 from .canvas import Canvas, ViewBox
+from . import axis_stack
 
 
 class BarChart(XyPlot):
@@ -31,6 +32,7 @@ class BarChart(XyPlot):
                  title: str = None, xname: str = None, yname: str = None,
                  legend: LegendLoc = 'left', style: Style = None):
         super().__init__(title=title, xname=xname, yname=yname, legend=legend, style=style)
+        axis_stack.pause = True
         self.barlist: list[Union[Bars, BarsHoriz]] = []
         self.xvalues = xvalues
         self.yvalues = yvalues
@@ -55,6 +57,8 @@ class BarChart(XyPlot):
                 bar = Bars((0,), (value,), width=self._barwidth, align='center')
             self.add(bar)
             self.barlist.append(bar)
+        axis_stack.pause = False
+        axis_stack.push_series(self)
     
     def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
@@ -112,6 +116,7 @@ class BarChartGrouped(XyPlot):
             Args:
                 values: Values for each bar of this series
         '''
+        axis_stack.pause = True
         # Use dummy x-values for now since we don't know how many series there will be
         x = list(range(len(values)))
         bar: Union[Bars, BarsHoriz]
@@ -129,6 +134,7 @@ class BarChartGrouped(XyPlot):
         else:
             self.barlist.append(bar)
         self.add(bar)
+        axis_stack.pause = False
         return bar
     
     def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:

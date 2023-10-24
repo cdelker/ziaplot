@@ -12,6 +12,7 @@ from . import styles
 from .canvas import Canvas, ViewBox, Halign, Valign
 from . import text
 from .drawable import Drawable
+from . import axis_stack
 
 
 @dataclass
@@ -42,6 +43,7 @@ class Pie(Drawable):
         self.labels = labels   # 'name', 'value', or 'percent'
         self.title = title
         self.wedgelist: list[Wedge] = []
+        axis_stack.push_series(self)
 
     def wedges(self, *values: float) -> Pie:
         ''' Add multiple wedges to the pie '''
@@ -78,17 +80,17 @@ class Pie(Drawable):
                                     extrude=extrude))
         return self
 
-    def colorfade(self, c1: str, c2: str) -> None:
+    def colorfade(self, *colors: str, stops: bool = None) -> None:
         ''' Define the color cycle evenly fading between two colors.
             `c1` will always be the color of the first series, and `c2`
             the color of the last series, with an even gradient for
             series in between.
 
             Args:
-                c1: Starting color
-                c2: Ending color
+                colors: List of colors to fade through
+                stops: Stop positions, starting with 0 and ending with 1
         '''
-        self.style.colorcycle = ColorFade(c1, c2)
+        self.style.colorcycle = ColorFade(*colors, stops=stops)
 
     def _legendsize(self) -> tuple[float, float]:
         ''' Calculate size of legend '''

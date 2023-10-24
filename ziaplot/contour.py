@@ -36,11 +36,10 @@ class Contour(Series):
         self.levels = levels
         self.contours: list[float] = []
         self.colorbar = colorbar
-        self.style.colorbar.colors
 
-    def colors(self, start: str, end: str) -> 'Contour':
+    def colors(self, *colors: str, stops: Sequence[float] = None) -> 'Contour':
         ''' Set the start and end colors for the contours '''
-        self.style.colorbar.colors = ColorFade(start, end)
+        self.style.colorbar.colors = ColorFade(*colors, stops=stops)
         return self
 
     def datarange(self) -> DataRange:
@@ -177,12 +176,12 @@ class Contour(Series):
             length = nlevels * barwidth  # Adjust for rounding
 
             x = canvas.viewbox.x + xpad
-            y = canvas.viewbox.h - ypad
+            y = canvas.viewbox.y + canvas.viewbox.h - width - ypad*2.5
             y2 = y+width
             if self.colorbar == 'bottom':
                 y = canvas.viewbox.y + ypad
                 y2 = y+width
-
+                
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
                 barx = x + barwidth*(i + 0.5)
                 canvas.path([barx, barx], [y, y2],
@@ -207,7 +206,7 @@ class Contour(Series):
             x = canvas.viewbox.x + ypad
             x2 = x+width
             if self.colorbar == 'right':
-                x = canvas.viewbox.w - xpad//2
+                x = canvas.viewbox.x + canvas.viewbox.w - width - xpad
                 x2 = x+width
 
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
@@ -229,6 +228,6 @@ class Contour(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot()
+        ax = XyPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)

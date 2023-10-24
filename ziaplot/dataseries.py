@@ -10,6 +10,7 @@ from .styletypes import SeriesStyle, MarkerTypes, DashTypes
 from .series import Series
 from . import axes
 from .canvas import Canvas, ViewBox, DataRange, Halign, Valign
+from . import util
 
 
 class Line(Series):
@@ -79,7 +80,7 @@ class Line(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = axes.XyPlot()
+        ax = axes.XyPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
@@ -96,7 +97,7 @@ class Function(Line):
     def __init__(self, func: Callable[[float], float],
                  xmin: float = -5, xmax: float = 5, n: int = 200):
         step = (xmax-xmin) / n
-        x = axes.zrange(xmin, xmax, step)
+        x = util.zrange(xmin, xmax, step)
         y = [func(x0) for x0 in x]
         super().__init__(x, y)
 
@@ -302,7 +303,7 @@ class LineFill(Line):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = axes.XyPlot()
+        ax = axes.XyPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
@@ -483,7 +484,7 @@ class Bars(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = axes.XyPlot()
+        ax = axes.XyPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
