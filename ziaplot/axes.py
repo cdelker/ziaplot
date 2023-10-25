@@ -203,13 +203,14 @@ class BasePlot(Drawable):
         boxw = 0.
         markw = 40
         square = 10
+        spacing = self.style.legend.text.size/3
 
         for s in series:
             width, height = text.text_size(
                 s._name, fontsize=self.style.legend.text.size,
                 font=self.style.legend.text.font)
             boxw = max(boxw, markw + width + 5)
-            boxh += max(height, square+4) + 3
+            boxh += self.style.legend.text.size+spacing
         boxh += 8  # Top and bottom pad
         return boxw, boxh
 
@@ -247,6 +248,7 @@ class BasePlot(Drawable):
         boxw, boxh = self._legendsize()
         markw = 40
         square = 10
+        spacing = self.style.legend.text.size/3
 
         ytop, xright = self._legendloc(axisbox, ticks, boxw)
 
@@ -261,19 +263,19 @@ class BasePlot(Drawable):
                         fill=self.style.legend.fill)
 
         # Draw each line
-        yytext = ytop - 4
+        yytext = ytop
         for i, s in enumerate(series):
             textw, texth = text.text_size(s._name, self.style.legend.text.size)
-            yytext -= max(texth/2, square/2+2)
-            yyline = yytext
+            yyline = yytext - self.style.legend.text.size * 2/3
+            yytext -= max(self.style.legend.text.size, spacing)
             if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz']:
                 yysquare = yytext - square/2
-                canvas.text(boxl + square + 8, yytext + texth/2,
+                canvas.text(boxl + square + 8, yytext - self.style.legend.text.size/3,
                             s._name,
                             font=self.style.legend.text.font,
                             size=self.style.legend.text.size,
                             color=self.style.legend.text.color,
-                            halign='left', valign='top')
+                            halign='left', valign='base')
                 canvas.rect(boxl+4, yysquare, square, square,
                             fill=s.style.line.color, strokewidth=1)
 
@@ -283,7 +285,7 @@ class BasePlot(Drawable):
                             color=self.style.axis.color,
                             font=self.style.legend.text.font,
                             size=self.style.legend.text.size,
-                            halign='left', valign='center')
+                            halign='left', valign='base')
                 linebox = ViewBox(boxl+5, ytop-boxh, markw-10, boxh)
                 canvas.setviewbox(linebox)  # Clip
                 canvas.path([boxl-10, boxl+markw/2, boxl+markw+10],
@@ -293,7 +295,7 @@ class BasePlot(Drawable):
                             markerid=s._markername,
                             stroke=s.style.line.stroke)
                 canvas.resetviewbox()
-            yytext -= max(texth/2, square/2+2) + 3
+            yytext -= spacing
 
 
 class XyPlot(BasePlot):
