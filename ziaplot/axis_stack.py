@@ -3,8 +3,11 @@
 from __future__ import annotations
 from typing import Union, Optional, TYPE_CHECKING
 
-    
-axis_stack: dict[BasePlot, Series] = {}
+if TYPE_CHECKING:
+    from .axes import BasePlot
+    from .series import Series
+
+axis_stack: dict[BasePlot, Optional[Union[BasePlot, Series]]] = {}
 pause: bool = False
 
 
@@ -16,7 +19,7 @@ def pop_axis(axis: BasePlot) -> None:
     ''' Remove the drawing from the stack '''
     axis_stack.pop(axis)
 
-def push_series(series: 'Series') -> None:
+def push_series(series: Optional[Union[BasePlot, Series]]) -> None:
     if not pause and len(axis_stack) > 0:
         axis, prev_series = list(axis_stack.items())[-1]
         if prev_series is not None and prev_series not in axis:

@@ -3,8 +3,8 @@ from .axes import XyPlot, XyGraph, linspace
 from .axeslog import LogYPlot, LogXPlot, LogXYPlot
 from .polar import Polar, LinePolar
 from .smith import Smith, SmithConstResistance, SmithConstReactance
-from .pie import Pie
-from .bar import BarChart, BarChartGrouped
+from .pie import Pie, PieSlice
+from .bar import BarChart, BarSingle, BarChartGrouped, BarSeries
 from .contour import Contour
 from .layout import Hlayout, Vlayout, LayoutGap
 from . import styles

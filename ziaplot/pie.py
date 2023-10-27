@@ -1,86 +1,101 @@
-''' Pie Charts '''
-
-from __future__ import annotations
-from typing import Optional, Literal
-import math
+from typing import Optional, Literal, Sequence
 from dataclasses import dataclass
-import xml.etree.ElementTree as ET
+import math
 
-from .colors import ColorFade
+from .axes import BasePlot, Ticks, LegendLoc
+from .series import Series
 from .styletypes import Style
-from . import styles
+from . import colors
 from .canvas import Canvas, ViewBox, Halign, Valign
-from . import text
-from .drawable import Drawable
 from . import axis_stack
 
 
-@dataclass
-class Wedge:
-    ''' Parameters for a single wedge of a pie '''
-    value: float = 1
-    name: str = ''
-    color: Optional[str] = None
-    strokecolor: str = 'black'
-    strokewidth: float = 1
-    extrude: bool = False
+class PieSlice(Series):
+    ''' One slice of a pie.
+
+        Args:
+            value: value assigned to this slice. Percent
+                will be calculated using total value of all
+                the slices.
+    '''
+    def __init__(self, value: float = 1):
+        super().__init__()
+        self.value = value
+        self._extrude = False
+
+    def extrude(self, extrude: bool) -> 'PieSlice':
+        ''' Extrude the slice '''
+        self._extrude = extrude
+        return self
 
 
-class Pie(Drawable):
-    ''' Pie Chart. Total of all wedge values will always be normalized to 100%.
+class Pie(BasePlot):
+    ''' Pie Chart. Total of all wedge values will be normalized to 100%.
 
         Args:
             title: Title of the chart
-            labels: How to label each wedge
             legend: Location for legend
+            labelmode: How to label each wedge - by `name`, `percent`,
+                or `value`.
             style: Plotting style
     '''
-    def __init__(self, title: str = None,
-                 labels: Literal['name', 'percent', 'value', None] = 'name',
-                 legend: str = None, style: Style = None):
-        self.style = style if style is not None else styles.Default()
-        self.legend = legend
-        self.labels = labels   # 'name', 'value', or 'percent'
-        self.title = title
-        self.wedgelist: list[Wedge] = []
-        axis_stack.push_series(self)
+    def __init__(self,
+                 title: str = None,
+                 legend: LegendLoc = 'left',
+                 labelmode: str = 'name',
+                 style: Style = None):
+        ''' '''
+        super().__init__(title=title, style=style, legend=legend)
+        self.labelmode = labelmode  # TODO put Literals in enum?
 
-    def wedges(self, *values: float) -> Pie:
-        ''' Add multiple wedges to the pie '''
-        for w in values:
-            self.wedge(w)
-        return self
-
-    def names(self, *names: str) -> Pie:
-        ''' Define names of each wedge added by `wedges` method. '''
-        for w, n in zip(self.wedgelist, names):
-            w.name = n
-        return self
-
-    def wedge(self, value: float, name: str = '', color: str = None,
-              strokecolor: str = None, strokewidth: float = None,
-              extrude: bool = False) -> Pie:
-        ''' Add a wedge to the pie.
+    @classmethod
+    def fromdict(cls,
+                 slices: dict[str, float],
+                 title: str = None,
+                 legend: LegendLoc = 'left',
+                 labelmode: str = 'name',
+                 ) -> 'Pie':
+        ''' Create Pie from bars dictionary
 
             Args:
-                value: The value for this wedge. Total value will be normalized to 100%.
-                name: Name for the wedge to include in legend
-                color: Color for the wedge
-                strokecolor: Color for the wedge border
-                strokewidth: Line width of the wedge border
-                extrude: Show the wedge pulled out from the pie
+                slices: dictionary of name:value pairs
+                title: Title of the chart
+                legend: Location for legend
+                labelmode: How to label each wedge - by `name`, `percent`,
+                    or `value`.
+                style: Plotting style
         '''
-        strokecolor = strokecolor if strokecolor else self.style.pie.strokecolor
-        strokewidth = strokewidth if strokewidth else self.style.pie.strokewidth
-        self.wedgelist.append(Wedge(value=value,
-                                    name=name,
-                                    color=color,  # type: ignore
-                                    strokecolor=strokecolor,
-                                    strokewidth=strokewidth,
-                                    extrude=extrude))
-        return self
+        pie = cls(title=title, legend=legend, labelmode=labelmode)
+        for name, value in slices.items():
+            axis_stack.pause = True
+            pie.add(PieSlice(value).name(name))
+        axis_stack.pause = False
+        return pie
 
-    def colorfade(self, *colors: str, stops: bool = None) -> None:
+    @classmethod
+    def fromlist(cls, slices: list[float],
+                 title: str = None,
+                 legend: LegendLoc = 'none',
+                 labelmode: str = 'name',
+                 ) -> 'Pie':
+        ''' Create Pie from list of values
+
+            Args:
+                slices: list of values
+                title: Title of the chart
+                legend: Location for legend
+                labelmode: How to label each wedge - by `name`, `percent`,
+                    or `value`.
+                style: Plotting style
+        '''
+        pie = cls(title=title, legend=legend, labelmode=labelmode)
+        for value in slices:
+            axis_stack.pause = True
+            pie.add(PieSlice(value))
+        axis_stack.pause = False
+        return pie
+
+    def colorfade(self, *clrs: str, stops: Sequence[float] = None) -> None:
         ''' Define the color cycle evenly fading between two colors.
             `c1` will always be the color of the first series, and `c2`
             the color of the last series, with an even gradient for
@@ -90,68 +105,31 @@ class Pie(Drawable):
                 colors: List of colors to fade through
                 stops: Stop positions, starting with 0 and ending with 1
         '''
-        self.style.colorcycle = ColorFade(*colors, stops=stops)
+        self.style.colorcycle = colors.ColorFade(*colors, stops=stops)    
 
-    def _legendsize(self) -> tuple[float, float]:
-        ''' Calculate size of legend '''
-        names = [w.name for w in self.wedgelist if w.name]
-        if self.legend is None or len(names) == 0:
-            return 0, 0
+    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float) -> tuple[float, float]:
+        ''' Calculate legend location
 
-        boxh = 0.
-        boxw = 0.
-        square = 16.
-
-        for name in names:
-            width = text.text_size(name, fontsize=self.style.legend.text.size,
-                                   font=self.style.legend.text.font).width
-            boxw = max(boxw, square + width + 5)
-            boxh += self.style.legend.text.size + 2
-        boxh += 4  # Top and bottom
-        return boxw, boxh
-
-    def _drawlegend(self, canvas: Canvas):
-        ''' Draw legend on the canvas '''
-        wedges = [w for w in self.wedgelist if w.name]
-        if len(wedges) == 0:
-            return
-
-        canvas.newgroup()
-        boxw, boxh = self._legendsize()
-        square = 10
-
-        ytop = canvas.viewbox.y + canvas.viewbox.h
-        if self.legend == 'right':
-            xleft = canvas.viewbox.x + canvas.viewbox.w - boxw
-        else:  # self.legend == 'left':
-            xleft = canvas.viewbox.x + 1
-
-        # Draw the box
-        if self.style.legend.border not in [None, 'none']:
-            legbox = ViewBox(xleft, ytop-boxh, boxw, boxh)
-            canvas.rect(legbox.x, legbox.y, legbox.w, legbox.h,
-                        strokewidth=1,
-                        rcorner=5,
-                        strokecolor=self.style.legend.border)
-
-        # Draw each name
-        for i, wedge in enumerate(wedges):
-            yytext = ytop - 4 - i*(self.style.legend.text.size+2)
-            yysquare = yytext - square
-            canvas.text(xleft + square + 8, yytext,
-                        wedge.name,
-                        font=self.style.legend.text.font,
-                        size=self.style.legend.text.size,
-                        color=self.style.legend.text.color,
-                        halign='left', valign='top')
-            canvas.rect(xleft+4, yysquare, square, square,
-                        fill=wedge.color, strokewidth=1)
+            Args:
+                axisbox: ViewBox of the axis
+                ticks: Tick names and positions
+                boxw: Width of legend box
+        '''
+        xright = 0
+        ytop = axisbox.y + axisbox.h - 1
+        if self.legend == 'left':
+            xright = axisbox.x + boxw + 1
+        elif self.legend == 'right':
+            xright = axisbox.x + axisbox.w - 1
+        return ytop, xright
 
     def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
         ''' Add XML elements to the canvas '''
-        values = [w.value for w in self.wedgelist]
+        slices = [s for s in self.series if isinstance(s, PieSlice)]
+        values = [w.value for w in slices]
         total = sum(values)
         thetas = [v/total*math.pi*2 for v in values]
+        self.style.colorcycle.steps(len(slices))
 
         cx = canvas.viewbox.x + canvas.viewbox.w/2
         cy = canvas.viewbox.y + canvas.viewbox.h/2
@@ -159,7 +137,7 @@ class Pie(Drawable):
         radius = (min(canvas.viewbox.w, canvas.viewbox.h) / 2 -
                   self.style.pie.edgepad*2)
 
-        if any(w.extrude for w in self.wedgelist):
+        if any(w._extrude for w in slices):
             radius -= self.style.pie.extrude
 
         if self.title:
@@ -171,28 +149,27 @@ class Pie(Drawable):
                         color=self.style.pie.title.color,
                         halign='center', valign='top')
 
-        if len(self.wedgelist) == 1:
-            w = self.wedgelist[0]
-            if w.color is None:
-                w.color = self.style.colorcycle[0]
-            elif w.color.startswith('C'):
-                w.color = self.style.colorcycle[w.color]
+        if len(slices) == 1:
+            w = slices[0]
+            if w.style.line.color == 'undefined':
+                w.style.line.color = self.style.colorcycle[0]
+            elif w.style.line.color.startswith('C'):
+                w.style.line.color = self.style.colorcycle[w.color]
 
             canvas.circle(cx, cy, radius,
-                          color=w.color,  # type: ignore
-                          strokecolor=w.strokecolor,
-                          strokewidth=w.strokewidth)
+                          color=w.style.line.color,  # type: ignore
+                          strokecolor=w.style.line.strokecolor,
+                          strokewidth=w.style.line.strokewidth)
 
-            if self.labels:
-                if self.labels is True or self.labels == 'name':
-                    labeltext = w.name
-                elif self.labels == 'value':
-                    labeltext = format(w.value)
-                elif self.labels == 'percent':
-                    labeltext = f'{w.value/total*100:.1f}%'
-                else:
-                    labeltext = ''
-
+            if self.labelmode == 'name':
+                labeltext = w._name
+            elif self.labelmode == 'value':
+                labeltext = format(w.value)
+            elif self.labelmode == 'percent':
+                labeltext = f'{w.value/total*100:.1f}%'
+            else:
+                labeltext = ''
+            if labeltext:
                 canvas.text(cx + radius * math.cos(math.pi/4),
                             cy + radius * math.sin(math.pi/4),
                             labeltext,
@@ -201,17 +178,17 @@ class Pie(Drawable):
                             color=self.style.pie.label.color)
 
         else:
-            theta = -math.pi/2  # Current wedge angle, start at top
-            self.style.colorcycle.steps(len(self.wedgelist))
-            for i, w in enumerate(self.wedgelist):
+            theta = -math.pi/2  # Current angle, start at top
+            for i, w in enumerate(slices):
                 thetahalf = theta + thetas[i]/2
 
-                if w.color is None:
-                    w.color = self.style.colorcycle[i]
-                elif w.color.startswith('C'):
-                    w.color = self.style.colorcycle[w.color]
+                if w.style.line.color == 'undefined':
+                    w.style.line.color = self.style.colorcycle[i]
+                elif w.style.line.color.startswith('C') and w.style.line.color[1:].isnumeric():
+                    # Convert things like 'C1'
+                    w.style.line.color = self.style.colorcycle[w.style.line.color]
 
-                if w.extrude:
+                if w._extrude:
                     cxx = cx + self.style.pie.extrude * math.cos(thetahalf)
                     cyy = cy - self.style.pie.extrude * math.sin(thetahalf)
                 else:
@@ -219,24 +196,24 @@ class Pie(Drawable):
                     cyy = cy
 
                 canvas.wedge(cxx, cyy, radius, thetas[i], starttheta=theta,
-                             color=w.color,  # type: ignore
-                             strokecolor=w.strokecolor,
-                             strokewidth=w.strokewidth)
+                             color=w.style.line.color,  # type: ignore
+                             strokecolor=w.style.line.strokecolor,
+                             strokewidth=w.style.line.strokewidth)
 
-                if self.labels:
-                    labelx = cxx + (radius+self.style.pie.labelpad) * math.cos(thetahalf)
-                    labely = cyy - (radius+self.style.pie.labelpad) * math.sin(thetahalf)
-                    halign: Halign = 'left' if labelx > cx else 'right'
-                    valign: Valign = 'bottom' if labely > cy else 'top'
-                    if self.labels is True or self.labels == 'name':
-                        labeltext = w.name
-                    elif self.labels == 'value':
-                        labeltext = format(w.value)
-                    elif self.labels == 'percent':
-                        labeltext = f'{w.value/total*100:.1f}%'
-                    else:
-                        labeltext = ''
+                labelx = cxx + (radius+self.style.pie.labelpad) * math.cos(thetahalf)
+                labely = cyy - (radius+self.style.pie.labelpad) * math.sin(thetahalf)
+                halign: Halign = 'left' if labelx > cx else 'right'
+                valign: Valign = 'bottom' if labely > cy else 'top'
+                if self.labelmode == 'name':
+                    labeltext = w._name
+                elif self.labelmode == 'value':
+                    labeltext = format(w.value)
+                elif self.labelmode == 'percent':
+                    labeltext = f'{w.value/total*100:.1f}%'
+                else:
+                    labeltext = ''
 
+                if labeltext:
                     canvas.text(labelx, labely,
                                 labeltext,
                                 font=self.style.pie.label.font,
@@ -246,17 +223,7 @@ class Pie(Drawable):
 
                 theta += thetas[i]
 
-        if self.legend:
-            self._drawlegend(canvas)
-
-    def svgxml(self, border: bool = False) -> ET.Element:
-        ''' XML for standalone SVG '''
-        canvas = Canvas(self.style.canvasw, self.style.canvash,
-                        fill=self.style.bgcolor)
-        self._xml(canvas)
-        if border:
-            attrib = {'x': '0', 'y': '0',
-                      'width': '100%', 'height': '100%',
-                      'fill': 'none', 'stroke': 'black'}
-            ET.SubElement(canvas.group, 'rect', attrib=attrib)
-        return canvas.xml()
+        if self.legend and self.legend != 'none':
+            ticks = Ticks(xticks=None, yticks=None, xnames=None, ynames=None,
+                          ywidth=0, xrange=None, yrange=None, xminor=None, yminor=None)
+            self._drawlegend(canvas, canvas.viewbox, ticks)

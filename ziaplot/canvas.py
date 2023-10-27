@@ -350,6 +350,9 @@ class Canvas:
                 rotate: Rotation angle in degrees
                 dataview: ViewBox for transforming x, y into SVG coordinates
         '''
+        if s == '':
+            return
+
         if dataview:
             xform = Transform(dataview, self.viewbox)
             x, y = xform.apply(x, y)

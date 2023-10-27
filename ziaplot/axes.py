@@ -20,7 +20,7 @@ from . import axis_stack
 Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
                              'ywidth', 'xrange', 'yrange', 'xminor', 'yminor'])
 
-LegendLoc = Literal['left', 'right']
+LegendLoc = Literal['left', 'right', 'none']
 
 
 def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> list[float]:
@@ -154,6 +154,7 @@ class BasePlot(Drawable):
 
     def add(self, series: Series) -> None:
         ''' Add a data series to the axis '''
+        assert isinstance(series, Series)
         self.series.append(series)
 
     def svgxml(self, border: bool = False) -> ET.Element:
@@ -204,12 +205,16 @@ class BasePlot(Drawable):
         markw = 40
         square = 10
         spacing = self.style.legend.text.size/3
-
+            
         for s in series:
             width, height = text.text_size(
                 s._name, fontsize=self.style.legend.text.size,
                 font=self.style.legend.text.font)
-            boxw = max(boxw, markw + width + 5)
+            if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz', 'PieSlice']:
+                w = square*2
+            else:
+                w = markw
+            boxw = max(boxw, w + width + 5)
             boxh += self.style.legend.text.size+spacing
         boxh += 8  # Top and bottom pad
         return boxw, boxh
@@ -223,6 +228,7 @@ class BasePlot(Drawable):
                 ticks: Tick names and positions
                 boxw: Width of legend box
         '''
+        ytop = xright = 0
         if self.legend == 'left':
             ytop = axisbox.y + axisbox.h
             xright = (axisbox.x - self.style.tick.length -
@@ -268,7 +274,7 @@ class BasePlot(Drawable):
             textw, texth = text.text_size(s._name, self.style.legend.text.size)
             yyline = yytext - self.style.legend.text.size * 2/3
             yytext -= max(self.style.legend.text.size, spacing)
-            if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz']:
+            if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz', 'PieSlice']:
                 yysquare = yytext - square/2
                 canvas.text(boxl + square + 8, yytext - self.style.legend.text.size/3,
                             s._name,
@@ -420,7 +426,7 @@ class XyPlot(BasePlot):
         rightborder = self.style.axis.framelinewidth + 5
         if self.legend == 'right':
             rightborder += legw + 5
-        else:
+        elif ticks.xnames[-1]:
             rightborder += text.text_size(
                 ticks.xnames[-1], fontsize=self.style.tick.text.size,
                 font=self.style.tick.text.font).width
