@@ -1,5 +1,5 @@
 ''' Bar charts (qualitative independent variable) '''
-
+from __future__ import annotations
 from typing import Sequence, Union
 
 from .series import Series

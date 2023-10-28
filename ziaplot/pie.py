@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional, Literal, Sequence
 from dataclasses import dataclass
 import math
