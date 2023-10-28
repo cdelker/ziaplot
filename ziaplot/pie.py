@@ -28,6 +28,15 @@ class PieSlice(Series):
         self._extrude = extrude
         return self
 
+    def edgecolor(self, color: str) -> 'Series':
+        ''' Sets the series stroke/linestyle '''
+        self.style.border.color = color
+        return self
+
+    def edgewidth(self, width: float) -> 'Series':
+        self.style.border.width = width
+        return self
+
 
 class Pie(BasePlot):
     ''' Pie Chart. Total of all wedge values will be normalized to 100%.
@@ -105,7 +114,7 @@ class Pie(BasePlot):
                 colors: List of colors to fade through
                 stops: Stop positions, starting with 0 and ending with 1
         '''
-        self.style.colorcycle = colors.ColorFade(*colors, stops=stops)    
+        self.style.colorcycle = colors.ColorFade(*clrs, stops=stops)    
 
     def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float) -> tuple[float, float]:
         ''' Calculate legend location
@@ -158,8 +167,8 @@ class Pie(BasePlot):
 
             canvas.circle(cx, cy, radius,
                           color=w.style.line.color,  # type: ignore
-                          strokecolor=w.style.line.strokecolor,
-                          strokewidth=w.style.line.strokewidth)
+                          strokecolor=w.style.border.color,
+                          strokewidth=w.style.border.width)
 
             if self.labelmode == 'name':
                 labeltext = w._name
@@ -197,8 +206,8 @@ class Pie(BasePlot):
 
                 canvas.wedge(cxx, cyy, radius, thetas[i], starttheta=theta,
                              color=w.style.line.color,  # type: ignore
-                             strokecolor=w.style.line.strokecolor,
-                             strokewidth=w.style.line.strokewidth)
+                             strokecolor=w.style.border.color,
+                             strokewidth=w.style.border.width)
 
                 labelx = cxx + (radius+self.style.pie.labelpad) * math.cos(thetahalf)
                 labely = cyy - (radius+self.style.pie.labelpad) * math.sin(thetahalf)

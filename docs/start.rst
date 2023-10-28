@@ -38,7 +38,7 @@ Math rendering interprets any string label enclosed in $..$ to be Latex math.
 Quick Example
 -------------
 
-Figures in Ziaplot are made from Series objects, which represent individual x-y data, added to Axes on which the Series are drawn.
+Figures in Ziaplot are made from Series objects, which represent sets of x-y data, added to Axes on which the Series are drawn.
 Here, an `XyPlot` axis is created, and a `Line` is added to it.
 
 .. jupyter-execute::
@@ -48,9 +48,17 @@ Here, an `XyPlot` axis is created, and a `Line` is added to it.
     x = list(range(6))
     y = [xi**2 for xi in x]
 
+    with zp.XyPlot():
+        zp.Line(x, y)
+
+
+Any Series created within a context manager are automatically added to the Axes.
+Series may also be added using the += operator, with the same results:
+
+.. jupyter-input::
+
     p = zp.XyPlot()
     p += zp.Line(x, y)
-    p
 
 
 Note the x and y arrays could more easily be created as Numpy arrays, but Ziaplot does not require Numpy as a dependency so this documentation does not use it.
@@ -60,7 +68,8 @@ Note the x and y arrays could more easily be created as Numpy arrays, but Ziaplo
 Use in Jupyter Notebooks
 ------------------------
 
-Ziaplot is optimized for use in Jupyter, as every drawable object has a Jupyter representer function, so the final line `p` in the example above will display the figure inline.
+Ziaplot is optimized for use in Jupyter, as every drawable object has a Jupyter representer function.
+In Jupyter, leaving the `with` block automatically draws the plot.
 
 Nearly everything in Ziaplot can be drawn (inherits from the `Drawable` class). A `Line` can be drawn by itself from the representation of zp.Line, but in this case, the Line will be added to an empty XyPlot.
 
@@ -69,9 +78,11 @@ Nearly everything in Ziaplot can be drawn (inherits from the `Drawable` class). 
 Use outside Jupyter
 -------------------
 
-Outside Jupyter, the raw SVG output can be accessed by calling `p.svg()`.
-Other image formats can be obtained if the `cairosvg <https://cairosvg.org/>`_ package is installed.
-Byte-data for all supported formats can be obtained by calling `p.imagebytes()`.
+Outside Jupyter, the raw SVG output can be accessed by calling `.svg()`, and saved to an svg file
+by calling `.save(fname)`.
+
+Other image formats, such as PNG, can be obtained if the `cairosvg <https://cairosvg.org/>`_ package is installed.
+Byte-data for all supported formats can be obtained by calling `.imagebytes()`.
 
 |
 

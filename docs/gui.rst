@@ -10,8 +10,6 @@ Tkinter
 Because Tkinter does not (yet) natively support SVG graphics, to use Ziaplot in a Tkinter user interface requires the `cairosvg` package to convert to PNG images.
 Tk's `PhotoImage` reads the PNG, which must be encoded in base-64.
 
-Note: cairosvg needs extra import hooks to work with PyInstaller. See `guitk.py` in the docs/examplegui folder for more information.
-
 .. code-block:: python
 
     import tkinter as tk

@@ -40,10 +40,19 @@ Axes
 .. autoclass:: ziaplot.pie.Pie
     :members:
 
+.. autoclass:: ziaplot.pie.PieSlice
+    :members:
+
 .. autoclass:: ziaplot.bar.BarChart
     :members:
 
+.. autoclass:: ziaplot.bar.BarSingle
+    :members:
+
 .. autoclass:: ziaplot.bar.BarChartGrouped
+    :members:
+
+.. autoclass:: ziaplot.bar.BarSeries
     :members:
 
 

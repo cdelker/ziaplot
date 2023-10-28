@@ -25,7 +25,7 @@ To customize the style, typically start with the base `Style` and modify its att
     sty.canvasw = 300
     sty.canvash = 300
     zp.XyPlot(style=sty)
-    
+
 To use the style for all plots, set the default style using :py:meth:`ziaplot.styles.setdefault`:
 
 .. code-block:: python
@@ -49,7 +49,7 @@ For example, to enable the "Taffy" theme for all plots, use:
     :hide-code:
 
     def teststyle():
-        p = zp.Pie().wedges(3,2,3,2,4,2).names('a', 'b', 'c', 'd', 'e', 'f')
+        p = zp.Pie().fromdict({'a':3, 'b':2, 'c':3, 'd':2, 'e':4, 'f':2}, legend='none')
         p2 = zp.XyGraph()
         p2 += zp.Function(lambda x: x**2).endmarkers()
         p2 += zp.Function(lambda x: x**3/2).endmarkers()
@@ -63,9 +63,9 @@ For example, to enable the "Taffy" theme for all plots, use:
         p3 += zp.Line(x, [yi*4 for yi in y]).marker('arrow', orient=True)
         p3 += zp.Line(x, [yi*3 for yi in y]).stroke('--')
 
-        p4 = zp.BarChartGrouped(('a', 'b', 'c', 'd'))
-        p4.bar_series((2, 2, 4, 3))
-        p4.bar_series((2, 3, 1, 4))
+        p4 = zp.BarChartGrouped(groups=('a', 'b', 'c', 'd'))
+        p4 += zp.BarSeries(2, 2, 4, 3)
+        p4 += zp.BarSeries(2, 3, 1, 4)
 
         l1 = zp.Hlayout(p3, p4)
         l2 = zp.Hlayout(p2, p)

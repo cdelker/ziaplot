@@ -478,8 +478,8 @@ class Bars(Series):
 
             canvas.rect(x, y2, self.width, y-y2,
                         fill=color,
-                        strokecolor=self.style.line.strokecolor,
-                        strokewidth=self.style.line.strokewidth,
+                        strokecolor=self.style.border.color,
+                        strokewidth=self.style.border.width,
                         dataview=databox)
 
     def svgxml(self, border: bool = False) -> ET.Element:
@@ -508,8 +508,8 @@ class BarsHoriz(Bars):
             canvas.rect(y2, x, y-y2,
                         self.width,
                         fill=color,
-                        strokecolor=self.style.line.strokecolor,
-                        strokewidth=self.style.line.strokewidth,
+                        strokecolor=self.style.border.color,
+                        strokewidth=self.style.border.width,
                         dataview=databox)
 
 

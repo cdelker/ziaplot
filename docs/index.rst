@@ -9,7 +9,7 @@ Ziaplot is for easy, lightweight, and Pythonic plotting of data in SVG format.
     import math
     import ziaplot as zp
     def teststyle():
-        p = zp.Pie().wedges(3,2,3,2,4,2).names('a', 'b', 'c', 'd', 'e', 'f')
+        p = zp.Pie().fromdict({'a':3, 'b':2, 'c':3, 'd':2, 'e':4, 'f':2}, legend='none')
         p2 = zp.XyGraph()
         p2 += zp.Function(lambda x: x**2).endmarkers()
         p2 += zp.Function(lambda x: x**3/2).endmarkers()
@@ -23,9 +23,9 @@ Ziaplot is for easy, lightweight, and Pythonic plotting of data in SVG format.
         p3 += zp.Line(x, [yi*4 for yi in y]).marker('arrow', orient=True)
         p3 += zp.Line(x, [yi*3 for yi in y]).stroke('--')
 
-        p4 = zp.BarChartGrouped(('a', 'b', 'c', 'd'))
-        p4.bar_series((2, 2, 4, 3))
-        p4.bar_series((2, 3, 1, 4))
+        p4 = zp.BarChartGrouped(groups=('a', 'b', 'c', 'd'))
+        p4 += zp.BarSeries(2, 2, 4, 3)
+        p4 += zp.BarSeries(2, 3, 1, 4)
 
         l1 = zp.Hlayout(p3, p4)
         l2 = zp.Hlayout(p2, p)

@@ -47,15 +47,15 @@ First, make up some data to plot.
 
 Then, create an XyPlot and add several lines to it.
 Notice the color of each series cycles through the default set of theme colors if not specified manually.
+Use of the context manager (`with` statement) makes every Line created within the manager automatically added to the axis.
 
 .. jupyter-execute::
 
-    p = zp.XyPlot()
-    p += zp.Line(x, y)
-    p += zp.Line(x, y2).marker('round', radius=8)
-    p += zp.Line(x, y3).stroke('dashed')
-    p += zp.Line(x, y4).color('purple').strokewidth(4)
-    p
+    with zp.XyPlot():
+        zp.Line(x, y)
+        zp.Line(x, y2).marker('round', radius=8)
+        zp.Line(x, y3).stroke('dashed')
+        zp.Line(x, y4).color('purple').strokewidth(4)
 
 |
 
@@ -97,10 +97,9 @@ Markers can also be oriented tangent to the data line, for example to show arrow
     tsq = [ti**2 for ti in t]
     tsq2 = [tsqi+20 for tsqi in tsq]
 
-    p = zp.XyPlot()
-    p += zp.Line(t, tsq).marker('arrow', orient=True)
-    p += zp.Line(t, tsq2).endmarkers(start='square', end='arrow')
-    p
+    with zp.XyPlot():
+        zp.Line(t, tsq).marker('arrow', orient=True)
+        zp.Line(t, tsq2).endmarkers(start='square', end='arrow')
 
 |
 
@@ -114,12 +113,11 @@ Color fading requires hex string colors.
 .. jupyter-execute::
 
     xf = zp.linspace(0, 10, 10)
-    p = zp.XyPlot()
-    p.colorfade('#0000FF', '#FF0000')
-    for i in range(10):
-        yf = [xi*(i+1) for xi in xf]
-        p += zp.Line(xf, yf)
-    p
+    with zp.XyPlot() as p:
+        p.colorfade('#0000FF', '#FF0000')
+        for i in range(10):
+            yf = [xi*(i+1) for xi in xf]
+            zp.Line(xf, yf)
 
 |
 
@@ -134,11 +132,10 @@ and adds a round marker.
 
 .. jupyter-execute::
 
-    p = zp.XyPlot()
-    p += zp.Xy(x, y)
-    p += zp.HLine(.5).stroke('dotted')
-    p += zp.VLine(.75).stroke('dashed')
-    p 
+    with zp.XyPlot():
+        zp.Xy(x, y)
+        zp.HLine(.5).stroke('dotted')
+        zp.VLine(.75).stroke('dashed')
 
 The :py:class:`ziaplot.dataseries.ErrorBar` series draws lines with added x or y errorbars.
 The :py:meth:`ziaplot.dataseries.ErrorBar.yerrmarker` and :py:meth:`ziaplot.dataseries.ErrorBar.xerrmarker` methods control the errorbar end markers.
@@ -172,14 +169,13 @@ Plain text labels can be added at any data point using the :py:class:`ziaplot.da
 
 .. jupyter-execute::
 
-    p = zp.XyPlot(title='Title',
-                  xname='Independent Variable',
-                  yname='Dependent Variable')
-    p += zp.Line(x, y).name('Line #1')
-    p += zp.Line(x, y2).name('Line #2')
-    p += zp.Text(0.2, 2, 'Text', halign='center')
-    p += zp.Arrow((.70, 2.3), (.6, 3), 'Arrow', strofst=(-.05, .1)).color('black')
-    p
+    with zp.XyPlot(title='Title',
+                   xname='Independent Variable',
+                   yname='Dependent Variable'):
+        zp.Line(x, y).name('Line #1')
+        zp.Line(x, y2).name('Line #2')
+        zp.Text(0.2, 2, 'Text', halign='center')
+        zp.Arrow((.70, 2.3), (.6, 3), 'Arrow', strofst=(-.05, .1)).color('black')
 
 If `ziamath <https://ziamath.readthedocs.io>`_ is installed, math expressions can be
 drawn in any label. The expressions are entered in Latex style delimited by $..$.
@@ -201,16 +197,15 @@ The function must take one float argument (the x value) and return a float (the 
 
 .. jupyter-execute::
 
-    p = zp.XyGraph()
-    p += zp.Function(math.sin, xmin=-2*math.pi, xmax=2*math.pi).name('sine')
-    p += zp.Function(math.cos, xmin=-2*math.pi, xmax=2*math.pi).name('cosine')
-    p
+    with zp.XyGraph():
+        zp.Function(math.sin, xmin=-2*math.pi, xmax=2*math.pi).name('sine')
+        zp.Function(math.cos, xmin=-2*math.pi, xmax=2*math.pi).name('cosine')
 
 Lambda functions work well here, such as
 
-.. code-block:: python
+.. jupyter-input::
 
-    p += zp.Function(lambda x: x**2)
+    zp.Function(lambda x: x**2)
 
 |
 
@@ -266,10 +261,9 @@ To manually set the data range, use :py:meth:`ziaplot.axes.BasePlot.xrange` and 
     x = [i*0.1 for i in range(11)]
     y = [xi**2 for xi in x]
 
-    p = zp.XyPlot()
-    p += zp.Line(x, y)
-    p.xrange(.5, 1).yrange(.3, 1)
-    p
+    with zp.XyPlot() as p:
+        zp.Line(x, y)
+        p.xrange(.5, 1).yrange(.3, 1)
 
 
 Tick locations are also automatically determined. To override, call
@@ -278,28 +272,25 @@ names.
 
 .. jupyter-execute::
 
-    p = zp.XyPlot()
-    p += zp.Line(x, y)
-    p.xticks((0, .25, .75, 1))
-    p.yticks((0, .5, 1), names=('Low', 'Medium', 'High'))
-    p
+    with zp.XyPlot() as p:
+        zp.Line(x, y)
+        p.xticks((0, .25, .75, 1))
+        p.yticks((0, .5, 1), names=('Low', 'Medium', 'High'))
 
 To keep the default ticks but change the number formatter, use :py:class:`ziaplot.styletypes.TickStyle` with a standard format specification used in Python's `format() <https://docs.python.org/3/library/stdtypes.html#str.format>`_.
 
 .. jupyter-execute::
 
-    p = zp.XyPlot()
-    p.style.tick.ystrformat = '.1e'
-    p += zp.Line(x, y)
-    p
-    
+    with zp.XyPlot() as p:
+        p.style.tick.ystrformat = '.1e'
+        zp.Line(x, y)
+
 
 Minor ticks, without a number label, can also be added between the major, labeled, ticks.
 
 .. jupyter-execute::
 
-    p = zp.XyPlot()
-    p += zp.Line(x, y)
-    p.xticks(values=(0, .2, .4, .6, .8, 1),
-             minor=(zp.linspace(0, 1, 21)))
-    p
+    with zp.XyPlot() as p:
+        zp.Line(x, y)
+        p.xticks(values=(0, .2, .4, .6, .8, 1),
+                 minor=(zp.linspace(0, 1, 21)))

@@ -1,10 +1,8 @@
-''' Example of matplotlib in a Tkinter GUI
+''' Example of matplotlib in a Tkinter GUI for comparison
 
 To build executable with pyinstaller:
 
     pyinstaller --windowed --onefile guimpl.py
-    
-~350 MB pyinstaller executable (using both conda/mkl and pip-installed numpy)
 '''
 
 import tkinter as tk

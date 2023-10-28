@@ -2,14 +2,9 @@
 
 To build executable with pyinstaller:
 
-    pyinstaller --windowed --onefile --hidden-import=cairosvg --additional-hooks-dir=. gui.py
-
-Cairosvg needs a little help in pyinstaller so this uses the hook-cairocffi.py
-and hook-cairosvg.py files.
+    pyinstaller --onefile guitk.py
 
 If/when tkinter natively supports svg (proposed for Tk 8.7), cairosvg won't be necessary.
-
-Approx 16 MB when built with pyinstaller.
 '''
 
 import tkinter as tk

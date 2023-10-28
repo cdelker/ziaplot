@@ -39,15 +39,22 @@ class LineStyle:
         Args:
             color: Line color
             stroke: Line style, name or SVG dash-array specification
-            strokecolor: Color for border of Bars
-            strokewidth: Width for border of Bars
-    
+            width: Line width
     '''
     color: str = 'undefined'  # Revert to AxisStyle
     stroke: DashTypes = '-'
     width: float = 2.0
-    strokecolor: str = 'black'  # for bars
-    strokewidth: float = 1
+
+@dataclass
+class BorderStyle:
+    ''' Border Style for bars and pie slices
+    
+        Args:
+            color: border color
+            width: border stroke width
+    '''
+    color: str = 'black'
+    width: float = 1.
 
         
 @dataclass
@@ -117,6 +124,7 @@ class SeriesStyle:
             fillalpha: Transparency factor (0-1) for LineFill series
     '''
     line: LineStyle = field(default_factory=LineStyle)
+    border: BorderStyle = field(default_factory=BorderStyle)
     marker: MarkerStyle = field(default_factory=MarkerStyle)
     text: TextStyle = field(default_factory=TextStyle)
     yerror: ErrorBarStyle = field(default_factory=ErrorBarStyle)
@@ -213,8 +221,6 @@ class PieStyle:
     ''' Style for pie charts
 
         Args:
-            strokecolor: Line color around each wedge
-            strokewisth: Line width around each wedge
             legend: Legend style
             edgepad: Distance from canvas edge to pie
             extrude: Distance to extrude slices
@@ -222,8 +228,6 @@ class PieStyle:
             label: Text style for wedge labels
             labelpad: Distance from pie to wedge label
     '''
-    strokecolor: str = 'black'
-    strokewidth: float = 1
     legend: LegendStyle = field(default_factory=LegendStyle)
     edgepad: float = 10
     extrude: float = 20

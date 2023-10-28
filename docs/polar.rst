@@ -22,10 +22,9 @@ The `style.polar.rlabeltheta` style parameter can be useful to align the radius/
     th = zp.linspace(0, 2*math.pi, 500)
     r = [math.cos(7*t+math.pi/6) for t in th]
 
-    p = zp.Polar()
-    p.style.polar.rlabeltheta = 15
-    p += zp.LinePolar(r, th)
-    p
+    with zp.Polar() as p:
+        p.style.polar.rlabeltheta = 15
+        zp.LinePolar(r, th)
 
 |
 
@@ -51,7 +50,6 @@ Alternatively, curves of constant resistance and constant reactance may be drawn
 
 .. jupyter-execute::
 
-    p = zp.Smith(grid='coarse')
-    p += zp.SmithConstReactance(0.5)
-    p += zp.SmithConstResistance(1)
-    p
+    with zp.Smith(grid='coarse'):
+        zp.SmithConstReactance(0.5)
+        zp.SmithConstResistance(1)

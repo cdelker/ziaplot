@@ -201,16 +201,21 @@ class BarChartGrouped(XyPlot):
         # Use named ticks
         if self.horiz:
             yticks = [self.bargap + (groupwidth-self.bargap)/2 + k*groupwidth for k in range(num_groups)]
-            self.yticks(yticks, self.groups)
+            self.yticks(yticks, self.groups[::-1])
             self.yrange(0, totwidth)
+            # Set bar x positions
+            for i, bar in enumerate(self.series[::-1]):
+                assert isinstance(bar, (Bars, BarsHoriz))            
+                x = [self.bargap + self.barwidth*i + k*groupwidth for k in range(num_groups)]
+                bar.x = x
         else:
             xticks = [self.bargap + (groupwidth-self.bargap)/2 + k*groupwidth for k in range(num_groups)]
             self.xticks(xticks, self.groups)
             self.xrange(0, totwidth)
 
-        # Set bar x positions
-        for i, bar in enumerate(self.series):
-            assert isinstance(bar, (Bars, BarsHoriz))
-            x = [self.bargap + self.barwidth*i + k*groupwidth for k in range(num_groups)]
-            bar.x = x
+            # Set bar x positions
+            for i, bar in enumerate(self.series):
+                assert isinstance(bar, (Bars, BarsHoriz))            
+                x = [self.bargap + self.barwidth*i + k*groupwidth for k in range(num_groups)]
+                bar.x = x
         super()._xml(canvas)
