@@ -11,4 +11,4 @@ from . import styles
 from .text import settextmode
 from .config import config
 
-__version__ = '0.5a0'
+__version__ = '0.5'
