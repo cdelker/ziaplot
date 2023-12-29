@@ -7,6 +7,7 @@ from .styles import Default
 from .drawable import Drawable
 from .canvas import DataRange
 from . import axis_stack
+from typing import Optional
 
 
 class Series(Drawable):
@@ -43,7 +44,7 @@ class Series(Drawable):
         self.style.line.width = width
         return self
 
-    def marker(self, marker: MarkerTypes, radius: float = None, orient: bool = False) -> 'Series':
+    def marker(self, marker: MarkerTypes, radius: Optional[float] = None, orient: bool = False) -> 'Series':
         ''' Sets the series marker '''
         self.style.marker.shape = marker
         self.style.marker.orient = orient

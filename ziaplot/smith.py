@@ -163,8 +163,8 @@ class Smith(Polar):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, grid: str = 'coarse', title: str = None,
-                 legend: LegendLoc = 'left', style: Style = None):
+    def __init__(self, grid: str = 'coarse', title: Optional[str] = None,
+                 legend: LegendLoc = 'left', style: Optional[Style] = None):
         super().__init__(title=title, legend=legend, style=style)
         if grid not in self.style.smith.grid:
             raise ValueError(f'Undefined grid type {grid}. Avaliable grids are '
@@ -343,7 +343,7 @@ class Smith(Polar):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         datarange = self.datarange()
         ticks = self._maketicks(datarange)
@@ -382,7 +382,7 @@ class SmithConstResistance(Series):
         self.xmin = xmin
         self.xmax = xmax
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         arc = const_resist_circle(self.resistance, self.xmin, self.xmax)
@@ -413,7 +413,7 @@ class SmithConstReactance(Series):
         self.rmax = rmax
         self.rmin = rmin
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         arc = const_react_arc(self.reactance, rmax=self.rmax, rmin=self.rmin)

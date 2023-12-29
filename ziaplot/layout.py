@@ -7,6 +7,7 @@ from .series import Series
 from .canvas import Canvas, ViewBox
 from .drawable import Drawable
 from . import axis_stack
+from typing import Optional
 
 
 class LayoutGap(Drawable):
@@ -84,7 +85,7 @@ class Hlayout(Layout):
             height and width are ignored if the layout is
             added to another layout.
     '''
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> ET.Element:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> ET.Element:
         ''' Add XML elements to the canvas '''
         N = len(self.axes)
         axwidth = (self.width - self.sep*(N-1)) / N
@@ -137,7 +138,7 @@ class Vlayout(Layout):
             height and width are ignored if the layout is
             added to another layout.
     '''
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> ET.Element:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> ET.Element:
         ''' Add XML elements to the canvas '''
         N = len(self.axes)
         axheight = (self.height - self.sep*(N-1)) / N

@@ -50,10 +50,10 @@ class Pie(BasePlot):
             style: Plotting style
     '''
     def __init__(self,
-                 title: str = None,
+                 title: Optional[str] = None,
                  legend: LegendLoc = 'left',
                  labelmode: str = 'name',
-                 style: Style = None):
+                 style: Optional[Style] = None):
         ''' '''
         super().__init__(title=title, style=style, legend=legend)
         self.labelmode = labelmode  # TODO put Literals in enum?
@@ -61,7 +61,7 @@ class Pie(BasePlot):
     @classmethod
     def fromdict(cls,
                  slices: dict[str, float],
-                 title: str = None,
+                 title: Optional[str] = None,
                  legend: LegendLoc = 'left',
                  labelmode: str = 'name',
                  ) -> 'Pie':
@@ -84,7 +84,7 @@ class Pie(BasePlot):
 
     @classmethod
     def fromlist(cls, slices: list[float],
-                 title: str = None,
+                 title: Optional[str] = None,
                  legend: LegendLoc = 'none',
                  labelmode: str = 'name',
                  ) -> 'Pie':
@@ -105,7 +105,7 @@ class Pie(BasePlot):
         axis_stack.pause = False
         return pie
 
-    def colorfade(self, *clrs: str, stops: Sequence[float] = None) -> None:
+    def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> None:
         ''' Define the color cycle evenly fading between two colors.
             `c1` will always be the color of the first series, and `c2`
             the color of the last series, with an even gradient for
@@ -133,7 +133,7 @@ class Pie(BasePlot):
             xright = axisbox.x + axisbox.w - 1
         return ytop, xright
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         slices = [s for s in self.series if isinstance(s, PieSlice)]
         values = [w.value for w in slices]

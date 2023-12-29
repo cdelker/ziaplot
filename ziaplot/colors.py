@@ -1,5 +1,5 @@
 ''' Color cylces '''
-from typing import Sequence
+from typing import Optional, Sequence
 
 from .util import interp, linspace
 
@@ -43,7 +43,7 @@ class ColorFade(ColorCycle):
             stops: List of stop positions for each color in the
                 gradient, starting with 0 and ending with 1.
     '''
-    def __init__(self, *colors: str, stops: Sequence[float] = None):
+    def __init__(self, *colors: str, stops: Optional[Sequence[float]] = None):
         if not all(c[0] == '#' for c in colors):
             raise ValueError('ColorFade colors must be #FFFFFF format.')
         self.colors = colors

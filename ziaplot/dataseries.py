@@ -1,7 +1,7 @@
 ''' Data Series Lines '''
 
 from __future__ import annotations
-from typing import Sequence, Callable
+from typing import Optional, Sequence, Callable
 import math
 from collections import Counter
 import xml.etree.ElementTree as ET
@@ -39,7 +39,7 @@ class Line(Series):
         ''' Get range of data '''
         return DataRange(min(self.x), max(self.x), min(self.y), max(self.y))
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Add XML elements to the canvas '''
         markname = None
         if self.style.marker.shape:
@@ -126,7 +126,7 @@ class ErrorBar(Line):
             xerr: X errors
     '''
     def __init__(self, x: Sequence[float], y: Sequence[float],
-                 yerr: Sequence[float] = None, xerr: Sequence[float] = None):
+                 yerr: Optional[Sequence[float]] = None, xerr: Optional[Sequence[float]] = None):
         super().__init__(x, y)
         self.yerr = yerr
         self.xerr = xerr
@@ -149,8 +149,8 @@ class ErrorBar(Line):
 
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def yerrmarker(self, marker: MarkerTypes = '-', length: float = None,
-                   width: float = None, stroke: DashTypes = None) -> 'ErrorBar':
+    def yerrmarker(self, marker: MarkerTypes = '-', length: Optional[float] = None,
+                   width: Optional[float] = None, stroke: Optional[DashTypes] = None) -> 'ErrorBar':
         ''' Set marker and linestyle for y-error bars
 
             Args:
@@ -168,8 +168,8 @@ class ErrorBar(Line):
             self.style.yerror.stroke = stroke
         return self
 
-    def xerrmarker(self, marker: MarkerTypes = '|', length: float = None,
-                   width: float = None, stroke: DashTypes = None) -> 'ErrorBar':
+    def xerrmarker(self, marker: MarkerTypes = '|', length: Optional[float] = None,
+                   width: Optional[float] = None, stroke: Optional[DashTypes] = None) -> 'ErrorBar':
         ''' Set marker and linestyle for x-error bars
 
             Args:
@@ -187,7 +187,7 @@ class ErrorBar(Line):
             self.style.xerror.stroke = stroke
         return self
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         if self.yerr is not None:
@@ -232,7 +232,7 @@ class LineFill(Line):
             ymax: Y-values defining upper limit of region
             ymin: Y-values defining lower limit of region. Defaults to 0.
     '''
-    def __init__(self, x: Sequence[float], ymax: Sequence[float], ymin: Sequence[float] = None):
+    def __init__(self, x: Sequence[float], ymax: Sequence[float], ymin: Optional[Sequence[float]] = None):
         super().__init__(x, ymax)
         self.x = x
         self.ymax = ymax
@@ -247,7 +247,7 @@ class LineFill(Line):
                          min(min(self.ymax), min(self.ymin)),
                          max(max(self.ymax), max(self.ymin)))
 
-    def fill(self, color: str, alpha: float = None) -> 'LineFill':
+    def fill(self, color: str, alpha: Optional[float] = None) -> 'LineFill':
         ''' Set the region fill color and transparency
 
             Args:
@@ -259,7 +259,7 @@ class LineFill(Line):
             self.style.fillalpha = alpha
         return self
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Add XML elements to the canvas '''
         # Draw in two parts - filled part doesn't have a stroke
         # because we don't want lines on the left/right edge.
@@ -320,7 +320,7 @@ class Text(Series):
             rotate: Rotation angle, in degrees
     '''
     def __init__(self, x: float, y: float, s: str, halign: Halign = 'left',
-                 valign: Valign = 'bottom', rotate: float = None):
+                 valign: Valign = 'bottom', rotate: Optional[float] = None):
         super().__init__()
         self.style = SeriesStyle()
         self.x = x
@@ -339,7 +339,7 @@ class Text(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, None, None)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         canvas.text(self.x, self.y, self.s,
                     color=self.style.text.color,
@@ -365,7 +365,7 @@ class Arrow(Line):
     '''
     def __init__(self, xy: Sequence[float], xytail: Sequence[float],
                  s: str = '', strofst: Sequence[float] = (0, 0),
-                 marker: MarkerTypes = 'arrow', tailmarker: MarkerTypes = None):
+                 marker: MarkerTypes = 'arrow', tailmarker: Optional[MarkerTypes] = None):
         self.xy = xy
         self.xytail = xytail
         self.strofst = strofst
@@ -376,7 +376,7 @@ class Arrow(Line):
         self.style.marker.strokewidth = 0
         self.endmarkers(start=tailmarker, end=marker)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         super()._xml(canvas, databox)
         x = self.xytail[0] + self.strofst[0]
@@ -402,7 +402,7 @@ class HLine(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, self.y, self.y)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
         color = self.style.line.color
@@ -426,7 +426,7 @@ class VLine(Series):
         ''' Get x-y datarange '''
         return DataRange(self.x, self.x, None, None)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
         color = self.style.line.color
@@ -447,8 +447,8 @@ class Bars(Series):
             width: Width of all bars
             align: Bar position in relation to x value
     '''
-    def __init__(self, x: Sequence[float], y: Sequence[float], y2: Sequence[float] = None,
-                 width: float = None, align: Halign = 'center'):
+    def __init__(self, x: Sequence[float], y: Sequence[float], y2: Optional[Sequence[float]] = None,
+                 width: Optional[float] = None, align: Halign = 'center'):
         super().__init__()
         self.x = x
         self.y = y
@@ -467,7 +467,7 @@ class Bars(Series):
             xmin, xmax = min(self.x)-self.width, max(self.x)
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         for x, y, y2 in zip(self.x, self.y, self.y2):
@@ -496,7 +496,7 @@ class BarsHoriz(Bars):
         rng = super().datarange()  # Transpose it
         return DataRange(rng.ymin, rng.ymax, rng.xmin, rng.xmax)
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         for x, y, y2 in zip(self.x, self.y, self.y2):
@@ -523,9 +523,9 @@ class Histogram(Bars):
             density: Normalize the histogram
             weights: Weights to apply to each x value
     '''
-    def __init__(self, x: Sequence[float], bins: int = None,
-                 binrange: tuple[float, float, float] = None,
-                 density: bool = False, weights: Sequence[float] = None):
+    def __init__(self, x: Sequence[float], bins: Optional[int] = None,
+                 binrange: Optional[tuple[float, float, float]] = None,
+                 density: bool = False, weights: Optional[Sequence[float]] = None):
         xmin = min(x)
         if binrange is not None:
             binleft = binrange[0]

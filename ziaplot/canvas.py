@@ -75,7 +75,7 @@ class Canvas:
             height: Pixel height of the canvas
             fill: Fill color for canvas background
     '''
-    def __init__(self, width: float, height: float, fill: str = None):
+    def __init__(self, width: float, height: float, fill: Optional[str] = None):
         self.canvaswidth = width
         self.canvasheight = height
         self.viewbox = ViewBox(0, 0, width, height)
@@ -215,9 +215,9 @@ class Canvas:
         return self.canvasheight - y
 
     def path(self, x: Sequence[float], y: Sequence[float], stroke: DashTypes = '-',
-             color: str = 'black', width: float = 2, markerid: str = None,
-             startmarker: str = None, endmarker: str = None,
-             dataview: ViewBox = None):
+             color: str = 'black', width: float = 2, markerid: Optional[str] = None,
+             startmarker: Optional[str] = None, endmarker: Optional[str] = None,
+             dataview: Optional[ViewBox] = None):
         ''' Add a path to the SVG
 
             Args:
@@ -261,9 +261,9 @@ class Canvas:
         if self.clip:
             path.attrib['clip-path'] = f'url(#{self.clip})'
 
-    def rect(self, x: float, y: float, w: float, h: float, fill: str = None,
+    def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
              strokecolor: str = 'black', strokewidth: float = 2,
-             rcorner: float = 0, dataview: ViewBox = None) -> ET.Element:
+             rcorner: float = 0, dataview: Optional[ViewBox] = None) -> ET.Element:
         ''' Add a rectangle to the canvas
 
             Args:
@@ -300,7 +300,7 @@ class Canvas:
 
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
                strokecolor: str = 'red', strokewidth: float = 1,
-               stroke: DashTypes = '-', dataview: ViewBox = None):
+               stroke: DashTypes = '-', dataview: Optional[ViewBox] = None):
         ''' Add a circle to the canvas
 
             Args:
@@ -334,8 +334,8 @@ class Canvas:
              size: float = 12,
              halign: Halign = 'left',
              valign: Valign = 'bottom',
-             rotate: float = None,
-             dataview: ViewBox = None) -> None:
+             rotate: Optional[float] = None,
+             dataview: Optional[ViewBox] = None) -> None:
         ''' Add text to the canvas
 
             Args:
@@ -368,7 +368,7 @@ class Canvas:
 
     def poly(self, points: Sequence[tuple[float, float]], color: str = 'black',
              strokecolor: str = 'red', strokewidth: float = 1, alpha: float = 1.0,
-             dataview: ViewBox = None):
+             dataview: Optional[ViewBox] = None):
         ''' Add a polygon to the canvas
 
             Args:
@@ -434,7 +434,7 @@ class Canvas:
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
             theta2: float = 3.14, strokecolor: str = 'black',
-            strokewidth: float = 1, dataview: ViewBox = None) -> ET.Element:
+            strokewidth: float = 1, dataview: Optional[ViewBox] = None) -> ET.Element:
         ''' Add an open arc
 
             Args:

@@ -1,6 +1,6 @@
 ''' SVG Drawable base class '''
 
-from typing import Literal
+from typing import Optional, Literal
 import os
 import xml.etree.ElementTree as ET
 
@@ -11,7 +11,14 @@ class Drawable:
     ''' Drawable SVG/XML object. Implements common XML and SVG functions,
         plus _repr_ for Jupyter
     '''
-    def _xml(self, canvas: Canvas, databox: ViewBox = None):
+    def __contains__(self, other: 'Drawable'):
+        return None
+
+    def add(self, series: 'Drawable') -> None:
+        ''' Add a data series to the axis '''
+        raise NotImplementedError
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Get XML elements '''
         return canvas.xml()
 

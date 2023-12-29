@@ -1,6 +1,6 @@
 ''' Contour plots '''
 from __future__ import annotations
-from typing import Sequence, Union, Literal
+from typing import Optional, Sequence, Union, Literal
 import xml.etree.ElementTree as ET
 
 from .series import Series
@@ -28,7 +28,7 @@ class Contour(Series):
                  y: Sequence[Sequence[float]],
                  z: Sequence[Sequence[float]],
                  levels: Union[int, Sequence[float]] = 7,
-                 colorbar: ColorBarPos = None):
+                 colorbar: Optional[ColorBarPos] = None):
         super().__init__()
         self.x = x
         self.y = y
@@ -37,7 +37,7 @@ class Contour(Series):
         self.contours: list[float] = []
         self.colorbar = colorbar
 
-    def colors(self, *colors: str, stops: Sequence[float] = None) -> 'Contour':
+    def colors(self, *colors: str, stops: Optional[Sequence[float]] = None) -> 'Contour':
         ''' Set the start and end colors for the contours '''
         self.style.colorbar.colors = ColorFade(*colors, stops=stops)
         return self
@@ -55,7 +55,7 @@ class Contour(Series):
                              min(min(y) for y in self.y),
                              max(max(y) for y in self.y))
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Add XML elements to the canvas '''
         segments = self._build_contours()
         colors = self.style.colorbar.colors
@@ -161,7 +161,7 @@ class Contour(Series):
             segments.append((segmentx, segmenty))
         return segments
 
-    def _draw_colorbar(self, canvas: Canvas, databox: ViewBox = None):
+    def _draw_colorbar(self, canvas: Canvas, databox: Optional[ViewBox] = None):
         ''' Draw colorbar on axis '''
         nlevels = len(self.contours)
         xpad = self.style.colorbar.xpad

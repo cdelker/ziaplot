@@ -1,7 +1,8 @@
 ''' Bar charts (qualitative independent variable) '''
 from __future__ import annotations
-from typing import Sequence, Union
+from typing import Optional, Sequence, Union
 
+from .drawable import Drawable
 from .series import Series
 from .dataseries import Bars, BarsHoriz
 from .axes import XyPlot, LegendLoc
@@ -37,11 +38,11 @@ class BarChart(XyPlot):
     '''
     def __init__(self,
                  horiz: bool = False,
-                 title: str = None,
-                 xname: str = None,
-                 yname: str = None,
+                 title: Optional[str] = None,
+                 xname: Optional[str] = None,
+                 yname: Optional[str] = None,
                  legend: LegendLoc = 'none',
-                 style: Style = None):
+                 style: Optional[Style] = None):
         super().__init__(title=title, xname=xname, yname=yname, legend=legend, style=style)
         self.barlist: list[BarSingle] = []
         self.horiz = horiz
@@ -55,7 +56,7 @@ class BarChart(XyPlot):
             self.style.axis.xgrid = False
         axis_stack.push_series(None)
     
-    def add(self, bar: Series) -> None:
+    def add(self, bar: Drawable) -> None:
         assert isinstance(bar, BarSingle)
         axis_stack.pause = True
         self.barlist.append(bar)
@@ -72,11 +73,11 @@ class BarChart(XyPlot):
     @classmethod
     def fromdict(cls, bars: dict[str, float],
                  horiz: bool = False,
-                 title: str = None,
-                 xname: str = None,
-                 yname: str = None,
+                 title: Optional[str] = None,
+                 xname: Optional[str] = None,
+                 yname: Optional[str] = None,
                  legend: LegendLoc = 'none',
-                 style: Style = None
+                 style: Optional[Style] = None
                  ) -> 'BarChart':
         chart = cls(horiz=horiz, title=title, xname=xname, yname=yname,
                     legend=legend, style=style)
@@ -86,7 +87,7 @@ class BarChart(XyPlot):
         axis_stack.pause = False
         return chart
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''        
         names = [bar._name for bar in self.barlist]
         if self.horiz:
@@ -139,11 +140,11 @@ class BarChartGrouped(XyPlot):
     '''
     def __init__(self, groups: Sequence[str],
                  horiz: bool = False,
-                 title: str = None,
-                 xname: str = None,
-                 yname: str = None,
+                 title: Optional[str] = None,
+                 xname: Optional[str] = None,
+                 yname: Optional[str] = None,
                  legend: LegendLoc = 'left',
-                 style: Style = None):
+                 style: Optional[Style] = None):
         super().__init__(title=title, xname=xname, yname=yname, legend=legend, style=style)
         self.barlist: list[BarSeries] = []
         self.groups = groups
@@ -158,7 +159,7 @@ class BarChartGrouped(XyPlot):
             self.style.axis.xgrid = False
         axis_stack.push_series(self)
 
-    def add(self, barseries: Series) -> None:
+    def add(self, barseries: Drawable) -> None:
         assert isinstance(barseries, BarSeries)
         axis_stack.pause = True
         self.barlist.append(barseries)
@@ -178,11 +179,11 @@ class BarChartGrouped(XyPlot):
     def fromdict(cls, bars: dict[str, Sequence[float]],
                  groups: Sequence[str],
                  horiz: bool = False,
-                 title: str = None,
-                 xname: str = None,
-                 yname: str = None,
+                 title: Optional[str] = None,
+                 xname: Optional[str] = None,
+                 yname: Optional[str] = None,
                  legend: LegendLoc = 'left',
-                 style: Style = None
+                 style: Optional[Style] = None
                  ) -> 'BarChartGrouped':
         chart = cls(groups=groups, horiz=horiz, title=title, xname=xname, yname=yname,
                     legend=legend, style=style)
@@ -192,7 +193,7 @@ class BarChartGrouped(XyPlot):
         axis_stack.pause = False
         return chart
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         num_series = len(self.barlist)
         num_groups = len(self.groups)

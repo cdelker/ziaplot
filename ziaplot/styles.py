@@ -36,7 +36,6 @@ def setaxiscolor(st: styletypes.Style, color: str = 'black'):
     settextcolor(st, color)
     st.axis.color = color
     st.legend.border = color
-    st.pie.strokecolor = color
     st.series.colorbar.bordercolor = color
 
 
@@ -69,7 +68,7 @@ def Pastel() -> styletypes.Style:
     s.axis.bgcolor = '#fafafa'
     setaxiscolor(s, '#555555')
     s.series.marker.strokecolor = '#555555'
-    s.series.line.strokecolor = '#555555'
+    s.series.border.color = '#555555'
     s.colorcycle = ColorCycle('#c6579A', '#ffbe9f', '#f1e6b2',
                               '#b6cfae', '#a7e6d7', '#9AdBe8',
                               '#decde7', '#ffa1cb', '#9a98b5',
@@ -95,9 +94,8 @@ def Dark() -> styletypes.Style:
     s.bgcolor = 'black'
     s.axis.gridcolor = '#555555'
     s.axis.bgcolor = 'black'
-    s.series.line.strokecolor = 'none'
-    s.series.line.strokewidth = 0
-    s.pie.strokewidth = 0
+    s.series.border.color = 'none'
+    s.series.border.width = 0
     return s
 
 

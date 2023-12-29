@@ -2,7 +2,7 @@
     paths via ziamath library
 '''
 
-from typing import Literal
+from typing import Optional, Literal
 
 import string
 from collections import namedtuple
@@ -66,7 +66,7 @@ def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
               size: float = 14,
               halign: Halign = 'left',
               valign: Valign = 'bottom',
-              rotate: float = None):
+              rotate: Optional[float] = None):
 
     if config.text == 'path':
         draw_text_zia(x, y, s, svgelm=svgelm,
@@ -84,7 +84,7 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
                   size: float = 14,
                   halign: Halign = 'left',
                   valign: Valign = 'base',
-                  rotate: float = None):
+                  rotate: Optional[float] = None):
     math = ziamath.Text(s, size=size, textfont=font, color=color,
                         halign=halign, valign=valign)
     textelm = math.drawon(svgelm, x, y)
@@ -99,7 +99,7 @@ def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
                    size: float = 14,
                    halign: Halign = 'left',
                    valign: Valign = 'bottom',
-                   rotate: float = None):
+                   rotate: Optional[float] = None):
     anchor = {'center': 'middle',
               'left': 'start',
               'right': 'end'}.get(halign, 'left')

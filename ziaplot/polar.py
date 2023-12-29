@@ -1,7 +1,7 @@
 ''' Polar plotting axis '''
 
 from __future__ import annotations
-from typing import Sequence
+from typing import Optional, Sequence
 import math
 import xml.etree.ElementTree as ET
 
@@ -24,8 +24,8 @@ class Polar(BasePlot):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, labeldeg: bool = True, title: str = None, legend: LegendLoc = 'left',
-                 style: Style = None):
+    def __init__(self, labeldeg: bool = True, title: Optional[str] = None, legend: LegendLoc = 'left',
+                 style: Optional[Style] = None):
         super().__init__(title=title, legend=legend, style=style)
         self.labeldegrees = labeldeg
 
@@ -162,7 +162,7 @@ class Polar(BasePlot):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         datarange = self.datarange()
         ticks = self._maketicks(datarange)

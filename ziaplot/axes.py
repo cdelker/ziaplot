@@ -75,8 +75,8 @@ class BasePlot(Drawable):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, title: str = None, xname: str = None, yname: str = None,
-                 legend: LegendLoc = 'left', style: Style = None):
+    def __init__(self, title: Optional[str] = None, xname: Optional[str] = None, yname: Optional[str] = None,
+                 legend: LegendLoc = 'left', style: Optional[Style] = None):
         self.title = title
         self.xname = xname
         self.yname = yname
@@ -108,7 +108,7 @@ class BasePlot(Drawable):
             except NameError:  # Not in Jupyter/IPython
                 pass
 
-    def __contains__(self, series: Series):
+    def __contains__(self, series: Drawable):
         return series in self.series
 
     def __iadd__(self, series: Series):
@@ -126,23 +126,23 @@ class BasePlot(Drawable):
         self._yrange = ymin, ymax
         return self
 
-    def xticks(self, values: Sequence[float], names: Sequence[str] = None,
-               minor: Sequence[float] = None) -> BasePlot:
+    def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
+               minor: Optional[Sequence[float]] = None) -> BasePlot:
         ''' Set x axis tick values and names '''
         self._xtickvalues = values
         self._xticknames = names
         self._xtickminor = minor
         return self
 
-    def yticks(self, values: Sequence[float], names: Sequence[str] = None,
-               minor: Sequence[float] = None) -> BasePlot:
+    def yticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
+               minor: Optional[Sequence[float]] = None) -> BasePlot:
         ''' Set y axis tick values and names '''
         self._ytickvalues = values
         self._yticknames = names
         self._ytickminor = minor
         return self
 
-    def colorfade(self, *clrs: str, stops: Sequence[float] = None) -> None:
+    def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> None:
         ''' Define the color cycle evenly fading between multiple colors.
 
             Args:
@@ -152,7 +152,7 @@ class BasePlot(Drawable):
         '''
         self.style.colorcycle = colors.ColorFade(*clrs, stops=stops)
 
-    def add(self, series: Series) -> None:
+    def add(self, series: Drawable) -> None:
         ''' Add a data series to the axis '''
         assert isinstance(series, Series)
         self.series.append(series)
@@ -597,7 +597,7 @@ class XyPlot(BasePlot):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         if self.style.bgcolor not in [None, 'none']:
             canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
@@ -633,9 +633,9 @@ class XyGraph(XyPlot):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, centerorigin: bool = True, title: str = None,
+    def __init__(self, centerorigin: bool = True, title: Optional[str] = None,
                  xname: str = 'x', yname: str = 'y',
-                 legend: LegendLoc = 'left', style: Style = None):
+                 legend: LegendLoc = 'left', style: Optional[Style] = None):
         super().__init__(title=title, xname=xname, yname=yname,
                          legend=legend, style=style)
         self.centerorigin = centerorigin
@@ -858,7 +858,7 @@ class XyGraph(XyPlot):
                         size=self.style.axis.title.size,
                         halign='left', valign='bottom')
 
-    def _xml(self, canvas: Canvas, databox: ViewBox = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
         ''' Add XML elements to the canvas '''
         if self.style.bgcolor not in [None, 'none']:
             canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
