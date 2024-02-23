@@ -20,7 +20,7 @@ from . import axis_stack
 Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
                              'ywidth', 'xrange', 'yrange', 'xminor', 'yminor'])
 
-LegendLoc = Literal['left', 'right', 'none']
+LegendLoc = Literal['left', 'right', 'topleft', 'topright', 'bottomleft', 'bottomright', 'none']
 
 
 def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> list[float]:
@@ -204,7 +204,6 @@ class BasePlot(Drawable):
         boxw = 0.
         markw = 40
         square = 10
-        spacing = self.style.legend.text.size/3
             
         for s in series:
             width, height = text.text_size(
@@ -214,12 +213,11 @@ class BasePlot(Drawable):
                 w = square*2
             else:
                 w = markw
-            boxw = max(boxw, w + width + 5)
-            boxh += self.style.legend.text.size+spacing
-        boxh += 8  # Top and bottom pad
+            boxw = max(boxw, w + width + self.style.legend.margin*2)
+        boxh = self.style.legend.margin + len(series)*self.style.legend.text.size*self.style.legend.linespacing
         return boxw, boxh
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float) -> tuple[float, float]:
+    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
         ''' Calculate legend location
 
             Args:
@@ -227,6 +225,7 @@ class BasePlot(Drawable):
                     placed outside axis.
                 ticks: Tick names and positions
                 boxw: Width of legend box
+                boxh: Height of legend box
         '''
         ytop = xright = 0
         if self.legend == 'left':
@@ -236,6 +235,19 @@ class BasePlot(Drawable):
         elif self.legend == 'right':
             ytop = axisbox.y + axisbox.h
             xright = axisbox.x + axisbox.w + boxw + self.style.tick.textofst
+        elif self.legend == 'topright':
+            ytop = axisbox.y + axisbox.h - self.style.legend.pad
+            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
+        elif self.legend == 'bottomleft':
+            ytop = axisbox.y + boxh + self.style.legend.pad
+            xright = (axisbox.x + boxw + self.style.legend.pad)
+        elif self.legend == 'bottomright':
+            ytop = axisbox.y + boxh + self.style.legend.pad
+            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
+        else: # self.legend == 'topleft':
+            ytop = axisbox.y + axisbox.h - self.style.legend.pad
+            xright = (axisbox.x + boxw + self.style.legend.pad)
+
         return ytop, xright
 
     def _drawlegend(self, canvas: Canvas, axisbox: ViewBox, ticks: Ticks) -> None:
@@ -254,9 +266,9 @@ class BasePlot(Drawable):
         boxw, boxh = self._legendsize()
         markw = 40
         square = 10
-        spacing = self.style.legend.text.size/3
+        margin = self.style.legend.margin
 
-        ytop, xright = self._legendloc(axisbox, ticks, boxw)
+        ytop, xright = self._legendloc(axisbox, ticks, boxw, boxh)
 
         # Draw the box
         boxl = xright - boxw
@@ -269,20 +281,18 @@ class BasePlot(Drawable):
                         fill=self.style.legend.fill)
 
         # Draw each line
-        yytext = ytop
+        yytext = ytop - self.style.legend.text.size
         for i, s in enumerate(series):
             textw, texth = text.text_size(s._name, self.style.legend.text.size)
-            yyline = yytext - self.style.legend.text.size * 2/3
-            yytext -= max(self.style.legend.text.size, spacing)
+            yyline = yytext + self.style.legend.text.size/3
             if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz', 'PieSlice']:
-                yysquare = yytext - square/2
-                canvas.text(boxl + square + 8, yytext - self.style.legend.text.size/3,
+                canvas.text(boxl+square+margin*2, yytext,
                             s._name,
                             font=self.style.legend.text.font,
                             size=self.style.legend.text.size,
                             color=self.style.legend.text.color,
                             halign='left', valign='base')
-                canvas.rect(boxl+4, yysquare, square, square,
+                canvas.rect(boxl+margin, yytext, square, square,
                             fill=s.style.line.color, strokewidth=1)
 
             else:
@@ -292,16 +302,16 @@ class BasePlot(Drawable):
                             font=self.style.legend.text.font,
                             size=self.style.legend.text.size,
                             halign='left', valign='base')
-                linebox = ViewBox(boxl+5, ytop-boxh, markw-10, boxh)
+                linebox = ViewBox(boxl+margin, ytop-boxh, markw-margin*2, boxh)
                 canvas.setviewbox(linebox)  # Clip
-                canvas.path([boxl-10, boxl+markw/2, boxl+markw+10],
+                canvas.path([boxl-margin*2, boxl+markw/2, boxl+markw+margin*2],
                             [yyline, yyline, yyline],
                             color=s.style.line.color,
                             width=s.style.line.width,
                             markerid=s._markername,
                             stroke=s.style.line.stroke)
                 canvas.resetviewbox()
-            yytext -= spacing
+            yytext -= self.style.legend.text.size * self.style.legend.linespacing
 
 
 class XyPlot(BasePlot):
@@ -712,7 +722,7 @@ class XyGraph(XyPlot):
             canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
                         strokecolor='none', fill=self.style.axis.bgcolor)
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float) -> tuple[float, float]:
+    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
         ''' Calculate legend location
 
             Args:
@@ -720,6 +730,7 @@ class XyGraph(XyPlot):
                     be placed outside axis.
                 ticks: Tick names and positions
                 boxw: Width of legend box
+                boxh: Height of legend box
         '''
         if self.legend == 'left':
             ytop = axisbox.y + axisbox.h
@@ -727,6 +738,19 @@ class XyGraph(XyPlot):
         elif self.legend == 'right':
             ytop = axisbox.y + axisbox.h
             xright = axisbox.x + axisbox.w + boxw + self.arrowwidth
+        elif self.legend == 'topright':
+            ytop = axisbox.y + axisbox.h - self.style.legend.pad
+            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
+        elif self.legend == 'bottomleft':
+            ytop = axisbox.y + boxh + self.style.legend.pad
+            xright = (axisbox.x + boxw + self.style.legend.pad)
+        elif self.legend == 'bottomright':
+            ytop = axisbox.y + boxh + self.style.legend.pad
+            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
+        else: # self.legend == 'topleft':
+            ytop = axisbox.y + axisbox.h - self.style.legend.pad
+            xright = (axisbox.x + boxw + self.style.legend.pad)
+
         return ytop, xright
 
     def _drawticks(self, canvas: Canvas, ticks: Ticks, axisbox: ViewBox, databox: ViewBox):

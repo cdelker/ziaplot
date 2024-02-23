@@ -208,12 +208,18 @@ class LegendStyle:
 
         Args:
             text: Text style
+            linespacing: Spacing between lines as multiplier of font size
             border: Color for legend box border
             fill: Fill color for legend box
+            pad: Padding between axis and legend box
+            margin: Distance from legend box to legend contents
     '''
     text: TextStyle = field(default_factory=TextStyle)
+    linespacing: float = 1.2
     border: str = 'black'
     fill: str = 'none'
+    pad: float = 10
+    margin: float = 4
 
 
 @dataclass

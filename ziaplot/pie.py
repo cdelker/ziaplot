@@ -117,19 +117,26 @@ class Pie(BasePlot):
         '''
         self.style.colorcycle = colors.ColorFade(*clrs, stops=stops)    
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float) -> tuple[float, float]:
+    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
         ''' Calculate legend location
 
             Args:
                 axisbox: ViewBox of the axis
                 ticks: Tick names and positions
                 boxw: Width of legend box
+                boxh: Height of legend box
         '''
         xright = 0
         ytop = axisbox.y + axisbox.h - 1
-        if self.legend == 'left':
+        if self.legend in ['left', 'topleft']:
             xright = axisbox.x + boxw + 1
-        elif self.legend == 'right':
+        elif self.legend in ['right', 'topright']:
+            xright = axisbox.x + axisbox.w - 1
+        elif self.legend == 'bottomleft':
+            ytop = axisbox.y + boxh + 1
+            xright = axisbox.x + boxw + 1
+        else: ##if self.legend == 'bottomright':
+            ytop = axisbox.y + boxh + 1
             xright = axisbox.x + axisbox.w - 1
         return ytop, xright
 
