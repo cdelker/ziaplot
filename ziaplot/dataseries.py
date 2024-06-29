@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from .styletypes import SeriesStyle, MarkerTypes, DashTypes
 from .series import Series
 from . import axes
-from .canvas import Canvas, ViewBox, DataRange, Halign, Valign
+from .canvas import Canvas, Borders, ViewBox, DataRange, Halign, Valign
 from . import util
 
 
@@ -39,7 +39,8 @@ class Line(Series):
         ''' Get range of data '''
         return DataRange(min(self.x), max(self.x), min(self.y), max(self.y))
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         markname = None
         if self.style.marker.shape:
@@ -187,7 +188,8 @@ class ErrorBar(Line):
             self.style.xerror.stroke = stroke
         return self
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         if self.yerr is not None:
@@ -259,7 +261,8 @@ class LineFill(Line):
             self.style.fillalpha = alpha
         return self
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         # Draw in two parts - filled part doesn't have a stroke
         # because we don't want lines on the left/right edge.
@@ -339,7 +342,8 @@ class Text(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, None, None)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         canvas.text(self.x, self.y, self.s,
                     color=self.style.text.color,
@@ -376,7 +380,8 @@ class Arrow(Line):
         self.style.marker.strokewidth = 0
         self.endmarkers(start=tailmarker, end=marker)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         super()._xml(canvas, databox)
         x = self.xytail[0] + self.strofst[0]
@@ -402,7 +407,8 @@ class HLine(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, self.y, self.y)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
         color = self.style.line.color
@@ -426,7 +432,8 @@ class VLine(Series):
         ''' Get x-y datarange '''
         return DataRange(self.x, self.x, None, None)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
         color = self.style.line.color
@@ -467,7 +474,8 @@ class Bars(Series):
             xmin, xmax = min(self.x)-self.width, max(self.x)
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         for x, y, y2 in zip(self.x, self.y, self.y2):
@@ -496,7 +504,8 @@ class BarsHoriz(Bars):
         rng = super().datarange()  # Transpose it
         return DataRange(rng.ymin, rng.ymax, rng.xmin, rng.xmax)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         for x, y, y2 in zip(self.x, self.y, self.y2):

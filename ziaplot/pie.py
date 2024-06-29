@@ -7,7 +7,7 @@ from .axes import BasePlot, Ticks, LegendLoc
 from .series import Series
 from .styletypes import Style
 from . import colors
-from .canvas import Canvas, ViewBox, Halign, Valign
+from .canvas import Canvas, Borders, ViewBox, Halign, Valign
 from . import axis_stack
 
 
@@ -140,7 +140,8 @@ class Pie(BasePlot):
             xright = axisbox.x + axisbox.w - 1
         return ytop, xright
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         slices = [s for s in self.series if isinstance(s, PieSlice)]
         values = [w.value for w in slices]

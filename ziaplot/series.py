@@ -13,6 +13,7 @@ from typing import Optional
 class Series(Drawable):
     ''' Base class for data series, defining a single line in a plot '''
     def __init__(self):
+        super().__init__()
         self._name = ''
         axis = axis_stack.current_axis()
         if axis and hasattr(axis, 'style'):

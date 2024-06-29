@@ -244,9 +244,7 @@ Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`
     p3 += line
     p4 = zp.LogXYPlot(title='LogXYPlot')
     p4 += line
-    vbox1 = zp.Vlayout(p1, p3)
-    vbox2 = zp.Vlayout(p2, p4)
-    zp.Hlayout(vbox1, vbox2, sep=-20)
+    zp.GridLayout(p1, p3, p2, p4, gutter=-20)
 
 |
 

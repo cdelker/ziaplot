@@ -4,13 +4,17 @@ from typing import Optional, Literal
 import os
 import xml.etree.ElementTree as ET
 
-from .canvas import Canvas, ViewBox
+from .canvas import Canvas, Borders, ViewBox
 
 
 class Drawable:
     ''' Drawable SVG/XML object. Implements common XML and SVG functions,
         plus _repr_ for Jupyter
     '''
+    def __init__(self):
+        self.colspan = 1
+        self.rowspan = 1
+
     def __contains__(self, other: 'Drawable'):
         return None
 
@@ -18,9 +22,14 @@ class Drawable:
         ''' Add a data series to the axis '''
         raise NotImplementedError
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
-        ''' Get XML elements '''
-        return canvas.xml()
+    def span(self, columns: int = 1, rows: int = 1) -> 'Drawable':
+        self.colspan = columns
+        self.rowspan = rows
+        return self
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Draw elements to canvas '''
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for a standalone SVG '''

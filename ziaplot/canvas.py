@@ -12,6 +12,7 @@ from .styletypes import MarkerTypes, DashTypes
 
 
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
+Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
 Halign = Literal['left', 'center', 'right']
 Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']

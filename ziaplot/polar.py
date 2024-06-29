@@ -6,7 +6,7 @@ import math
 import xml.etree.ElementTree as ET
 
 from .axes import BasePlot, getticks, LegendLoc, Ticks
-from .canvas import Canvas, ViewBox, DataRange, Halign, Valign
+from .canvas import Canvas, Borders, ViewBox, DataRange, Halign, Valign
 from .dataseries import Line
 from .styletypes import Style
 
@@ -162,7 +162,8 @@ class Polar(BasePlot):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         datarange = self.datarange()
         ticks = self._maketicks(datarange)

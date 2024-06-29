@@ -55,7 +55,8 @@ class Contour(Series):
                              min(min(y) for y in self.y),
                              max(max(y) for y in self.y))
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         segments = self._build_contours()
         colors = self.style.colorbar.colors

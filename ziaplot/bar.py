@@ -7,7 +7,7 @@ from .series import Series
 from .dataseries import Bars, BarsHoriz
 from .axes import XyPlot, LegendLoc
 from .styletypes import Style
-from .canvas import Canvas, ViewBox
+from .canvas import Canvas, Borders, ViewBox
 from . import axis_stack
 
 
@@ -87,7 +87,8 @@ class BarChart(XyPlot):
         axis_stack.pause = False
         return chart
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''        
         names = [bar._name for bar in self.barlist]
         if self.horiz:
@@ -193,7 +194,8 @@ class BarChartGrouped(XyPlot):
         axis_stack.pause = False
         return chart
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         num_series = len(self.barlist)
         num_groups = len(self.groups)

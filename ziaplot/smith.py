@@ -11,7 +11,7 @@ from .styletypes import Style
 from .axes import getticks, Ticks, LegendLoc
 from .series import Series
 from .polar import Polar
-from .canvas import Canvas, ViewBox, DataRange
+from .canvas import Canvas, Borders, ViewBox, DataRange
 
 ArcType = namedtuple('ArcType', ['x', 'y', 'r', 't1', 't2'])
 
@@ -343,7 +343,8 @@ class Smith(Polar):
             s._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None) -> None:
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         datarange = self.datarange()
         ticks = self._maketicks(datarange)
@@ -382,7 +383,8 @@ class SmithConstResistance(Series):
         self.xmin = xmin
         self.xmax = xmax
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         arc = const_resist_circle(self.resistance, self.xmin, self.xmax)
@@ -413,7 +415,8 @@ class SmithConstReactance(Series):
         self.rmax = rmax
         self.rmin = rmin
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None):
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         color = self.style.line.color
         arc = const_react_arc(self.reactance, rmax=self.rmax, rmin=self.rmin)

@@ -27,9 +27,7 @@ Ziaplot is for easy, lightweight, and Pythonic plotting of data in SVG format.
         p4 += zp.BarSeries(2, 2, 4, 3)
         p4 += zp.BarSeries(2, 3, 1, 4)
 
-        l1 = zp.Hlayout(p3, p4)
-        l2 = zp.Hlayout(p2, p)
-        fig = zp.Vlayout(l1, l2)
+        fig = zp.GridLayout(p3, p4, p2, p, columns=2)
         return fig
     teststyle()
 

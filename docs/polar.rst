@@ -40,9 +40,7 @@ Normalized Smith Charts are created using :py:class:`ziaplot.smith.Smith`. The g
     med = zp.Smith(grid='medium', title='medium')
     fine = zp.Smith(grid='fine', title='fine')
     extrafine = zp.Smith(grid='extrafine', title='extrafine')
-    row1 = zp.Hlayout(coarse, med)
-    row2 = zp.Hlayout(fine, extrafine)
-    zp.Vlayout(row1, row2, width=800, height=800)
+    zp.GridLayout(coarse, med, fine, extrafine, columns=2, width=800, height=800)    
 
 Discrete data may be plotted on Smith charts using either :py:class:`ziaplot.dataseries.Line` or :py:class:`ziaplot.polar.LinePolar`, depending on the data format.
 Alternatively, curves of constant resistance and constant reactance may be drawn with :py:class:`ziaplot.smith.SmithConstResistance` and :py:class:`ziaplot.smith.SmithConstReactance`.
