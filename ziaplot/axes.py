@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import Sequence, Optional, Literal
+from functools import lru_cache
 import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
@@ -95,7 +96,7 @@ class BasePlot(Drawable):
         self.series: list[Series] = []   # List of XY lines/series
         self.legend = legend
         axis_stack.push_series(self)
-
+    
     def __enter__(self):
         axis_stack.push_axis(self)
         return self
@@ -125,11 +126,13 @@ class BasePlot(Drawable):
     def xrange(self, xmin: float, xmax: float) -> BasePlot:
         ''' Set x-range of data display '''
         self._xrange = xmin, xmax
+        self._clearcache()
         return self
 
     def yrange(self, ymin, ymax):
         ''' Set y-range of data display '''
         self._yrange = ymin, ymax
+        self._clearcache()
         return self
 
     def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
@@ -138,6 +141,7 @@ class BasePlot(Drawable):
         self._xtickvalues = values
         self._xticknames = names
         self._xtickminor = minor
+        self._clearcache()
         return self
 
     def yticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
@@ -146,8 +150,21 @@ class BasePlot(Drawable):
         self._ytickvalues = values
         self._yticknames = names
         self._ytickminor = minor
+        self._clearcache()
         return self
 
+    def noxticks(self) -> BasePlot:
+        ''' Turn off x axis tick marks '''
+        self.showxticks = False
+        self._clearcache()
+        return self
+
+    def noyticks(self) -> BasePlot:
+        ''' Turn off y axis tick marks '''
+        self.showyticks = False
+        self._clearcache()
+        return self
+    
     def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> None:
         ''' Define the color cycle evenly fading between multiple colors.
 
@@ -162,6 +179,7 @@ class BasePlot(Drawable):
         ''' Add a data series to the axis '''
         assert isinstance(series, Series)
         self.series.append(series)
+        self._clearcache()
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
@@ -175,6 +193,11 @@ class BasePlot(Drawable):
 
         return canvas.xml()
 
+    def _clearcache(self):
+        self.datarange.cache_clear()
+        self._legendsize.cache_clear()
+
+    @lru_cache
     def datarange(self) -> DataRange:
         ''' Get range of data only '''
         xmin = ymin = math.inf
@@ -202,6 +225,7 @@ class BasePlot(Drawable):
 
         return DataRange(xmin, xmax, ymin, ymax)
 
+    @lru_cache
     def _legendsize(self) -> tuple[float, float]:
         ''' Calculate pixel size of legend '''
         series = [s for s in self.series if s._name]
@@ -334,16 +358,19 @@ class XyPlot(BasePlot):
         Attributes:
             style: Drawing style
     '''
-    def _maketicks(self, datarange: DataRange) -> Ticks:
-        ''' Define ticks and tick labels.
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+        self._borders.cache_clear()
 
-            Args:
-                datarange: Range of x and y data
+    @lru_cache
+    def _maketicks(self) -> Ticks:
+        ''' Define ticks and tick labels.
 
             Returns:
                 ticks: Tick names and positions
         '''
-        xmin, xmax, ymin, ymax = datarange
+        xmin, xmax, ymin, ymax = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
             xmin = min(xmin, min(xticks))
@@ -408,6 +435,7 @@ class XyPlot(BasePlot):
                       xrange, yrange, xminor, yminor)
         return ticks
 
+    @lru_cache
     def _borders(self) -> Borders:
         ''' Calculate bounding box of where to place axis within frame,
             shifting left/up to account for labels
@@ -419,7 +447,7 @@ class XyPlot(BasePlot):
             Returns:
                 ViewBox of axis within the full frame
         '''
-        ticks = self._maketicks(self.datarange())
+        ticks = self._maketicks()
         legw, _ = self._legendsize()
         if self.showyticks:
             leftborder = ticks.ywidth + self.style.tick.length + self.style.tick.textofst
@@ -629,8 +657,7 @@ class XyPlot(BasePlot):
             canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
                         strokecolor=self.style.bgcolor)
 
-        datarange = self.datarange()
-        ticks = self._maketicks(datarange)
+        ticks = self._maketicks()
         dborders = self._borders()
         if borders is not None:
             dborders = Borders(
@@ -680,6 +707,12 @@ class XyGraph(XyPlot):
         self.centerorigin = centerorigin
         self.arrowwidth = self.style.axis.framelinewidth * 3
 
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+        self._borders.cache_clear()
+
+    @lru_cache
     def _borders(self) -> Borders:
         ''' Calculate bounding box of where to place axis within frame,
             shifting left/up to account for labels
@@ -694,7 +727,7 @@ class XyGraph(XyPlot):
             Returns:
                 ViewBox of axis within the full frame
         '''
-        ticks = self._maketicks(self.datarange())
+        ticks = self._maketicks()
         legw, _ = self._legendsize()
         leftborder = self.arrowwidth*2
         rightborder = self.arrowwidth*2
@@ -723,6 +756,7 @@ class XyGraph(XyPlot):
 
         return Borders(leftborder, rightborder, topborder, botborder)
 
+    @lru_cache
     def datarange(self) -> DataRange:
         ''' Get range of x-y data. XyGraph datarange must include 0 '''
         drange = super().datarange()
@@ -916,8 +950,7 @@ class XyGraph(XyPlot):
             canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
                         strokecolor=self.style.bgcolor)
 
-        datarange = self.datarange()
-        ticks = self._maketicks(datarange)
+        ticks = self._maketicks()
         dborders = self._borders()
         if borders is not None:
             dborders = Borders(

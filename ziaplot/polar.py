@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import Optional, Sequence
+from functools import lru_cache
 import math
 import xml.etree.ElementTree as ET
 
@@ -37,12 +38,17 @@ class Polar(BasePlot):
         ''' Sets range of y data '''
         raise ValueError('Cannot set y (theta) range on polar plot')
 
-    def _maketicks(self, datarange: DataRange) -> Ticks:
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+
+    @lru_cache
+    def _maketicks(self) -> Ticks:
         ''' Generate tick names and positions. Y/Theta ticks are always
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
-        _, xmax, _, _ = datarange
+        _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
             xmax = max(xmax, max(xticks))
@@ -165,8 +171,7 @@ class Polar(BasePlot):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        datarange = self.datarange()
-        ticks = self._maketicks(datarange)
+        ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         self._drawseries(canvas, radius, cx, cy, ticks)

@@ -1,4 +1,5 @@
 ''' Layouts for creating multi-axis plots '''
+from __future__ import annotations
 from typing import Union, Set
 import xml.etree.ElementTree as ET
 
@@ -125,7 +126,7 @@ class GridLayout(Drawable):
 
         for i, ax in enumerate(drawaxes):
             row1, col1, row2, col2 = cellloc[ax] 
-            b = ax._borders()###ax._maketicks(ax.datarange()))
+            b = ax._borders()
             topborders[row1] = max(topborders[row1], b.top)
             botborders[row2-1] = max(botborders[row2-1], b.bottom)
             lftborders[col1] = max(lftborders[col1], b.left)

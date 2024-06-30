@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import Sequence
+from functools import lru_cache
 import math
 from copy import deepcopy
 
@@ -54,6 +55,12 @@ class LogYPlot(XyPlot):
         Attributes:
             style: Drawing style
     '''
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+        self._borders.cache_clear()
+
+    @lru_cache
     def datarange(self) -> DataRange:
         ''' Get range of data '''
         drange = super().datarange()
@@ -63,16 +70,14 @@ class LogYPlot(XyPlot):
             ymin = 0
         return DataRange(drange.xmin, drange.xmax, ymin, math.log10(drange.ymax))
 
-    def _maketicks(self, datarange: DataRange) -> Ticks:
+    @lru_cache
+    def _maketicks(self) -> Ticks:
         ''' Define ticks and tick labels.
-
-            Args:
-                datarange: Range of x and y data
 
             Returns:
                 ticks: Tick names and positions
         '''
-        ticks = super()._maketicks(datarange)
+        ticks = super()._maketicks()
         yticks, ynames, yminor = logticks(ticks.yticks, divs=self.style.tick.ylogdivisions)
         yrange = yticks[0], yticks[-1]
 
@@ -120,6 +125,12 @@ class LogXPlot(XyPlot):
         Attributes:
             style: Drawing style
     '''
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+        self._borders.cache_clear()
+
+    @lru_cache
     def datarange(self) -> DataRange:
         ''' Get range of data '''
         drange = super().datarange()
@@ -130,16 +141,14 @@ class LogXPlot(XyPlot):
         return DataRange(xmin, math.log10(drange.xmax),
                          drange.ymin, drange.ymax)
 
-    def _maketicks(self, datarange: DataRange) -> Ticks:
+    @lru_cache
+    def _maketicks(self) -> Ticks:
         ''' Define ticks and tick labels.
-
-            Args:
-                datarange: Range of x and y data
 
             Returns:
                 ticks: Tick names and positions
         '''
-        ticks = super()._maketicks(datarange)
+        ticks = super()._maketicks()
         xticks, xnames, xminor = logticks(ticks.xticks, divs=self.style.tick.xlogdivisions)
         xrange = xticks[0], xticks[-1]
 
@@ -182,6 +191,12 @@ class LogXYPlot(XyPlot):
         Attributes:
             style: Drawing style
     '''
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+        self._borders.cache_clear()
+
+    @lru_cache
     def datarange(self) -> DataRange:
         drange = super().datarange()
         try:
@@ -196,7 +211,8 @@ class LogXYPlot(XyPlot):
         return DataRange(xmin, math.log10(drange.xmax),
                          ymin, math.log10(drange.ymax))
 
-    def _maketicks(self, datarange: DataRange) -> Ticks:
+    @lru_cache
+    def _maketicks(self) -> Ticks:
         ''' Define ticks and tick labels.
 
             Args:
@@ -205,10 +221,9 @@ class LogXYPlot(XyPlot):
             Returns:
                 ticks: Tick names and positions
         '''
-        ticks = super()._maketicks(datarange)
+        ticks = super()._maketicks()
         xticks, xnames, xminor = logticks(ticks.xticks, divs=self.style.tick.xlogdivisions)
         xrange = xticks[0], xticks[-1]
-        ticks = super()._maketicks(datarange)
         yticks, ynames, yminor = logticks(ticks.yticks, divs=self.style.tick.ylogdivisions)
         yrange = yticks[0], yticks[-1]
 

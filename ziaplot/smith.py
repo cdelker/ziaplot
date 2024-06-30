@@ -1,8 +1,7 @@
 ''' Smith chart axis '''
-
 from __future__ import annotations
 from typing import Optional
-
+from functools import lru_cache
 import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
@@ -171,12 +170,17 @@ class Smith(Polar):
                              + ', '.join(self.style.smith.grid.keys()))
         self.grid = grid
 
-    def _maketicks(self, datarange: DataRange) -> Ticks:
+    def _clearcache(self):
+        super()._clearcache()
+        self._maketicks.cache_clear()
+
+    @lru_cache
+    def _maketicks(self) -> Ticks:
         ''' Generate tick names and positions. Y/Theta ticks are always
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
-        _, xmax, _, _ = datarange
+        _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
             xmax = max(xmax, max(xticks))
@@ -346,8 +350,7 @@ class Smith(Polar):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        datarange = self.datarange()
-        ticks = self._maketicks(datarange)
+        ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         self._drawseries(canvas, radius, cx, cy, ticks)
