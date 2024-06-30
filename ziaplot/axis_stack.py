@@ -1,12 +1,9 @@
 ''' Axis Stack '''
 
 from __future__ import annotations
-from typing import Union, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .axes import BasePlot
-    from .series import Series
-    from .layout import Layout
     from .drawable import Drawable
 
 axis_stack: dict[Drawable, Optional[Drawable]] = {}

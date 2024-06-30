@@ -223,7 +223,7 @@ class ErrorBar(Line):
                             endmarker=xerrmark,
                             dataview=databox)
 
-        super()._xml(canvas, databox)
+        super()._xml(canvas, databox, borders)
 
 
 class LineFill(Line):
@@ -383,7 +383,7 @@ class Arrow(Line):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        super()._xml(canvas, databox)
+        super()._xml(canvas, databox, borders=borders)
         x = self.xytail[0] + self.strofst[0]
         y = self.xytail[1] + self.strofst[1]
         canvas.text(x, y, self.string,

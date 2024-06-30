@@ -96,7 +96,7 @@ class BarChart(XyPlot):
             names = names[::-1]
         else:
             series = self.series
-        
+
         N = len(names)
         tickpos = [i * (self._barwidth + self.bargap) for i in range(N)]
 
@@ -110,7 +110,7 @@ class BarChart(XyPlot):
         for tick, bar in zip(tickpos, self.series):
             assert isinstance(bar, (Bars, BarsHoriz))
             bar.x = (tick,)
-        super()._xml(canvas)
+        super()._xml(canvas, databox, borders)
 
 
 class BarSeries(Series):

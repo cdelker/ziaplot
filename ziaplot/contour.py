@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 from .series import Series
 from .axes import zrange, XyPlot
-from .canvas import Canvas, ViewBox, DataRange
+from .canvas import Canvas, Borders, ViewBox, DataRange
 from .colors import ColorFade
 
 ColorBarPos = Literal['top', 'right', 'bottom', 'left']

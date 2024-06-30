@@ -1,14 +1,63 @@
 ''' Layouts for creating multi-axis plots '''
 from __future__ import annotations
-from typing import Union, Set
+from typing import Set
 import xml.etree.ElementTree as ET
 
-from .axes import BasePlot, XyPlot
+from .axes import XyPlot
 from .series import Series
 from .canvas import Canvas, ViewBox, Borders
 from .drawable import Drawable
 from . import axis_stack
 from typing import Optional
+
+
+def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> list[float]:
+    ''' Get width of each column (or row) based on the specification string
+
+        Args:
+            spec: Column (or row) specification
+            total: Total width to fill
+            gap: Spacing between columns (or rows)
+            naxes: Number of axes
+            
+        Notes:
+            spec uses a similar style to a CSS grid layout. The string is
+            space-delimited with each item either 1) a plain number representing
+            the number of pixels 2) a percent of the whole width, 3) a number
+            with "fr" suffix representing fractions of the whole. Examples:
+                "25% 1fr" --> First column takes 25%, second column the remainder
+                "200 1fr" --> First column takes 200 pixels, second column the remainder
+                "2fr 1fr" --> First column is twice the width of second
+    '''
+    axwidths: list[float]
+    if spec is None:
+        axwidths = [(total - gap*(naxes-1)) / naxes] * naxes
+    else:
+        specitems = spec.split()
+        if len(specitems) < naxes:
+            specitems.extend([specitems[-1]]*(naxes-len(specitems)))
+        
+        fixedwidths = [(naxes-1)*gap]
+        useablewidth = total - fixedwidths[0]
+        fractions = []
+        for v in specitems:
+            if v.endswith('%'):
+                fixedwidths.append(useablewidth * float(v.rstrip('%'))/100)
+            elif v.endswith('fr'):
+                fractions.append(float(v.rstrip('fr')))
+            else:
+                fixedwidths.append(float(v))
+        axwidths = []
+        fixed = sum(fixedwidths)
+        for v in specitems:
+            if v.endswith('%'):
+                axwidths.append(useablewidth * float(v.rstrip('%'))/100)
+            elif v.endswith('fr'):
+                axwidths.append((useablewidth - fixed) * float(v.rstrip('fr')) / sum(fractions))
+            else:
+                axwidths.append(float(v))
+        
+    return axwidths
 
 
 class GridLayout(Drawable):
@@ -20,20 +69,39 @@ class GridLayout(Drawable):
             width: Width of the grid
             height: Height of the grid
             columns: Number of columns
-            gutter: Spacing between columns and rows
+            column_widths: String specifying widths of each column (see Note)
+            row_heights: String specifying widths of each column (see Note)
+            column_gap: Spacing between columns
+            row_gap: Spacing between rows
+
+        Notes:
+            column_widths and row_heights specification is a similar style to a CSS
+            grid layout. The string is space-delimited with each item either 1)
+            a plain number representing the number of pixels 2) a percent of the
+            whole width, 3) a number with "fr" suffix representing fractions of
+            the whole. Examples:
+                "25% 1fr" --> First column takes 25%, second column the remainder
+                "200 1fr" --> First column takes 200 pixels, second column the remainder
+                "2fr 1fr" --> First column is twice the width of second
     '''
     def __init__(self,
-                 *axes: BasePlot,
+                 *axes: Drawable,
                  width: float = 600,
                  height: float = 400,
                  columns: int = 1,
-                 gutter: float = 10,
+                 column_widths: Optional[str] = None,
+                 row_heights: Optional[str] = None,
+                 column_gap: float = 10,
+                 row_gap: float = 10,
                  **kwargs):
         self.axes = list(axes)
         self.width = width
         self.height = height
         self.columns = columns
-        self.gutter = gutter
+        self.column_widths = column_widths
+        self.row_heights = row_heights
+        self.column_gap = column_gap
+        self.row_gap = row_gap
 
     def __contains__(self, axis: Drawable):
         return axis in self.axes
@@ -55,7 +123,7 @@ class GridLayout(Drawable):
             except NameError:  # Not in Jupyter/IPython
                 pass
 
-    def add(self, axis: BasePlot):
+    def add(self, axis: Drawable):
         ''' Add an axis to the grid '''
         self.axes.append(axis)
 
@@ -77,7 +145,7 @@ class GridLayout(Drawable):
         ncols = self.columns if self.columns > 0 else naxes
 
         # Convert Series, etc. to Axes
-        drawaxes = []
+        drawaxes: list[Drawable] = []
         for ax in self.axes:
             if isinstance(ax, Series):
                 a = XyPlot()
@@ -101,7 +169,7 @@ class GridLayout(Drawable):
                 for row in range(row_start, row_start + rowspan)
                 for column in range(col_start, col_start + colspan)}
         
-        cellmap: dict[tuple(int, int), Drawable] = {}  # All cells covered
+        cellmap: dict[tuple[int, int], Drawable] = {}  # All cells covered
         cellloc: dict[Drawable, tuple[int, int, int, int]] = {}  # Cell to x, y, x+sp, y+sp
         row, col = (0, 0)
         for ax in drawaxes:
@@ -123,27 +191,26 @@ class GridLayout(Drawable):
         botborders = [0] * nrows
         lftborders = [0] * ncols
         rgtborders = [0] * ncols
-
         for i, ax in enumerate(drawaxes):
-            row1, col1, row2, col2 = cellloc[ax] 
-            b = ax._borders()
-            topborders[row1] = max(topborders[row1], b.top)
-            botborders[row2-1] = max(botborders[row2-1], b.bottom)
-            lftborders[col1] = max(lftborders[col1], b.left)
-            rgtborders[col2-1] = max(rgtborders[col2-1], b.right)
+            row1, col1, row2, col2 = cellloc[ax]
+            if hasattr(ax, '_borders'):
+                b = ax._borders()
+                topborders[row1] = max(topborders[row1], b.top)
+                botborders[row2-1] = max(botborders[row2-1], b.bottom)
+                lftborders[col1] = max(lftborders[col1], b.left)
+                rgtborders[col2-1] = max(rgtborders[col2-1], b.right)
 
-        # Calculate viewbox for each axis
-        # Without considering borders
-        axheight = (self.height - self.gutter*(nrows-1)) / nrows
-        axwidth = (self.width - self.gutter*(ncols-1)) / ncols
+        # Size of viewboxes, not including borders
+        axwidths = axis_widths(self.column_widths, self.width, self.column_gap, ncols)
+        axheights = axis_widths(self.row_heights, self.height, self.row_gap, nrows)
 
         vboxes = []
         for i, ax in enumerate(drawaxes):
             row1, col1, row2, col2 = cellloc[ax]
-            width = (col2-col1)*(axwidth) + (col2-col1-1)*self.gutter
-            height = (row2-row1)*(axheight) + (row2-row1-1)*self.gutter
-            y = (nrows-row2) * (axheight+self.gutter) 
-            x = col1 * (axwidth+self.gutter)
+            width = sum(axwidths[col1:col2]) + (col2-col1-1)*self.column_gap
+            height = sum(axheights[row1:row2]) + (row2-row1-1)*self.row_gap
+            x = sum(axwidths[:col1]) + col1*self.column_gap
+            y = self.height - (sum(axheights[:row2]) + (row2-1)*self.row_gap)
             vboxes.append(ViewBox(x, y, width, height))
 
         # Draw a background rectangle over whole grid
@@ -192,15 +259,15 @@ class Vlayout(GridLayout):
             axes: The axes to add
             width: Width of the grid
             height: Height of the grid
-            gutter: Spacing between rows
+            row_gap: Spacing between rows
     '''
     def __init__(self,
                  *axes: Drawable,
                  width: float = 600,
                  height: float = 400,
-                 gutter: float = 10, **kwargs):
+                 row_gap: float = 10, **kwargs):
         super().__init__(*axes, width=width, height=height,
-                         gutter=gutter,
+                         row_gap=row_gap,
                          columns=1, **kwargs)
 
 
@@ -211,13 +278,13 @@ class Hlayout(GridLayout):
             axes: The axes to add
             width: Width of the grid
             height: Height of the grid
-            gutter: Spacing between columns
+            column_gap: Spacing between columns
     '''
     def __init__(self,
                  *axes: Drawable,
                  width: float = 600,
                  height: float = 400,
-                 gutter: float = 10, **kwargs):
+                 column_gap: float = 10, **kwargs):
         super().__init__(*axes, width=width, height=height,
-                         gutter=gutter,
+                         column_gap=column_gap,
                          columns=-1, **kwargs)
