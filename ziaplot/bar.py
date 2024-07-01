@@ -49,10 +49,10 @@ class BarChart(XyPlot):
         self._barwidth = 1.  # Let each bar have data-width = 1
         self.bargap = 0.1    # With 0.5 between each bar
         if self.horiz:
-            self.style.axis.xdatapad = 0
+            self.style.axis.xtickpad = 0
             self.style.axis.ygrid = False
         else:
-            self.style.axis.ydatapad = 0
+            self.style.axis.ytickpad = 0
             self.style.axis.xgrid = False
         axis_stack.push_series(None)
     
@@ -153,10 +153,10 @@ class BarChartGrouped(XyPlot):
         self.barwidth = 1.  # Let each bar have data-width = 1
         self.bargap = 0.5  # With 0.5 between each group of bars
         if self.horiz:
-            self.style.axis.xdatapad = 0
+            self.style.axis.xtickpad = 0
             self.style.axis.ygrid = False
         else:
-            self.style.axis.ydatapad = 0
+            self.style.axis.ytickpad = 0
             self.style.axis.xgrid = False
         axis_stack.push_series(self)
 
@@ -221,4 +221,4 @@ class BarChartGrouped(XyPlot):
                 assert isinstance(bar, (Bars, BarsHoriz))            
                 x = [self.bargap + self.barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x
-        super()._xml(canvas)
+        super()._xml(canvas, databox, borders=borders)

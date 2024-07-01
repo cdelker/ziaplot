@@ -151,8 +151,8 @@ class AxisStyle:
             gridcolor: Color for grid lines
             gridlinewidth: Width of grid lines
             gridstroke: Line style or SVG dash-array specification for grid
-            xdatapad: Fraction of a tick to expand the data range
-            ydatapad: Fraction of a tick to expand the data range
+            xtickpad: Fraction of a tick to expand the data range
+            ytickpad: Fraction of a tick to expand the data range
     '''
     xname: TextStyle = field(default_factory=TextStyle)
     yname: TextStyle = field(default_factory=TextStyle)
@@ -166,8 +166,8 @@ class AxisStyle:
     gridcolor: str = 'lightgray'
     gridlinewidth: float = 1.0
     gridstroke: DashTypes = 'dashed'
-    xdatapad: float = 0.2
-    ydatapad: float = 0.2
+    xtickpad: float = 0.2
+    ytickpad: float = 0.2
 
         
 @dataclass
@@ -187,6 +187,8 @@ class TickStyle:
             ylogdivisions: Number of minor divisions for logscale plots (2, 5, or 10)
             minorwidth: Line width of minor ticks
             minorlength: Length of minor ticks
+            maxticksx: Maximum number of ticks allowed on x axis
+            maxticksy: Maximum number of ticks allowed on y axis
     '''
     length: float = 9.0
     width: float = 2.0
@@ -200,6 +202,8 @@ class TickStyle:
     ylogdivisions: int = 10
     minorwidth: float = 1.0
     minorlength: float = 5.0
+    maxticksx: int = 9
+    maxticksy: int = 9
 
 
 @dataclass

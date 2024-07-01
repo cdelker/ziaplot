@@ -14,7 +14,7 @@ from . import colors
 from .canvas import Canvas, Transform, ViewBox, DataRange, Borders
 from . import text
 from .drawable import Drawable
-from .util import zrange
+from .util import zrange, linspace
 from . import axis_stack
 
 
@@ -50,7 +50,6 @@ def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> lis
     else:
         N = 1
 
-    maxticks = 9
     for inc in [1, 2, 2.5, 5]:
         step = inc * 10**(N-1)
         start = round_dn(vmin, step)
@@ -58,8 +57,8 @@ def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> lis
         ticks = zrange(start, stop, step)
         if len(ticks) <= maxticks:
             break
-    else:  # nobreak; shouldn't happen
-        assert False
+    else:
+        ticks = linspace(vmin, vmax, maxticks)
     return ticks
 
 
@@ -133,6 +132,18 @@ class BasePlot(Drawable):
         ''' Set y-range of data display '''
         self._yrange = ymin, ymax
         self._clearcache()
+        return self
+
+    def match_y(self, other: BasePlot):
+        ''' Set this axis y range equal to the other axis's y range '''
+        r = other.datarange()
+        self.yrange(r.ymin, r.ymax)
+        return self
+
+    def match_x(self, other: BasePlot):
+        ''' Set this axis x range equal to the other axis's x range '''
+        r = other.datarange()
+        self.xrange(r.xmin, r.xmax)
         return self
 
     def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
@@ -376,7 +387,7 @@ class XyPlot(BasePlot):
             xmin = min(xmin, min(xticks))
             xmax = max(xmax, max(xticks))
         else:
-            xticks = getticks(xmin, xmax, maxticks=9,
+            xticks = getticks(xmin, xmax, maxticks=self.style.tick.maxticksx,
                               fmt=self.style.tick.xstrformat)
             xmin, xmax = xticks[0], xticks[-1]
 
@@ -385,7 +396,7 @@ class XyPlot(BasePlot):
             ymin = min(ymin, min(yticks))
             ymax = max(ymax, max(yticks))
         else:
-            yticks = getticks(ymin, ymax, maxticks=9,
+            yticks = getticks(ymin, ymax, maxticks=self.style.tick.maxticksy,
                               fmt=self.style.tick.ystrformat)
             ymin, ymax = yticks[0], yticks[-1]
 
@@ -423,13 +434,13 @@ class XyPlot(BasePlot):
         else:
             yminor = None
 
-        # Add a bit of padding to range if not set manually
-        dx = 0 if self._xrange else xticks[1]-xticks[0]
-        dy = 0 if self._yrange else yticks[1]-yticks[0]
-        xrange = (xmin - dx*self.style.axis.xdatapad,
-                  xmax + dx*self.style.axis.xdatapad)
-        yrange = (ymin - dy*self.style.axis.ydatapad,
-                  ymax + dy*self.style.axis.ydatapad)
+        # Add a bit of padding to data range
+        dx = xticks[1]-xticks[0]
+        dy = yticks[1]-yticks[0]
+        xrange = (xmin - dx*self.style.axis.xtickpad,
+                  xmax + dx*self.style.axis.xtickpad)
+        yrange = (ymin - dy*self.style.axis.ytickpad,
+                  ymax + dy*self.style.axis.ytickpad)
 
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)
@@ -478,10 +489,6 @@ class XyPlot(BasePlot):
         rightborder = self.style.axis.framelinewidth
         if self.legend == 'right':
             rightborder += legw + 5
-        elif ticks.xnames[-1]:
-            rightborder += text.text_size(
-                ticks.xnames[-1], fontsize=self.style.tick.text.size,
-                font=self.style.tick.text.font).width
 
         borders = Borders(leftborder, rightborder, topborder, botborder)
         return borders
@@ -519,19 +526,19 @@ class XyPlot(BasePlot):
         '''
         canvas.newgroup()
         xform = Transform(databox, axisbox)
-        if self.showxticks:
-            for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
-                x, _ = xform.apply(xtick, 0)
-                y1 = axisbox.y
-                y2 = y1 - self.style.tick.length
-                if (self.style.axis.xgrid
-                        and x > axisbox.x+self.style.axis.framelinewidth
-                        and x < axisbox.x+axisbox.w-self.style.axis.framelinewidth):
-                    canvas.path([x, x], [axisbox.y, axisbox.y+axisbox.h],
-                                color=self.style.axis.gridcolor,
-                                stroke=self.style.axis.gridstroke,
-                                width=self.style.axis.gridlinewidth)
-    
+        for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
+            x, _ = xform.apply(xtick, 0)
+            y1 = axisbox.y
+            y2 = y1 - self.style.tick.length
+            if (self.style.axis.xgrid
+                    and x > axisbox.x+self.style.axis.framelinewidth
+                    and x < axisbox.x+axisbox.w-self.style.axis.framelinewidth):
+                canvas.path([x, x], [axisbox.y, axisbox.y+axisbox.h],
+                            color=self.style.axis.gridcolor,
+                            stroke=self.style.axis.gridstroke,
+                            width=self.style.axis.gridlinewidth)
+
+            if self.showxticks:
                 canvas.path([x, x], [y1, y2], color=self.style.axis.color,
                             width=self.style.tick.width)
     
@@ -541,30 +548,30 @@ class XyPlot(BasePlot):
                             size=self.style.tick.text.size,
                             halign='center', valign='top')
                                   
-            if ticks.xminor:
-                for xminor in ticks.xminor:
-                    if xminor in ticks.xticks:
-                        continue  # Don't double-draw
-                    x, _ = xform.apply(xminor, 0)
-                    y1 = axisbox.y
-                    y2 = y1 - self.style.tick.minorlength
-                    canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                                width=self.style.tick.minorwidth)
+                if ticks.xminor:
+                    for xminor in ticks.xminor:
+                        if xminor in ticks.xticks:
+                            continue  # Don't double-draw
+                        x, _ = xform.apply(xminor, 0)
+                        y1 = axisbox.y
+                        y2 = y1 - self.style.tick.minorlength
+                        canvas.path([x, x], [y1, y2], color=self.style.axis.color,
+                                    width=self.style.tick.minorwidth)
 
-        if self.showyticks:
-            for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
-                _, y = xform.apply(0, ytick)
-                x1 = axisbox.x
-                x2 = axisbox.x - self.style.tick.length
-    
-                if (self.style.axis.ygrid
-                        and y > axisbox.y+self.style.axis.framelinewidth
-                        and y < axisbox.y+axisbox.h-self.style.axis.framelinewidth):
-                    canvas.path([axisbox.x, axisbox.x+axisbox.w], [y, y],
-                                color=self.style.axis.gridcolor,
-                                stroke=self.style.axis.gridstroke,
-                                width=self.style.axis.gridlinewidth)
-    
+        for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
+            _, y = xform.apply(0, ytick)
+            x1 = axisbox.x
+            x2 = axisbox.x - self.style.tick.length
+
+            if (self.style.axis.ygrid
+                    and y > axisbox.y+self.style.axis.framelinewidth
+                    and y < axisbox.y+axisbox.h-self.style.axis.framelinewidth):
+                canvas.path([axisbox.x, axisbox.x+axisbox.w], [y, y],
+                            color=self.style.axis.gridcolor,
+                            stroke=self.style.axis.gridstroke,
+                            width=self.style.axis.gridlinewidth)
+
+            if self.showyticks:
                 canvas.path([x1, x2], [y, y], color=self.style.axis.color,
                             width=self.style.tick.width)
     
@@ -574,15 +581,15 @@ class XyPlot(BasePlot):
                             size=self.style.tick.text.size,
                             halign='right', valign='center')
     
-            if ticks.yminor:
-                for yminor in ticks.yminor:
-                    if yminor in ticks.yticks:
-                        continue  # Don't double-draw
-                    _, y = xform.apply(0, yminor)
-                    x1 = axisbox.x
-                    x2 = axisbox.x - self.style.tick.minorlength
-                    canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                                width=self.style.tick.minorwidth)
+                if ticks.yminor:
+                    for yminor in ticks.yminor:
+                        if yminor in ticks.yticks:
+                            continue  # Don't double-draw
+                        _, y = xform.apply(0, yminor)
+                        x1 = axisbox.x
+                        x2 = axisbox.x - self.style.tick.minorlength
+                        canvas.path([x1, x2], [y, y], color=self.style.axis.color,
+                                    width=self.style.tick.minorwidth)
 
         if self.xname:
             centerx = axisbox.x + axisbox.w/2

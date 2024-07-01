@@ -18,10 +18,9 @@ horizontally or vertically.
 .. jupyter-execute::
 
     with zp.Hlayout(height=200):
-        zp.Line([1,2,3], [1,2,5])
-        zp.Line([1,2,3], [1,2,5])
-        zp.Line([1,2,3], [1,2,5])
-
+        zp.Line([1,3,5], [1,2,5]).marker('o')
+        zp.Line([1,3,5], [1,2,5]).marker('square')
+        zp.Line([1,3,5], [1,2,5]).marker('triangle')
 
 Grid layouts arrange axes in rows and columns. The number of columns may be specified, and the rows
 are automatically added as needed.
