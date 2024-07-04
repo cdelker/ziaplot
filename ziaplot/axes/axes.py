@@ -408,6 +408,8 @@ class XyGraph(XyPlot):
                          legend=legend, style=style)
         self.centerorigin = centerorigin
         self.arrowwidth = self.style.axis.framelinewidth * 3
+        self.style.axis.xtickpad = 0
+        self.style.axis.ytickpad = 0
 
     def _clearcache(self):
         super()._clearcache()
@@ -419,23 +421,26 @@ class XyGraph(XyPlot):
         ''' Calculate bounding box of where to place axis within frame,
             shifting left/up to account for labels
 
-            Args:
-                fullframe: ViewBox full size of svg
-                ticks: Tick definitions
-
-            Notes:
-                XyGraph doesn't need to account for tick text, unlike XyPlot
-
             Returns:
                 ViewBox of axis within the full frame
         '''
+        databox = self.datarange()
         ticks = self._maketicks()
         legw, _ = self._legendsize()
-        leftborder = self.arrowwidth*2
+
+        if databox.xmin == 0:
+            leftborder = ticks.ywidth + self.style.tick.length + self.style.tick.textofst        
+        else:
+            leftborder = 1
+
+        if databox.ymin == 0:
+            botborder = self.style.tick.length + self.style.tick.text.size + 4
+        else:
+            botborder = 1
+
         rightborder = self.arrowwidth*2
         topborder = self.arrowwidth
-        botborder = self.arrowwidth*2
-
+        
         if self.legend == 'left':
             leftborder += legw + self.style.axis.framelinewidth
         elif self.legend == 'right':
@@ -446,7 +451,7 @@ class XyGraph(XyPlot):
             leftborder += ticks.ywidth
 
         if self.yname:
-            topborder += self.style.axis.yname.size + 2
+            topborder += self.style.tick.textofst+self.style.axis.yname.size + 2
 
         if self.xname:
             rightborder += text.text_size(
@@ -462,15 +467,21 @@ class XyGraph(XyPlot):
     def datarange(self) -> DataRange:
         ''' Get range of x-y data. XyGraph datarange must include 0 '''
         drange = super().datarange()
+        if not self.centerorigin:
+            return drange
         xmin = min(0, drange.xmin)
         xmax = max(0, drange.xmax)
         ymin = min(0, drange.ymin)
         ymax = max(0, drange.ymax)
-        if self.centerorigin:
-            x = max(abs(xmax), abs(xmin))
-            y = max(abs(ymax), abs(ymin))
-            xmin, xmax = -x, x
-            ymin, ymax = -y, y
+
+        x = max(abs(xmax), abs(xmin))
+        y = max(abs(ymax), abs(ymin))
+        xmin, xmax = -x, x
+        ymin, ymax = -y, y
+
+        if xmin == xmax == ymin == ymax == 0:
+            ymin = xmin = -1
+            ymax = xmax = 1
         return DataRange(xmin, xmax, ymin, ymax)
 
     def _drawframe(self, canvas: Canvas, axisbox: ViewBox) -> None:
@@ -541,18 +552,36 @@ class XyGraph(XyPlot):
                                       strokecolor=self.style.axis.color,
                                       color=self.style.axis.color, orient=True)
 
-        canvas.path([xleft[0]+self.arrowwidth+self.style.tick.width,
-                     xrght[0]-self.arrowwidth-self.style.tick.width],
+        xmarker = startmark
+        ymarker = endmark
+        if databox.x == 0:
+            xmarker = None
+            xaxis = [xleft[0],
+                     xrght[0]-self.style.tick.width]
+        else:
+            xaxis = [xleft[0]+self.arrowwidth+self.style.tick.width,
+                     xrght[0]-self.arrowwidth-self.style.tick.width]
+
+        if databox.y == 0:
+            ymarker = None
+            yaxis = [ytop[1]-self.style.tick.width,
+                     ybot[1]]
+        else:
+            yaxis = [ytop[1]-self.arrowwidth-self.style.tick.width,
+                     ybot[1]+self.arrowwidth+self.style.tick.width]
+        
+        canvas.path(xaxis,
                     [xleft[1], xrght[1]],
                     color=self.style.axis.color,
                     width=self.style.axis.framelinewidth,
-                    startmarker=startmark, endmarker=endmark)
+                    startmarker=xmarker,
+                    endmarker=endmark)
         canvas.path([ytop[0], ybot[0]],
-                    [ytop[1]-self.arrowwidth-self.style.tick.width,
-                     ybot[1]+self.arrowwidth+self.style.tick.width],
+                    yaxis,
                     color=self.style.axis.color,
                     width=self.style.axis.framelinewidth,
-                    startmarker=startmark, endmarker=endmark)
+                    startmarker=startmark,
+                    endmarker=ymarker)
 
         for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
             if xtick == 0:
@@ -565,14 +594,17 @@ class XyGraph(XyPlot):
                             color=self.style.axis.gridcolor,
                             stroke=self.style.axis.gridstroke,
                             width=self.style.axis.gridlinewidth)
-            canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                        width=self.style.tick.width)
+                
+            if xleft[0] < x < xrght[0]:
+                # Don't draw ticks outside the arrows
+                canvas.path([x, x], [y1, y2], color=self.style.axis.color,
+                            width=self.style.tick.width)
 
-            canvas.text(x, y2-self.style.tick.textofst, xtickname,
-                        color=self.style.tick.text.color,
-                        font=self.style.tick.text.font,
-                        size=self.style.tick.text.size,
-                        halign='center', valign='top')
+                canvas.text(x, y2-self.style.tick.textofst, xtickname,
+                            color=self.style.tick.text.color,
+                            font=self.style.tick.text.font,
+                            size=self.style.tick.text.size,
+                            halign='center', valign='top')
         if ticks.xminor:
             for xminor in ticks.xminor:
                 if xminor in ticks.xticks:
@@ -594,14 +626,17 @@ class XyGraph(XyPlot):
                             color=self.style.axis.gridcolor,
                             stroke=self.style.axis.gridstroke,
                             width=self.style.axis.gridlinewidth)
-            canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                        width=self.style.tick.width)
 
-            canvas.text(x2-self.style.tick.textofst, y, ytickname,
-                        color=self.style.tick.text.color,
-                        font=self.style.tick.text.font,
-                        size=self.style.tick.text.size,
-                        halign='right', valign='center')
+            if ybot[1] < y < ytop[1]:
+                # Don't draw ticks outside the arrows
+                canvas.path([x1, x2], [y, y], color=self.style.axis.color,
+                            width=self.style.tick.width)
+
+                canvas.text(x2-self.style.tick.textofst, y, ytickname,
+                            color=self.style.tick.text.color,
+                            font=self.style.tick.text.font,
+                            size=self.style.tick.text.size,
+                            halign='right', valign='center')
         if ticks.yminor:
             for yminor in ticks.yminor:
                 if yminor in ticks.yticks:
@@ -623,7 +658,7 @@ class XyGraph(XyPlot):
 
         if self.yname:
             canvas.text(ytop[0],
-                        ytop[1]+self.style.tick.textofst*2+self.arrowwidth,
+                        ytop[1]+self.style.tick.textofst+self.arrowwidth,
                         self.yname,
                         color=self.style.axis.color,
                         font=self.style.axis.yname.font,
