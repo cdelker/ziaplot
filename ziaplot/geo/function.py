@@ -1,12 +1,16 @@
 from __future__ import annotations
-from typing import Callable
+from typing import Optional, Callable, Sequence
 import math
 
 from .. import util
+from ..series import Series
+from ..style import MarkerTypes
+from ..canvas import Canvas, Borders, ViewBox
+from ..axes import XyPlot
 from ..dataplots import PolyLine
 
 
-class Function(PolyLine):
+class Function(Series):
     ''' Plot a function
 
         Args:
@@ -16,17 +20,77 @@ class Function(PolyLine):
             n: Number of datapoints for discrete representation
     '''
     def __init__(self, func: Callable[[float], float],
-                 xmin: float = -5, xmax: float = 5, n: int = 200):
-        step = (xmax-xmin) / n
-        x = util.zrange(xmin, xmax, step)
-        y = [func(x0) for x0 in x]
+                 xrange: Optional[tuple[float, float]] = None, n: int = 200):
+        super().__init__()
+        self._func = func
         self.func = func
-        super().__init__(x, y)
+        self.xrange = xrange
+        self.n = n
+        self.startmark: MarkerTypes = None
+        self.endmark: MarkerTypes = None
+        self._logx = False
+        self._logy = False
+
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'PolyLine':
+        ''' Define markers to show at the start and end of the line. Use defaults
+            to show arrowheads pointing outward in the direction of the line.
+        '''
+        self.startmark = start
+        self.endmark = end
+        return self
 
     def logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
-        self.func = lambda x: math.log10(self.func(x))
+        self._logy = True
 
     def logx(self) -> None:
         ''' Convert x values to log(x) '''
-        self.func = lambda x: self.func(math.log10(x))
+        self._logx = True
+
+    def _evaluate(self, x: Sequence[float]) -> tuple[list[float], list[float]]:
+        y = [self.func(xx) for xx in x]
+        if self._logy:
+            y = [math.log10(yy) if yy > 0 else math.nan for yy in y]
+        if self._logx:
+            x = [math.log10(xx) if xx > 0 else math.nan for xx in x]
+        return x, y
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        xrange = self.xrange
+        if xrange is None:
+            xrange = databox.x, databox.x+databox.w
+        x = util.linspace(*xrange, self.n)
+        x, y = self._evaluate(x)
+        startmark = None
+        endmark = None
+        if self.startmark:
+            startmark = canvas.definemarker(self.startmark,
+                                            self.style.marker.radius,
+                                            self.style.marker.color,
+                                            self.style.marker.strokecolor,
+                                            self.style.marker.strokewidth,
+                                            orient=True)
+        if self.endmark:
+            endmark = canvas.definemarker(self.endmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+
+        color = self.style.line.color
+        canvas.path(x, y,
+                    stroke=self.style.line.stroke,
+                    color=color,
+                    width=self.style.line.width,
+                    startmarker=startmark,
+                    endmarker=endmark,
+                    dataview=databox)
+
+    def svgxml(self, border: bool = False) -> ET.Element:
+        ''' Generate XML for standalone SVG '''
+        ax = XyPlot(style=self._axisstyle)
+        ax.add(self)
+        return ax.svgxml(border=border)

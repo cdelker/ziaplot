@@ -63,8 +63,8 @@ class Transform:
     def apply_list(self, x: Sequence[float], y: Sequence[float]) -> tuple[list[float], list[float]]:
         ''' Apply the transofrmation to a list of x, y points '''
         xy = [self.apply(xx, yy) for xx, yy in zip(x, y)]
-        x = [z[0] for z in xy]
-        y = [z[1] for z in xy]
+        x = [z[0] for z in xy if math.isfinite(z[0]) and math.isfinite(z[1])]
+        y = [z[1] for z in xy if math.isfinite(z[0]) and math.isfinite(z[1])]
         return x, y
 
 

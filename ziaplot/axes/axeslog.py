@@ -67,7 +67,12 @@ class LogYPlot(XyPlot):
             ymin = math.log10(drange.ymin)
         except ValueError:
             ymin = 0
-        return DataRange(drange.xmin, drange.xmax, ymin, math.log10(drange.ymax))
+        try:
+            ymax = math.log10(drange.ymax)
+        except ValueError:
+            ymax = 1
+        
+        return DataRange(drange.xmin, drange.xmax, ymin, ymax)
 
     @lru_cache
     def _maketicks(self) -> Ticks:
@@ -134,7 +139,11 @@ class LogXPlot(XyPlot):
             xmin = math.log10(drange.xmin)
         except ValueError:
             xmin = 0
-        return DataRange(xmin, math.log10(drange.xmax),
+        try:
+            xmax = math.log10(drange.xmax)
+        except ValueError:
+            xmax = 1
+        return DataRange(xmin, xmax,
                          drange.ymin, drange.ymax)
 
     @lru_cache
@@ -198,9 +207,16 @@ class LogXYPlot(XyPlot):
             ymin = math.log10(drange.ymin)
         except ValueError:
             ymin = 0
+        try:
+            xmax = math.log10(drange.xmax)
+        except ValueError:
+            xmax = 1
+        try:
+            ymax = math.log10(drange.ymax)
+        except ValueError:
+            ymax = 1
 
-        return DataRange(xmin, math.log10(drange.xmax),
-                         ymin, math.log10(drange.ymax))
+        return DataRange(xmin, xmax, ymin, ymax)
 
     @lru_cache
     def _maketicks(self) -> Ticks:
