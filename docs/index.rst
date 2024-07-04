@@ -18,10 +18,10 @@ Ziaplot is for easy, lightweight, and Pythonic plotting of data in SVG format.
         x = zp.linspace(10, 20, 10)
         y = [math.exp(xi/10) for xi in x]
         p3 = zp.XyPlot()
-        p3 += zp.Line(x, y).marker('round')
+        p3 += zp.Plot(x, y).marker('round')
         p3 += zp.Xy(x, [yi*2 for yi in y]).marker('square')
-        p3 += zp.Line(x, [yi*4 for yi in y]).marker('arrow', orient=True)
-        p3 += zp.Line(x, [yi*3 for yi in y]).stroke('--')
+        p3 += zp.Plot(x, [yi*4 for yi in y]).marker('arrow', orient=True)
+        p3 += zp.Plot(x, [yi*3 for yi in y]).stroke('--')
 
         p4 = zp.BarChartGrouped(groups=('a', 'b', 'c', 'd'))
         p4 += zp.BarSeries(2, 2, 4, 3)
@@ -50,7 +50,7 @@ If you appreciate Ziaplot, buy me a coffee to show your support!
 |
 
 
-Source code is available on `Bitbucket <https://bitbucket.org/cdelker/ziaplot>`_.
+Source code is available on `Github <https://github.com/cdelker/ziaplot>`_.
 
 ----
 

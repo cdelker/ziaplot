@@ -30,9 +30,9 @@ In terms of adding and displaying data series, the two are identical.
 Basic Plotting
 --------------
 
-The most common data series is the :py:class:`ziaplot.dataseries.Line`.
-Typically, an axis will be created first, then one or more Lines added to it.
-Lines can be drawn with different colors, strokes (dash style), or with markers, using
+The most common data series is the :py:class:`ziaplot.dataplots.polylines.PolyLine`.
+Typically, an axis will be created first, then one or more PolyLines added to it.
+PolyLines can be drawn with different colors, strokes (dash style), or with markers, using
 the chained method interface.
 
 First, make up some data to plot.
@@ -47,15 +47,15 @@ First, make up some data to plot.
 
 Then, create an XyPlot and add several lines to it.
 Notice the color of each series cycles through the default set of theme colors if not specified manually.
-Use of the context manager (`with` statement) makes every Line created within the manager automatically added to the axis.
+Use of the context manager (`with` statement) makes every PolyLine created within the manager automatically added to the axis.
 
 .. jupyter-execute::
 
     with zp.XyPlot():
-        zp.Line(x, y)
-        zp.Line(x, y2).marker('round', radius=8)
-        zp.Line(x, y3).stroke('dashed')
-        zp.Line(x, y4).color('purple').strokewidth(4)
+        zp.PolyLine(x, y)
+        zp.PolyLine(x, y2).marker('round', radius=8)
+        zp.PolyLine(x, y3).stroke('dashed')
+        zp.PolyLine(x, y4).color('purple').strokewidth(4)
 
 |
 
@@ -98,8 +98,8 @@ Markers can also be oriented tangent to the data line, for example to show arrow
     tsq2 = [tsqi+20 for tsqi in tsq]
 
     with zp.XyPlot():
-        zp.Line(t, tsq).marker('arrow', orient=True)
-        zp.Line(t, tsq2).endmarkers(start='square', end='arrow')
+        zp.PolyLine(t, tsq).marker('arrow', orient=True)
+        zp.PolyLine(t, tsq2).endmarkers(start='square', end='arrow')
 
 |
 
@@ -117,7 +117,7 @@ Color fading requires hex string colors.
         p.colorfade('#0000FF', '#FF0000')
         for i in range(10):
             yf = [xi*(i+1) for xi in xf]
-            zp.Line(xf, yf)
+            zp.PolyLine(xf, yf)
 
 |
 
@@ -172,8 +172,8 @@ Plain text labels can be added at any data point using the :py:class:`ziaplot.da
     with zp.XyPlot(title='Title',
                    xname='Independent Variable',
                    yname='Dependent Variable'):
-        zp.Line(x, y).name('Line #1')
-        zp.Line(x, y2).name('Line #2')
+        zp.PolyLine(x, y).name('Line #1')
+        zp.PolyLine(x, y2).name('Line #2')
         zp.Text(0.2, 2, 'Text', halign='center')
         zp.Arrow((.70, 2.3), (.6, 3), 'Arrow', strofst=(-.05, .1)).color('black')
 
@@ -235,7 +235,7 @@ Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`
     
     x2 = zp.linspace(.1, 1000)
     y2 = x2
-    line = zp.Line(x2, y2)
+    line = zp.PolyLine(x2, y2)
     p1 = zp.XyPlot(title='XyPlot')
     p1 += line
     p2 = zp.LogYPlot(title='LogYPlot')
@@ -244,7 +244,7 @@ Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`
     p3 += line
     p4 = zp.LogXYPlot(title='LogXYPlot')
     p4 += line
-    zp.GridLayout(p1, p3, p2, p4, gutter=-20)
+    zp.GridLayout(p1, p3, p2, p4, gutter=-20, columns=2)
 
 |
 
@@ -260,7 +260,7 @@ To manually set the data range, use :py:meth:`ziaplot.axes.BasePlot.xrange` and 
     y = [xi**2 for xi in x]
 
     with zp.XyPlot() as p:
-        zp.Line(x, y)
+        zp.PolyLine(x, y)
         p.xrange(.5, 1).yrange(.3, 1)
 
 
@@ -271,7 +271,7 @@ names.
 .. jupyter-execute::
 
     with zp.XyPlot() as p:
-        zp.Line(x, y)
+        zp.PolyLine(x, y)
         p.xticks((0, .25, .75, 1))
         p.yticks((0, .5, 1), names=('Low', 'Medium', 'High'))
 
@@ -281,7 +281,7 @@ To keep the default ticks but change the number formatter, use :py:class:`ziaplo
 
     with zp.XyPlot() as p:
         p.style.tick.ystrformat = '.1e'
-        zp.Line(x, y)
+        zp.PolyLine(x, y)
 
 
 Minor ticks, without a number label, can also be added between the major, labeled, ticks.
@@ -289,6 +289,6 @@ Minor ticks, without a number label, can also be added between the major, labele
 .. jupyter-execute::
 
     with zp.XyPlot() as p:
-        zp.Line(x, y)
+        zp.PolyLine(x, y)
         p.xticks(values=(0, .2, .4, .6, .8, 1),
                  minor=(zp.linspace(0, 1, 21)))

@@ -2,13 +2,13 @@
 from __future__ import annotations
 from typing import Optional, Sequence, Union
 
-from .drawable import Drawable
-from .series import Series
-from .dataseries import Bars, BarsHoriz
-from .axes import XyPlot, LegendLoc
-from .styletypes import Style
-from .canvas import Canvas, Borders, ViewBox
-from . import axis_stack
+from ..drawable import Drawable
+from ..series import Series
+from ..dataplots import Bars, BarsHoriz
+from ..axes import XyPlot, LegendLoc
+from ..style import Style
+from ..canvas import Canvas, Borders, ViewBox
+from .. import axis_stack
 
 
 class BarSingle(Series):

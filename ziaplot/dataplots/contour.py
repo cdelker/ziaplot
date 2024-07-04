@@ -2,11 +2,14 @@
 from __future__ import annotations
 from typing import Optional, Sequence, Union, Literal
 import xml.etree.ElementTree as ET
+import math
 
-from .series import Series
-from .axes import zrange, XyPlot
-from .canvas import Canvas, Borders, ViewBox, DataRange
-from .colors import ColorFade
+from ..util import zrange
+from ..style import ColorFade
+from ..canvas import Canvas, Borders, ViewBox, DataRange
+from ..axes import XyPlot
+from ..series import Series
+
 
 ColorBarPos = Literal['top', 'right', 'bottom', 'left']
 
@@ -54,6 +57,14 @@ class Contour(Series):
                              max(max(x) for x in self.x),
                              min(min(y) for y in self.y),
                              max(max(y) for y in self.y))
+
+    def logy(self) -> None:
+        ''' Convert y coordinates to log(y) '''
+        self.y = [math.log10(y) for y in self.y]
+
+    def logx(self) -> None:
+        ''' Convert x values to log(x) '''
+        self.x = [math.log10(x) for x in self.x]
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -117,12 +128,14 @@ class Contour(Series):
                         # Numpy
                         block = (z0[row:row+2, col:col+2][::-1])
                         corners = self.z[row:row+2, col:col+2][::-1]
+                        blockid = block[1, 0] + 2*block[1, 1] + 4*block[0, 1] + 8*block[0, 0]
+
                     except TypeError:
                         # Not Numpy
                         block = [zi[col:col+2] for zi in z0[row:row+2]][::-1]
                         corners = [zi[col:col+2] for zi in z[row:row+2]][::-1]
+                        blockid = block[1][0] + 2*block[1][1] + 4*block[0][1] + 8*block[0][0]
 
-                    blockid = block[1][0] + 2*block[1][1] + 4*block[0][1] + 8*block[0][0]
                     blockx = (X[col] + X[col+1])/2
                     blocky = (Y[row] + Y[row+1])/2
                     x1 = x2 = y1 = y2 = None

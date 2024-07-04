@@ -7,9 +7,8 @@ import math
 from copy import deepcopy
 
 from .axes import XyPlot, Ticks
-from .canvas import Canvas, ViewBox, DataRange
-from .dataseries import Line, Text, Bars, HLine, VLine
-from . import text
+from ..canvas import Canvas, ViewBox, DataRange
+from .. import text
 
 
 def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], list[float]]:
@@ -103,10 +102,7 @@ class LogYPlot(XyPlot):
         seriesbackup = self.series
         self.series = [deepcopy(s) for s in seriesbackup]
         for s in self.series:
-            if isinstance(s, (Line, Bars)):
-                s.y = [math.log10(y) for y in s.y]
-            elif isinstance(s, (Text, HLine)):
-                s.y = math.log10(s.y)
+            s.logy()
 
         super()._drawseries(canvas, axisbox, databox)
         self.series = seriesbackup
@@ -167,12 +163,7 @@ class LogXPlot(XyPlot):
         seriesbackup = self.series
         self.series = [deepcopy(s) for s in seriesbackup]
         for s in self.series:
-            if isinstance(s, (Line, Bars)):
-                s.x = [math.log10(x) for x in s.x]
-                if isinstance(s, Bars):
-                    s.width = math.log10(s.x[1]) - math.log10(s.x[0])
-            elif isinstance(s, (Text, VLine)):
-                s.x = math.log10(s.x)
+            s.logx()
 
         super()._drawseries(canvas, axisbox, databox)
         self.series = seriesbackup
@@ -250,17 +241,7 @@ class LogXYPlot(XyPlot):
 
         self.series = [deepcopy(s) for s in seriesbackup]
         for s in self.series:
-            if isinstance(s, (Line, Bars)):
-                s.x = [math.log10(x) for x in s.x]
-                s.y = [math.log10(y) for y in s.y]
-                if isinstance(s, Bars):
-                    s.width = math.log10(s.x[1]) - math.log10(s.x[0])
-            elif isinstance(s, (Text)):
-                s.x = math.log10(s.x)
-                s.y = math.log10(s.y)
-            elif isinstance(s, HLine):
-                s.y = math.log10(s.y)
-            elif isinstance(s, VLine):
-                s.x = math.log10(s.x)
+            s.logx()
+            s.logy()
         super()._drawseries(canvas, axisbox, databox)
         self.series = seriesbackup

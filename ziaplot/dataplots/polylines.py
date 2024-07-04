@@ -1,20 +1,18 @@
 ''' Data Series Lines '''
 
 from __future__ import annotations
-from typing import Optional, Sequence, Callable
+from typing import Optional, Sequence
 import math
-from collections import Counter
 import xml.etree.ElementTree as ET
 
-from .styletypes import SeriesStyle, MarkerTypes, DashTypes
-from .series import Series
-from . import axes
-from .canvas import Canvas, Borders, ViewBox, DataRange, Halign, Valign
-from . import util
+from ..style import SeriesStyle, MarkerTypes, DashTypes
+from ..canvas import Canvas, Borders, ViewBox, DataRange
+from ..axes import XyPlot
+from ..series import Series
 
 
-class Line(Series):
-    ''' A line series of x-y data
+class PolyLine(Series):
+    ''' A polyline series of x-y data, points connected by line segments
 
         Args:
             x: X-values to plot
@@ -27,7 +25,7 @@ class Line(Series):
         self.startmark: MarkerTypes = None
         self.endmark: MarkerTypes = None
 
-    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Line':
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'PolyLine':
         ''' Define markers to show at the start and end of the line. Use defaults
             to show arrowheads pointing outward in the direction of the line.
         '''
@@ -38,6 +36,14 @@ class Line(Series):
     def datarange(self) -> DataRange:
         ''' Get range of data '''
         return DataRange(min(self.x), max(self.x), min(self.y), max(self.y))
+
+    def logy(self) -> None:
+        ''' Convert y coordinates to log(y) '''
+        self.y = [math.log10(y) for y in self.y]
+
+    def logx(self) -> None:
+        ''' Convert x values to log(x) '''
+        self.x = [math.log10(x) for x in self.x]
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -81,29 +87,12 @@ class Line(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = axes.XyPlot(style=self._axisstyle)
+        ax = XyPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
 
-class Function(Line):
-    ''' Plot a function
-
-        Args:
-            func: Callable function (e.g. lambda x: x**2)
-            xmin: Minimum x value
-            xmax: Maximum x value
-            n: Number of datapoints for discrete representation
-    '''
-    def __init__(self, func: Callable[[float], float],
-                 xmin: float = -5, xmax: float = 5, n: int = 200):
-        step = (xmax-xmin) / n
-        x = util.zrange(xmin, xmax, step)
-        y = [func(x0) for x0 in x]
-        super().__init__(x, y)
-
-
-class Xy(Line):
+class Scatter(PolyLine):
     ''' An X-Y Scatter series of data
 
         Args:
@@ -117,8 +106,8 @@ class Xy(Line):
         self.style.marker.shape = 'round'
 
 
-class ErrorBar(Line):
-    ''' An X-Y Line with Error Bars in X and/or Y
+class ErrorBar(PolyLine):
+    ''' An X-Y PolyLine with Error Bars in X and/or Y
 
         Args:
             x: X-values to plot
@@ -226,7 +215,7 @@ class ErrorBar(Line):
         super()._xml(canvas, databox, borders)
 
 
-class LineFill(Line):
+class LineFill(PolyLine):
     ''' A filled line/region
 
         Args:
@@ -306,56 +295,12 @@ class LineFill(Line):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = axes.XyPlot(style=self._axisstyle)
+        ax = XyPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
 
-class Text(Series):
-    ''' A text element to draw at a specific x-y location
-
-        Args:
-            x: X-position for text
-            y: Y-position for text
-            s: String to draw
-            halign: Horizontal alignment
-            valign: Vertical alignment
-            rotate: Rotation angle, in degrees
-    '''
-    def __init__(self, x: float, y: float, s: str, halign: Halign = 'left',
-                 valign: Valign = 'bottom', rotate: Optional[float] = None):
-        super().__init__()
-        self.style = SeriesStyle()
-        self.x = x
-        self.y = y
-        self.s = s
-        self.halign = halign
-        self.valign = valign
-        self.rotate = rotate
-
-    def color(self, color: str) -> 'Text':
-        ''' Sets the text color '''
-        self.style.text.color = color
-        return self
-
-    def datarange(self) -> DataRange:
-        ''' Get x-y datarange '''
-        return DataRange(None, None, None, None)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        canvas.text(self.x, self.y, self.s,
-                    color=self.style.text.color,
-                    font=self.style.text.font,
-                    size=self.style.text.size,
-                    halign=self.halign,
-                    valign=self.valign,
-                    rotate=self.rotate,
-                    dataview=databox)
-
-
-class Arrow(Line):
+class Arrow(PolyLine):
     ''' An arrow pointing to an XY location, with optional
         text annotation
 
@@ -407,6 +352,10 @@ class HLine(Series):
         ''' Get x-y datarange '''
         return DataRange(None, None, self.y, self.y)
 
+    def logy(self) -> None:
+        ''' Convert y coordinates to log(y) '''
+        self.y = math.log10(self.y)
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
@@ -432,6 +381,10 @@ class VLine(Series):
         ''' Get x-y datarange '''
         return DataRange(self.x, self.x, None, None)
 
+    def logx(self) -> None:
+        ''' Convert x values to log(x) '''
+        self.x = math.log10(self.x)
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
@@ -443,137 +396,6 @@ class VLine(Series):
                     self.style.line.width, dataview=databox)
 
 
-class Bars(Series):
-    ''' A series of bars to add to an XyPlot (quantitative x values)
-        For qualitative bar chart, use a BarChart instance.
 
-        Args:
-            x: X-values of each bar
-            y: Y-values of each bar
-            y2: Minimum y-values of each bar
-            width: Width of all bars
-            align: Bar position in relation to x value
-    '''
-    def __init__(self, x: Sequence[float], y: Sequence[float], y2: Optional[Sequence[float]] = None,
-                 width: Optional[float] = None, align: Halign = 'center'):
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.align = align
-        self.width = width if width is not None else self.x[1]-self.x[0]
-        self.y2 = y2 if y2 is not None else [0] * len(self.x)
-
-    def datarange(self):
-        ''' Get x-y datarange '''
-        ymin, ymax = min(self.y2), max(self.y)+max(self.y)/25
-        if self.align == 'left':
-            xmin, xmax = min(self.x), max(self.x)+self.width
-        elif self.align == 'center':
-            xmin, xmax = min(self.x)-self.width/2, max(self.x)+self.width/2
-        else:  # self.align == 'right':
-            xmin, xmax = min(self.x)-self.width, max(self.x)
-        return DataRange(xmin, xmax, ymin, ymax)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        color = self.style.line.color
-        for x, y, y2 in zip(self.x, self.y, self.y2):
-            if self.align == 'center':
-                x -= self.width/2
-            elif self.align == 'right':
-                x -= self.width
-
-            canvas.rect(x, y2, self.width, y-y2,
-                        fill=color,
-                        strokecolor=self.style.border.color,
-                        strokewidth=self.style.border.width,
-                        dataview=databox)
-
-    def svgxml(self, border: bool = False) -> ET.Element:
-        ''' Generate XML for standalone SVG '''
-        ax = axes.XyPlot(style=self._axisstyle)
-        ax.add(self)
-        return ax.svgxml(border=border)
-
-
-class BarsHoriz(Bars):
-    ''' Horizontal bars '''
-    def datarange(self) -> DataRange:
-        ''' Get x-y datarange '''
-        rng = super().datarange()  # Transpose it
-        return DataRange(rng.ymin, rng.ymax, rng.xmin, rng.xmax)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        color = self.style.line.color
-        for x, y, y2 in zip(self.x, self.y, self.y2):
-            if self.align == 'center':
-                x -= self.width/2
-            elif self.align in ['right', 'top']:
-                x -= self.width
-
-            canvas.rect(y2, x, y-y2,
-                        self.width,
-                        fill=color,
-                        strokecolor=self.style.border.color,
-                        strokewidth=self.style.border.width,
-                        dataview=databox)
-
-
-class Histogram(Bars):
-    ''' Histogram data series
-
-        Args:
-            x: Data to show as histogram
-            bins: Number of bins for histogram
-            binrange: Tuple of (start, stop, step) defining bins
-            density: Normalize the histogram
-            weights: Weights to apply to each x value
-    '''
-    def __init__(self, x: Sequence[float], bins: Optional[int] = None,
-                 binrange: Optional[tuple[float, float, float]] = None,
-                 density: bool = False, weights: Optional[Sequence[float]] = None):
-        xmin = min(x)
-        if binrange is not None:
-            binleft = binrange[0]
-            binright = binrange[1]
-            binwidth = binrange[2]
-            bins = math.ceil((binright - binleft) / binwidth)
-            binlefts = [binleft + binwidth*i for i in range(bins)]
-        elif bins is None:
-            bins = math.ceil(math.sqrt(len(x)))
-            binwidth = (max(x) - xmin) / bins
-            binlefts = [xmin + binwidth*i for i in range(bins)]
-            binright = binlefts[-1] + binwidth
-        else:
-            binwidth = (max(x) - xmin) / bins
-            binlefts = [xmin + binwidth*i for i in range(bins)]
-            binright = binlefts[-1] + binwidth
-
-        binr = binright-binlefts[0]
-        xnorm = [(xx-binlefts[0])/binr * bins for xx in x]
-        xint = [math.floor(v) for v in xnorm]
-
-        if weights is None:
-            counter = Counter(xint)
-            counts: list[float] = [counter[xx] for xx in range(bins)]
-            if binrange is None:
-                # If auto-binning, need to include rightmost endpoint
-                counts[-1] += counter[bins]
-        else:  # weighed
-            counts = [0] * bins
-            for w, b in zip(weights, xint):
-                try:
-                    counts[b] += w
-                except IndexError:
-                    if b == len(counts) and binrange is None:
-                        # If auto-binning, need to include rightmost endpoint
-                        counts[-1] += w
-
-        if density:
-            cmax = sum(counts) * binwidth
-            counts = [c/cmax for c in counts]
-
-        super().__init__(binlefts, counts, align='left')
+Plot = PolyLine
+Xy = Scatter

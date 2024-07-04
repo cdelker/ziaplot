@@ -1,14 +1,12 @@
 from __future__ import annotations
-from typing import Optional, Literal, Sequence
-from dataclasses import dataclass
+from typing import Optional, Sequence
 import math
 
-from .axes import BasePlot, Ticks, LegendLoc
-from .series import Series
-from .styletypes import Style
-from . import colors
-from .canvas import Canvas, Borders, ViewBox, Halign, Valign
-from . import axis_stack
+from ..axes import BasePlot, Ticks, LegendLoc
+from ..series import Series
+from ..style import Style, ColorFade
+from ..canvas import Canvas, Borders, ViewBox, Halign, Valign
+from .. import axis_stack
 
 
 class PieSlice(Series):
@@ -115,7 +113,7 @@ class Pie(BasePlot):
                 colors: List of colors to fade through
                 stops: Stop positions, starting with 0 and ending with 1
         '''
-        self.style.colorcycle = colors.ColorFade(*clrs, stops=stops)    
+        self.style.colorcycle = ColorFade(*clrs, stops=stops)    
 
     def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
         ''' Calculate legend location

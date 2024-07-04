@@ -1,7 +1,7 @@
 ''' Color cylces '''
 from typing import Optional, Sequence
 
-from .util import interp, linspace
+from ..util import interp, linspace
 
 
 class ColorCycle:

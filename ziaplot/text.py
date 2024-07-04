@@ -1,7 +1,7 @@
 ''' Methods for drawing text, either as <text> elements or as
     paths via ziamath library
 '''
-
+from __future__ import annotations
 from typing import Optional, Literal
 
 import string

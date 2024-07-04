@@ -1,16 +1,18 @@
 ''' Smith chart axis '''
 from __future__ import annotations
 from typing import Optional
-from functools import lru_cache
 import math
+from functools import lru_cache
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
-from .styletypes import Style
-from .axes import getticks, Ticks, LegendLoc
-from .series import Series
+from ..style.styletypes import Style
+from ..series import Series
+from ..canvas import Canvas, Borders, ViewBox
 from .polar import Polar
-from .canvas import Canvas, Borders, ViewBox, DataRange
+from .axes import getticks
+from .baseplot import Ticks, LegendLoc
+
 
 ArcType = namedtuple('ArcType', ['x', 'y', 'r', 't1', 't2'])
 

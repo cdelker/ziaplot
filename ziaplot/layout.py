@@ -1,6 +1,6 @@
 ''' Layouts for creating multi-axis plots '''
 from __future__ import annotations
-from typing import Set
+from typing import Set, Optional
 import xml.etree.ElementTree as ET
 
 from .axes import XyPlot
@@ -8,7 +8,6 @@ from .series import Series
 from .canvas import Canvas, ViewBox, Borders
 from .drawable import Drawable
 from . import axis_stack
-from typing import Optional
 
 
 def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> list[float]:
@@ -80,9 +79,9 @@ class GridLayout(Drawable):
             a plain number representing the number of pixels 2) a percent of the
             whole width, 3) a number with "fr" suffix representing fractions of
             the whole. Examples:
-                "25% 1fr" --> First column takes 25%, second column the remainder
-                "200 1fr" --> First column takes 200 pixels, second column the remainder
-                "2fr 1fr" --> First column is twice the width of second
+            "25% 1fr" --> First column takes 25%, second column the remainder
+            "200 1fr" --> First column takes 200 pixels, second column the remainder
+            "2fr 1fr" --> First column is twice the width of second
     '''
     def __init__(self,
                  *axes: Drawable,

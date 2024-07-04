@@ -1,15 +1,15 @@
 ''' Polar plotting axis '''
 
 from __future__ import annotations
-from typing import Optional, Sequence
+from typing import Optional
 from functools import lru_cache
 import math
 import xml.etree.ElementTree as ET
 
-from .axes import BasePlot, getticks, LegendLoc, Ticks
-from .canvas import Canvas, Borders, ViewBox, DataRange, Halign, Valign
-from .dataseries import Line
-from .styletypes import Style
+from .baseplot import BasePlot, LegendLoc, Ticks
+from .axes import getticks
+from ..canvas import Canvas, Borders, ViewBox, Halign, Valign
+from ..style import Style
 
 
 class Polar(BasePlot):
@@ -188,21 +188,3 @@ class Polar(BasePlot):
                       'fill': 'none', 'stroke': 'black'}
             ET.SubElement(canvas.group, 'rect', attrib=attrib)
         return canvas.xml()
-
-
-class LinePolar(Line):
-    ''' Define a data Line series using polar coordinates
-
-        Args:
-            radius: The radius values to plot
-            theta: The theta values to plot, in degres or radians
-            deg: Interpret theta as degrees instead of radians
-    '''
-    def __init__(self, radius: Sequence[float], theta: Sequence[float], deg: bool = False):
-        self.radius = radius
-        self.theta = theta
-        if deg:
-            self.theta = [math.radians(t) for t in theta]
-        x = [r * math.cos(t) for r, t in zip(self.radius, self.theta)]
-        y = [r * math.sin(t) for r, t in zip(self.radius, self.theta)]
-        super().__init__(x, y)

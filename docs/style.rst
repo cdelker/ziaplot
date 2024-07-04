@@ -12,7 +12,7 @@ Plot Style
     zp.styles.setdefault(zp.styles.DocStyle)
 
 
-Plotting style is set using a :py:class:`ziaplot.styletypes.Style` dataclass.
+Plotting style is set using a :py:class:`ziaplot.style.style.styletypes.Style` dataclass.
 Individual drawing axes take a `style` argument to specify the style of the axis
 and any data series it contains.
 To customize the style, typically start with the base `Style` and modify its attributes:
@@ -26,7 +26,7 @@ To customize the style, typically start with the base `Style` and modify its att
     sty.canvash = 300
     zp.XyPlot(style=sty)
 
-To use the style for all plots, set the default style using :py:meth:`ziaplot.styles.setdefault`:
+To use the style for all plots, set the default style using :py:meth:`ziaplot.style.styles.setdefault`:
 
 .. code-block:: python
 
@@ -58,10 +58,10 @@ For example, to enable the "Taffy" theme for all plots, use:
         x = zp.linspace(10, 20, 10)
         y = [math.exp(xi/10) for xi in x]
         p3 = zp.XyPlot()
-        p3 += zp.Line(x, y).marker('round')
-        p3 += zp.Xy(x, [yi*2 for yi in y]).marker('square')
-        p3 += zp.Line(x, [yi*4 for yi in y]).marker('arrow', orient=True)
-        p3 += zp.Line(x, [yi*3 for yi in y]).stroke('--')
+        p3 += zp.PolyLine(x, y).marker('round')
+        p3 += zp.Scatter(x, [yi*2 for yi in y]).marker('square')
+        p3 += zp.PolyLine(x, [yi*4 for yi in y]).marker('arrow', orient=True)
+        p3 += zp.PolyLine(x, [yi*3 for yi in y]).stroke('--')
 
         p4 = zp.BarChartGrouped(groups=('a', 'b', 'c', 'd'))
         p4 += zp.BarSeries(2, 2, 4, 3)
@@ -184,41 +184,41 @@ Style Dataclass
 The style dictionary is a set of nested dataclasses.
 
 
-.. autoclass:: ziaplot.styletypes.Style
+.. autoclass:: ziaplot.style.styletypes.Style
     :members:
 
-.. autoclass:: ziaplot.styletypes.SeriesStyle
+.. autoclass:: ziaplot.style.styletypes.SeriesStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.LineStyle
+.. autoclass:: ziaplot.style.styletypes.LineStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.MarkerStyle
+.. autoclass:: ziaplot.style.styletypes.MarkerStyle
     :members:
     
-.. autoclass:: ziaplot.styletypes.TextStyle
+.. autoclass:: ziaplot.style.styletypes.TextStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.ErrorBarStyle
+.. autoclass:: ziaplot.style.styletypes.ErrorBarStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.AxisStyle
+.. autoclass:: ziaplot.style.styletypes.AxisStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.TickStyle
+.. autoclass:: ziaplot.style.styletypes.TickStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.LegendStyle
+.. autoclass:: ziaplot.style.styletypes.LegendStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.PolarStyle
+.. autoclass:: ziaplot.style.styletypes.PolarStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.PieStyle
+.. autoclass:: ziaplot.style.styletypes.PieStyle
     :members:
 
-.. autoclass:: ziaplot.styletypes.SmithStyle
+.. autoclass:: ziaplot.style.styletypes.SmithStyle
     :members:
 
-.. autoclass:: ziaplot.colors.ColorCycle
+.. autoclass:: ziaplot.style.colors.ColorCycle
     :members:

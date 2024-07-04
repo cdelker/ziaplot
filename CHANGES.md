@@ -1,5 +1,17 @@
 # Release notes
 
+### 0.6 - In progress
+
+- Added `GridLayout`. `Hlayout` and `Vlayout` now inherit from `GridLayout`, and no longer support nested layouts.
+- Added more legend location options
+
+Breaking changes:
+
+- `Line` has become `PolyLine`, with alias `Plot`. The new `Line` represents a true Euclidean line rather than a set of (x, y) coordinates connected by line segments.
+- Code restructured into submodules
+
+
+
 ### 0.5 - 2023-12-20
 
 - Updated Pie and Bar interfaces

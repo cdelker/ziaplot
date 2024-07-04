@@ -39,7 +39,7 @@ Tk's `PhotoImage` reads the PNG, which must be encoded in base-64.
             x = list(range(n))
 
             p = zp.XyPlot()
-            p += zp.Line(x, y).marker('o')
+            p += zp.Plot(x, y).marker('o')
             p += zp.HLine(avg)
             img = base64.encodebytes(p.imagebytes('png'))
             self.plot = tk.PhotoImage(data=img)

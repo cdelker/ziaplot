@@ -1,17 +1,16 @@
 ''' Series of X-Y Data, base class '''
-
+from __future__ import annotations
+from typing import Optional
 from copy import deepcopy
 
-from .styletypes import MarkerTypes, DashTypes
-from .styles import Default
+from .style import Default, MarkerTypes, DashTypes
 from .drawable import Drawable
 from .canvas import DataRange
 from . import axis_stack
-from typing import Optional
 
 
 class Series(Drawable):
-    ''' Base class for data series, defining a single line in a plot '''
+    ''' Base class for data series, defining a single object in a plot '''
     def __init__(self):
         super().__init__()
         self._name = ''
@@ -57,3 +56,9 @@ class Series(Drawable):
         ''' Sets the series name to include in the legend '''
         self._name = name
         return self
+
+    def logy(self) -> None:
+        ''' Convert y coordinates to log(y) '''
+
+    def logx(self) -> None:
+        ''' Convert x values to log(x) '''

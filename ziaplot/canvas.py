@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 from . import text
 from .config import config
-from .styletypes import MarkerTypes, DashTypes
+from .style import MarkerTypes, DashTypes
 
 
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])

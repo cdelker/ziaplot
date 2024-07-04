@@ -13,46 +13,46 @@ Most Ziaplot classes inherit from Drawable, allowing them to be drawn as SVG, sa
 Axes
 ----
 
-.. autoclass:: ziaplot.axes.BasePlot
+.. autoclass:: ziaplot.axes.baseplot.BasePlot
     :members:
 
-.. autoclass:: ziaplot.axes.XyPlot
+.. autoclass:: ziaplot.axes.axes.XyPlot
     :members:
 
-.. autoclass:: ziaplot.axes.XyGraph
+.. autoclass:: ziaplot.axes.axes.XyGraph
     :members:
 
-.. autoclass:: ziaplot.axeslog.LogYPlot
+.. autoclass:: ziaplot.axes.axeslog.LogYPlot
     :members:
 
-.. autoclass:: ziaplot.axeslog.LogXPlot
+.. autoclass:: ziaplot.axes.axeslog.LogXPlot
     :members:
 
-.. autoclass:: ziaplot.axeslog.LogXYPlot
+.. autoclass:: ziaplot.axes.axeslog.LogXYPlot
     :members:
 
-.. autoclass:: ziaplot.polar.Polar
+.. autoclass:: ziaplot.axes.polar.Polar
     :members:
 
-.. autoclass:: ziaplot.smith.Smith
+.. autoclass:: ziaplot.axes.smith.Smith
     :members:
 
-.. autoclass:: ziaplot.pie.Pie
+.. autoclass:: ziaplot.charts.pie.Pie
     :members:
 
-.. autoclass:: ziaplot.pie.PieSlice
+.. autoclass:: ziaplot.charts.pie.PieSlice
     :members:
 
-.. autoclass:: ziaplot.bar.BarChart
+.. autoclass:: ziaplot.charts.bar.BarChart
     :members:
 
-.. autoclass:: ziaplot.bar.BarSingle
+.. autoclass:: ziaplot.charts.bar.BarSingle
     :members:
 
-.. autoclass:: ziaplot.bar.BarChartGrouped
+.. autoclass:: ziaplot.charts.bar.BarChartGrouped
     :members:
 
-.. autoclass:: ziaplot.bar.BarSeries
+.. autoclass:: ziaplot.charts.bar.BarSeries
     :members:
 
 
@@ -62,50 +62,54 @@ Data Series
 .. autoclass:: ziaplot.series.Series
     :members:
 
-.. autoclass:: ziaplot.dataseries.Line
+.. autoclass:: ziaplot.dataplots.polylines.PolyLine
     :members:
 
-.. autoclass:: ziaplot.dataseries.Xy
+.. autoclass:: ziaplot.dataplots.polylines.Scatter
     :members:
 
-.. autoclass:: ziaplot.dataseries.Function
+.. autoclass:: ziaplot.dataplots.polylines.ErrorBar
     :members:
 
-.. autoclass:: ziaplot.dataseries.ErrorBar
+.. autoclass:: ziaplot.dataplots.polylines.LineFill
     :members:
 
-.. autoclass:: ziaplot.dataseries.LineFill
+.. autoclass:: ziaplot.dataplots.text.Text
     :members:
 
-.. autoclass:: ziaplot.dataseries.Text
+.. autoclass:: ziaplot.dataplots.polylines.Arrow
     :members:
 
-.. autoclass:: ziaplot.dataseries.Arrow
+.. autoclass:: ziaplot.dataplots.polylines.HLine
     :members:
 
-.. autoclass:: ziaplot.dataseries.HLine
+.. autoclass:: ziaplot.dataplots.polylines.VLine
     :members:
 
-.. autoclass:: ziaplot.dataseries.VLine
+.. autoclass:: ziaplot.dataplots.bars.Bars
     :members:
 
-.. autoclass:: ziaplot.dataseries.Bars
+.. autoclass:: ziaplot.dataplots.bars.BarsHoriz
     :members:
 
-.. autoclass:: ziaplot.dataseries.BarsHoriz
+.. autoclass:: ziaplot.dataplots.bars.Histogram
     :members:
 
-.. autoclass:: ziaplot.dataseries.Histogram
-    :members:
-
-.. autoclass:: ziaplot.polar.LinePolar
+.. autoclass:: ziaplot.dataplots.polar.LinePolar
     :members:
     
-.. autoclass:: ziaplot.smith.SmithConstResistance
+.. autoclass:: ziaplot.axes.smith.SmithConstResistance
     :members:
 
-.. autoclass:: ziaplot.smith.SmithConstReactance
+.. autoclass:: ziaplot.axes.smith.SmithConstReactance
     :members:
+
+Functions
+---------
+
+.. autoclass:: ziaplot.geo.Function
+    :members:
+
 
 Layouts
 -------
@@ -114,4 +118,7 @@ Layouts
     :members:
 
 .. autoclass:: ziaplot.layout.Vlayout
+    :members:
+
+.. autoclass:: ziaplot.layout.GridLayout
     :members:

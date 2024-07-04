@@ -18,9 +18,9 @@ horizontally or vertically.
 .. jupyter-execute::
 
     with zp.Hlayout(height=200):
-        zp.Line([1,3,5], [1,2,5]).marker('o')
-        zp.Line([1,3,5], [1,2,5]).marker('square')
-        zp.Line([1,3,5], [1,2,5]).marker('triangle')
+        zp.Plot([1,3,5], [1,2,5]).marker('o')
+        zp.Plot([1,3,5], [1,2,5]).marker('square')
+        zp.Plot([1,3,5], [1,2,5]).marker('triangle')
 
 Grid layouts arrange axes in rows and columns. The number of columns may be specified, and the rows
 are automatically added as needed.
@@ -28,22 +28,22 @@ are automatically added as needed.
 .. jupyter-execute::
 
     with zp.GridLayout(columns=2):
-        zp.Line([1,2,3], [1,2,5])
-        zp.Line([1,2,3], [1,2,5]).color('blue')
-        zp.Line([1,2,3], [1,2,5]).color('green')
-        zp.Line([1,2,3], [1,2,5]).color('orange')
+        zp.Plot([1,2,3], [1,2,5])
+        zp.Plot([1,2,3], [1,2,5]).color('blue')
+        zp.Plot([1,2,3], [1,2,5]).color('green')
+        zp.Plot([1,2,3], [1,2,5]).color('orange')
 
 Subplots may span multiple rows or columns using `.span`. The first parameter is the column span, the second is the row span.
 
 .. jupyter-execute::
 
     with zp.GridLayout(columns=3, width=800):
-        zp.Line([1,2,3], [1,2,5]).span(3)
-        zp.Line([1,2,3], [3,3,2]).color('blue').span(1, 2)
-        zp.Line([1,2,3], [4,1,3]).color('green')
-        zp.Line([1,2,3], [0,2,6]).color('orange')
-        zp.Line([1,2,3], [0,2,6]).color('cyan')
-        zp.Line([1,2,3], [0,2,6]).color('purple')
+        zp.Plot([1,2,3], [1,2,5]).span(3)
+        zp.Plot([1,2,3], [3,3,2]).color('blue').span(1, 2)
+        zp.Plot([1,2,3], [4,1,3]).color('green')
+        zp.Plot([1,2,3], [0,2,6]).color('orange')
+        zp.Plot([1,2,3], [0,2,6]).color('cyan')
+        zp.Plot([1,2,3], [0,2,6]).color('purple')
 
 
 Use :py:class:`ziaplot.layout.GridEmpty` to leave an empty spot in a layout.
@@ -51,7 +51,7 @@ Use :py:class:`ziaplot.layout.GridEmpty` to leave an empty spot in a layout.
 .. jupyter-execute::
 
     with zp.GridLayout(columns=2):
-        zp.Line([0, 1], [0, 1])
+        zp.Plot([0, 1], [0, 1])
         zp.GridEmpty()
-        zp.Line([0, 1], [1, 1]).color('orange')
-        zp.Line([0, 1], [1, 0]).color('green')
+        zp.Plot([0, 1], [1, 1]).color('orange')
+        zp.Plot([0, 1], [1, 0]).color('green')
