@@ -336,6 +336,7 @@ class Canvas:
              halign: Halign = 'left',
              valign: Valign = 'bottom',
              rotate: Optional[float] = None,
+             pixelofst: Optional[tuple[float, float]] = None,
              dataview: Optional[ViewBox] = None) -> None:
         ''' Add text to the canvas
 
@@ -349,6 +350,7 @@ class Canvas:
                 halign: Horizontal Alignment
                 valign: Vertical Alignment
                 rotate: Rotation angle in degrees
+                pixelofst: Offset to apply to shift text in SVG/pixel coordinates
                 dataview: ViewBox for transforming x, y into SVG coordinates
         '''
         if s == '':
@@ -357,6 +359,11 @@ class Canvas:
         if dataview:
             xform = Transform(dataview, self.viewbox)
             x, y = xform.apply(x, y)
+
+        if pixelofst:
+            # Apply offset in pixel coordinates, without transform
+            x += pixelofst[0]
+            y += pixelofst[1]
 
         y = self.flipy(y)
         text.draw_text(x, y, s, self.group,

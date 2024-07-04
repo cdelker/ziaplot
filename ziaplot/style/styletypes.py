@@ -45,6 +45,39 @@ class LineStyle:
     stroke: DashTypes = '-'
     width: float = 2.0
 
+
+@dataclass
+class GuideStyle:
+    ''' Guide line style
+
+        Args:
+            color: Line color
+            stroke: Line style, name or SVG dash-array specification
+            width: Line width
+    '''
+    color: str = 'black'
+    stroke: DashTypes = ':'
+    width: float = 1.5
+
+
+@dataclass
+class PointMarkerStyle:
+    ''' Point Marker Style
+
+        Args:
+            shape: Shape of marker
+            color: Marker color
+            strokecolor: Color for border
+            strokewidth: Width of border
+            radius: Pixel radius (or half-width) of marker
+    '''
+    shape: MarkerTypes = 'round'
+    color: str = '#007a86'
+    strokecolor: str = 'black'
+    strokewidth: float = 1
+    radius: float = 4.0
+
+
 @dataclass
 class BorderStyle:
     ''' Border Style for bars and pie slices
@@ -69,6 +102,24 @@ class TextStyle:
     font: str = 'sans'
     size: float = 16
     color: str = 'black'
+
+
+@dataclass
+class PointStyle:
+    ''' Point Style
+
+        Args:
+            marker: Marker Style
+            text: Text Label Style
+            text_ofst: Pixel offset between point and text    
+            guidex: Line style for x guide-lines
+            guidey: Line style for y guide-lines
+    '''
+    marker: PointMarkerStyle = field(default_factory=PointMarkerStyle)
+    text: TextStyle = field(default_factory=lambda: TextStyle(size=14))
+    text_ofst: float = 8
+    guidex: GuideStyle = field(default_factory=GuideStyle)
+    guidey: GuideStyle = field(default_factory=GuideStyle)
 
 
 @dataclass
@@ -126,6 +177,7 @@ class SeriesStyle:
     line: LineStyle = field(default_factory=LineStyle)
     border: BorderStyle = field(default_factory=BorderStyle)
     marker: MarkerStyle = field(default_factory=MarkerStyle)
+    point: PointStyle = field(default_factory=PointStyle)
     text: TextStyle = field(default_factory=TextStyle)
     yerror: ErrorBarStyle = field(default_factory=ErrorBarStyle)
     xerror: ErrorBarStyle = field(default_factory=lambda: ErrorBarStyle(marker='|'))

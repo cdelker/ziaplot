@@ -29,6 +29,8 @@ def settextcolor(st: styletypes.Style, color: str):
     st.polar.title.color = color
     st.pie.title.color = color
     st.pie.label.color = color
+    st.series.point.text.color = color
+    st.series.point.text.color = color
 
 
 def setaxiscolor(st: styletypes.Style, color: str = 'black'):
@@ -59,6 +61,7 @@ def Taffy() -> styletypes.Style:
                               '#f2547d', '#6a78d1', '#f5C26b',
                               '#516f90', '#99acc2', '#cc3399',
                               '#99cc00')
+    s.series.point.marker.color = '#00bda5'
     return s
 
 
@@ -69,6 +72,8 @@ def Pastel() -> styletypes.Style:
     setaxiscolor(s, '#555555')
     s.series.marker.strokecolor = '#555555'
     s.series.border.color = '#555555'
+    s.series.point.marker.color = '#7589bf'
+    s.series.point.marker.strokecolor = '#555555'
     s.colorcycle = ColorCycle('#c6579A', '#ffbe9f', '#f1e6b2',
                               '#b6cfae', '#a7e6d7', '#9AdBe8',
                               '#decde7', '#ffa1cb', '#9a98b5',
@@ -82,6 +87,7 @@ def Bold() -> styletypes.Style:
     s.colorcycle = ColorCycle('red', 'orange', 'yellow', 'lime',
                               '#00aa00', 'blue', '#00eeee',
                               'violet', 'purple', 'silver')
+    s.series.point.marker.color = '#00aa00'
     return s
 
 
@@ -96,6 +102,8 @@ def Dark() -> styletypes.Style:
     s.axis.bgcolor = 'black'
     s.series.border.color = 'none'
     s.series.border.width = 0
+    s.series.point.marker.color = '#f5C26b'
+    s.series.point.guidex.color = '#dddddd'
     return s
 
 
@@ -113,6 +121,7 @@ def DarkBold() -> styletypes.Style:
                               'violet',
                               'purple',
                               'silver')
+    s.series.point.marker.color = 'orange'
     return s    
 
 
@@ -123,6 +132,7 @@ def DarkTaffy() -> styletypes.Style:
                               '#f2547d', '#6a78d1', '#f5C26b',
                               '#516f90', '#99acc2', '#cc3399',
                               '#99cc00')
+    s.series.point.marker.color = '#00bda5'
     return s
 
 

@@ -20,6 +20,8 @@ else:
 
 from .config import config, TextMode
 
+TextPosition = Literal['N', 'E', 'S', 'W',
+                       'NE', 'NW', 'SE', 'SW']
 Halign = Literal['left', 'center', 'right']
 Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
 Size = namedtuple('Size', ['width', 'height'])
