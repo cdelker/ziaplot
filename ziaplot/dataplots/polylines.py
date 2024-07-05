@@ -338,64 +338,6 @@ class Arrow(PolyLine):
                     dataview=databox)
 
 
-class HLine(Series):
-    ''' Horizontal line spanning the plot
-
-        Args:
-            y: Y-value of the line
-    '''
-    def __init__(self, y: float):
-        super().__init__()
-        self.y = y
-
-    def datarange(self) -> DataRange:
-        ''' Get x-y datarange '''
-        return DataRange(None, None, self.y, self.y)
-
-    def logy(self) -> None:
-        ''' Convert y coordinates to log(y) '''
-        self.y = math.log10(self.y)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        assert databox is not None
-        color = self.style.line.color
-        xpath = ViewBox(databox.x, databox.x + databox.w, databox.w, databox.h)
-        ypath = (self.y, self.y)
-        canvas.path(xpath, ypath, self.style.line.stroke, color,
-                    self.style.line.width, dataview=databox)
-
-
-class VLine(Series):
-    ''' Vertical line spanning the plot
-
-        Args:
-            x: X-value of the line
-    '''
-    def __init__(self, x: float):
-        super().__init__()
-        self.x = x
-
-    def datarange(self) -> DataRange:
-        ''' Get x-y datarange '''
-        return DataRange(self.x, self.x, None, None)
-
-    def logx(self) -> None:
-        ''' Convert x values to log(x) '''
-        self.x = math.log10(self.x)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        assert databox is not None
-        color = self.style.line.color
-        xpath = (self.x, self.x)
-        ypath = (databox.y, databox.y + databox.h)
-        canvas.path(xpath, ypath, self.style.line.stroke, color,
-                    self.style.line.width, dataview=databox)
-
-
 
 Plot = PolyLine
 Xy = Scatter

@@ -53,8 +53,9 @@ class Point(Series):
 
     def datarange(self) -> DataRange:
         ''' Get x-y datarange '''
-        dx = self.style.marker.radius * 2 ## PUT IN POINT STYLE
-        dy = self.style.marker.radius * 2 ## PUT IN POINT STYLE
+        delta = .05
+        dx = abs(self.x) * delta
+        dy = abs(self.y) * delta
         return DataRange(self.x - dx, self.x + dx,
                          self.y - dy, self.y + dy)
 

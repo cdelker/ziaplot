@@ -10,7 +10,7 @@ def zrange(start: float, stop: float, step: float) -> list[float]:
     assert step > 0
     assert step < (stop-start)
     vals = [start]
-    while abs(vals[-1] - stop)/step > .1:  # Wiggle room for float precision
+    while abs(vals[-1] - stop)/step > .1 and vals[-1] < stop:  # Wiggle room for float precision
         vals.append(vals[-1] + step)
     return vals
 

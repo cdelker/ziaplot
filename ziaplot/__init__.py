@@ -1,5 +1,5 @@
-from .dataplots import PolyLine, Plot, Xy, Scatter, Text, HLine, VLine, LinePolar, Bars, BarsHoriz, Histogram, ErrorBar, LineFill, Arrow, Contour, Point
-from .geo import Function
+from .dataplots import PolyLine, Plot, Xy, Scatter, Text, LinePolar, Bars, BarsHoriz, Histogram, ErrorBar, LineFill, Arrow, Contour, Point
+from .geo import Function, Line, HLine, VLine
 from .axes import XyPlot, XyGraph, LogYPlot, LogXPlot, LogXYPlot, Polar, Smith, SmithConstResistance, SmithConstReactance
 from .charts import Pie, PieSlice, BarChart, BarSingle, BarChartGrouped, BarSeries
 from .layout import Hlayout, Vlayout, GridLayout, GridEmpty

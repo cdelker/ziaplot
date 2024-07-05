@@ -4,8 +4,6 @@ from .polylines import (
     ErrorBar,
     LineFill,
     Arrow, 
-    HLine,
-    VLine,
     Plot,
     Xy)
 from .contour import Contour

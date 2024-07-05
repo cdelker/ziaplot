@@ -401,7 +401,7 @@ class XyGraph(XyPlot):
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, centerorigin: bool = True, title: Optional[str] = None,
+    def __init__(self, centerorigin: bool = False, title: Optional[str] = None,
                  xname: str = 'x', yname: str = 'y',
                  legend: LegendLoc = 'left', style: Optional[Style] = None):
         super().__init__(title=title, xname=xname, yname=yname,
@@ -465,19 +465,18 @@ class XyGraph(XyPlot):
 
     @lru_cache
     def datarange(self) -> DataRange:
-        ''' Get range of x-y data. XyGraph datarange must include 0 '''
+        ''' Get range of x-y data. XyGraph datarange must include x=0 and y=0 '''
         drange = super().datarange()
-        if not self.centerorigin:
-            return drange
         xmin = min(0, drange.xmin)
         xmax = max(0, drange.xmax)
         ymin = min(0, drange.ymin)
         ymax = max(0, drange.ymax)
 
-        x = max(abs(xmax), abs(xmin))
-        y = max(abs(ymax), abs(ymin))
-        xmin, xmax = -x, x
-        ymin, ymax = -y, y
+        if self.centerorigin:
+            x = max(abs(xmax), abs(xmin))
+            y = max(abs(ymax), abs(ymin))
+            xmin, xmax = -x, x
+            ymin, ymax = -y, y
 
         if xmin == xmax == ymin == ymax == 0:
             ymin = xmin = -1

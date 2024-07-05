@@ -2,14 +2,13 @@
 
 ### 0.6 - In progress
 
-- Added `GridLayout`. `Hlayout` and `Vlayout` now inherit from `GridLayout`, and no longer support nested layouts.
+Includes several breaking changes:
+
+- Added `Point` and `Line`
+- The old `Line` has become `PolyLine`, with alias `Plot`. The new `Line` represents a true Euclidean line rather than a set of (x, y) coordinates connected by line segments.
+- Added `GridLayout` for placing axes in a grid. `Hlayout` and `Vlayout` now inherit from `GridLayout`, and no longer support nested layouts.
 - Added more legend location options
-
-Breaking changes:
-
-- `Line` has become `PolyLine`, with alias `Plot`. The new `Line` represents a true Euclidean line rather than a set of (x, y) coordinates connected by line segments.
 - Code restructured into submodules
-
 
 
 ### 0.5 - 2023-12-20
