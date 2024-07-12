@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Optional
 from copy import deepcopy
+import math
 
 from .style import Default, MarkerTypes, DashTypes
 from .drawable import Drawable

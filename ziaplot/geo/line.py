@@ -64,6 +64,28 @@ class Line(Series):
             y2 = x2 * self.slope + intercept
         return (x1, x2), (y1, y2)        
 
+    def point_at(self, x: float) -> Point:
+        ''' Draw Point at f(x) '''
+        y = self.y(x)
+        return Point(x, y)
+
+    def point_aty(self, y: float) -> Point:
+        ''' Draw Point at y = f(x) '''
+        x = self.x(y)
+        return Point(x, y)
+
+    def line_perpendicular(self, x: float) -> 'Line':
+        ''' Draw Line perpendicular at x '''
+        y = self.y(x)
+        slope = -1 / self.slope
+        return Line((x, y), slope)
+
+    def line_perpendicular_y(self, y: float) -> 'Line':
+        ''' Draw Line perpendicular at y '''
+        x = self.x(y)
+        slope = -1 / self.slope
+        return Line((x, y), slope)
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
@@ -86,38 +108,6 @@ class Line(Series):
         except ZeroDivisionError:
             slope = math.inf
         return cls(p1, slope)
-
-    @classmethod
-    def perp_to(cls, line: 'Line', x: float = 0) -> 'Line':
-        ''' Create a Line perpendicular to Line at x '''
-        if not math.isfinite(line.slope):
-            raise ValueError('Undefined Line')
-
-        try:
-            slope = -1 / line.slope
-        except ZeroDivisionError as exc:
-            slope = math.inf
-        return cls(point=(x, line.y(x)), slope=slope)
-
-    @classmethod
-    def perp_toy(cls, line: 'Line', y: float = 0) -> 'Line':
-        ''' Create a Line perpendicular to Line at y '''
-        if line.slope == 0:
-            raise ValueError('Undefined Line')
-
-        slope = -1 / line.slope
-        x = line.x(y)
-        if x and not math.isfinite(x):
-            x = line.point[0]
-        return cls(point=(x, y), slope=slope)
-
-    def x_point(self, x: float) -> Point:
-        ''' Make a Point on the line at x '''
-        return Point(x, self.y(x))
-
-    def y_point(self, y):
-        ''' Make a Point on the line at y '''
-        return Point(self.x(y), y)
 
 
 class HLine(Line):

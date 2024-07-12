@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 from typing import Optional
+import math
 
 from ..series import Series
 from ..canvas import Canvas, Borders, ViewBox
+from ..dataplots import Point
+from ..geo import Line
 
 
 class ShapeBase(Series):
@@ -33,6 +36,29 @@ class Circle(ShapeBase):
         self.x = x
         self.y = y
         self.radius = radius
+
+    def point_at(self, theta: float) -> Point:
+        ''' Draw Point on circle at angle theta (radians) '''
+        x = self.x + math.cos(theta)
+        y = self.y + math.sin(theta)
+        return Point(x, y)
+
+    def line_perpendicular(self, theta: float) -> Line:
+        ''' Draw Line perpendicular to the circle at theta (radians) '''
+        x = self.x + math.cos(theta)
+        y = self.y + math.sin(theta)
+        slope = math.tan(theta)
+        return Line((x, y), slope)
+
+    def line_tangent(self, theta: float) -> Line:
+        ''' Draw Line perpendicular to the circle at theta (radians) '''
+        x = self.x + math.cos(theta)
+        y = self.y + math.sin(theta)
+        try:
+            slope = -1/math.tan(theta)
+        except ZeroDivisionError:
+            slope = math.inf
+        return Line((x, y), slope)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
