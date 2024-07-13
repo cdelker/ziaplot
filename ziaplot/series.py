@@ -63,3 +63,7 @@ class Series(Drawable):
 
     def logx(self) -> None:
         ''' Convert x values to log(x) '''
+
+    def _tangent_slope(self, x: float) -> float:
+        ''' Calculate angle tangent to Series at x '''
+        raise NotImplementedError

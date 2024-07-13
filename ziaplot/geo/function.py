@@ -8,8 +8,8 @@ from ..series import Series
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox
 from ..axes import XyPlot
-from ..dataplots import PolyLine, Point
-from .line import Line
+from ..dataplots import PolyLine
+
 
 
 class Function(Series):
@@ -55,7 +55,7 @@ class Function(Series):
             y = math.log10(y) if y > 0 else math.nan
         return y
 
-    def _tangent_slope(self, x: float, y: Optional[float] = None) -> float:
+    def _tangent_slope(self, x: float) -> float:
         ''' Calculate angle tangent to Series at x '''
         return util.derivative(self.func, x)
 
@@ -70,35 +70,6 @@ class Function(Series):
             between x1 and x2
         '''
         return util.minimum(self.func, x1, x2)
-
-    def point_at(self, x: float) -> Point:
-        ''' Draw Point at f(x) '''
-        y = self.y(x)
-        return Point(x, y)
-
-    def point_minimum(self, x1: float, x2: float) -> Point:
-        ''' Draw Point at local minimum between x1 and x2 '''
-        x = self._local_min(x1, x2)
-        y = self.y(x)
-        return Point(x, y)
-
-    def point_maximum(self, x1: float, x2: float) -> Point:
-        ''' Draw Point at local maximum between x1 and x2 '''
-        x = self._local_max(x1, x2)
-        y = self.y(x)
-        return Point(x, y)
-
-    def line_perpendicular(self, x: float) -> Line:
-        ''' Draw perpendicular Line at x '''
-        y = self.y(x)
-        slope = -1 / self._tangent_slope(x)
-        return Line((x, y), slope)
-
-    def line_tangent(self, x: float) -> Line:
-        ''' Draw tangent Line at x '''
-        y = self.y(x)
-        slope = self._tangent_slope(x)
-        return Line((x, y), slope)
 
     def _evaluate(self, x: Sequence[float]) -> tuple[list[float], list[float]]:
         y = [self.func(xx) for xx in x]

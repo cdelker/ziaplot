@@ -5,34 +5,32 @@ import math
 
 from ..canvas import Canvas, Borders, ViewBox
 from ..series import Series
-from ..dataplots import Point
+from ..style import MarkerTypes
+from ..axes import XyPlot
 
 
 PointType = tuple[float, float]
 
 
 class Line(Series):
-    ''' A straight line
-
-        Args:
-            point: One point on the line
-            slope: Slope of the line
-        
-        See also Line.from_slopeintercept and Line.from_points
-        for other means of creating the Line.
-    '''
     def __init__(self, point: PointType, slope: float = 0):
         super().__init__()
         self.slope = slope
         self.point = point
+        self.startmark: Optional[MarkerTypes] = None
+        self.endmark: Optional[MarkerTypes] = None
+
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'PolyLine':
+        ''' Define markers to show at the start and end of the line. Use defaults
+            to show arrowheads pointing outward in the direction of the line.
+        '''
+        self.startmark = start
+        self.endmark = end
+        return self
 
     @property
     def intercept(self) -> float:
         return -self.slope * self.point[0] + self.point[1]
-
-    def y(self, x):
-        ''' Calculate y at x '''
-        return self.slope * x + self.intercept
 
     def x(self, y):
         ''' Calculate x at y '''
@@ -43,7 +41,16 @@ class Line(Series):
         except ZeroDivisionError:
             return math.nan
 
-    def _endpoints(self, databox: ViewBox) -> tuple[tuple[float, float], tuple[float, float]]:
+    def y(self, x: float):
+        ''' Calculate y at x '''
+        y = self.slope * x + self.intercept
+        return y
+
+    def _tangent_slope(self, x: float) -> float:
+        ''' Calculate angle tangent to Series at x '''
+        return self.slope
+
+    def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
         ''' Get endpoints of line that will fill the databox '''
         assert databox is not None
         intercept = self.intercept
@@ -64,37 +71,6 @@ class Line(Series):
             y2 = x2 * self.slope + intercept
         return (x1, x2), (y1, y2)        
 
-    def point_at(self, x: float) -> Point:
-        ''' Draw Point at f(x) '''
-        y = self.y(x)
-        return Point(x, y)
-
-    def point_aty(self, y: float) -> Point:
-        ''' Draw Point at y = f(x) '''
-        x = self.x(y)
-        return Point(x, y)
-
-    def line_perpendicular(self, x: float) -> 'Line':
-        ''' Draw Line perpendicular at x '''
-        y = self.y(x)
-        slope = -1 / self.slope
-        return Line((x, y), slope)
-
-    def line_perpendicular_y(self, y: float) -> 'Line':
-        ''' Draw Line perpendicular at y '''
-        x = self.x(y)
-        slope = -1 / self.slope
-        return Line((x, y), slope)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        assert databox is not None
-        color = self.style.line.color
-        x, y = self._endpoints(databox)
-        canvas.path(x, y, self.style.line.stroke, color,
-                    self.style.line.width, dataview=databox)
-
     @classmethod
     def from_slopeintercept(cls, slope: float, intercept: float = 0) -> 'Line':
         ''' Create a line from slope and intercept '''
@@ -109,6 +85,42 @@ class Line(Series):
             slope = math.inf
         return cls(p1, slope)
 
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        assert databox is not None
+        color = self.style.line.color
+        x, y = self._endpoints(databox)
+        startmark = None
+        endmark = None
+        if self.startmark:
+            startmark = canvas.definemarker(self.startmark,
+                                            self.style.marker.radius,
+                                            self.style.marker.color,
+                                            self.style.marker.strokecolor,
+                                            self.style.marker.strokewidth,
+                                            orient=True)
+        if self.endmark:
+            endmark = canvas.definemarker(self.endmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+        canvas.path(x, y,
+                    stroke=self.style.line.stroke,
+                    color=color,
+                    width=self.style.line.width,
+                    startmarker=startmark,
+                    endmarker=endmark,
+                    dataview=databox)
+
+    def svgxml(self, border: bool = False) -> ET.Element:
+        ''' Generate XML for standalone SVG '''
+        ax = XyPlot(style=self._axisstyle)
+        ax.add(self)
+        return ax.svgxml(border=border)
+
 
 class HLine(Line):
     ''' Horizontal Line at y '''
@@ -120,4 +132,57 @@ class VLine(Line):
     ''' Vertical Line at x '''
     def __init__(self, x: float):
         super().__init__(point=(x, 0), slope=math.inf)
+
+
+class Segment(Line):
+    ''' Line segment from p1 to p2 '''
+    def __init__(self, p1: PointType, p2: PointType):
+        try:
+            slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+        except ZeroDivisionError:
+            slope = math.inf
+        super().__init__(p1, slope)
+        self.p1 = p1
+        self.p2 = p2
+
+    @property
+    def length(self) -> float:
+        ''' Length of the segment '''
+        return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
+
+    def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
+        ''' Get endpoints of line that will fill the databox '''
+        return (self.p1[0], self.p2[0]), (self.p1[1], self.p2[1])
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        assert databox is not None
+        color = self.style.line.color
+        x, y = self._endpoints(databox)
+        startmark = None
+        endmark = None
+        if self.startmark:
+            startmark = canvas.definemarker(self.startmark,
+                                            self.style.marker.radius,
+                                            self.style.marker.color,
+                                            self.style.marker.strokecolor,
+                                            self.style.marker.strokewidth,
+                                            orient=True)
+        if self.endmark:
+            endmark = canvas.definemarker(self.endmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+
+        color = self.style.line.color
+        canvas.path(x, y,
+                    stroke=self.style.line.stroke,
+                    color=color,
+                    width=self.style.line.width,
+                    startmarker=startmark,
+                    endmarker=endmark,
+                    dataview=databox)
 

@@ -6,6 +6,8 @@ import math
 from ..text import TextPosition
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..series import Series
+from ..shapes import Circle
+from . import Function
 
 
 class Point(Series):
@@ -123,3 +125,29 @@ class Point(Series):
                         valign=valign,
                         pixelofst=(dx, dy),
                         dataview=databox)
+
+    @classmethod
+    def at(cls, f: Function, x: float) -> 'Point':
+        ''' Draw a Point at y = f(x) '''
+        y = f.y(x)
+        return cls(x, y)
+
+    @classmethod
+    def at_minimum(cls, f: Function, x1: float, x2: float) -> 'Point':
+        ''' Draw a Point at local minimum of f between x1 and x2 '''
+        x = f._local_min(x1, x2)
+        y = f.y(x)
+        return cls(x, y)
+
+    @classmethod    
+    def at_maximum(cls, f: Function, x1: float, x2: float) -> 'Point':
+        ''' Draw a Point at local maximum of f between x1 and x2 '''
+        x = f._local_max(x1, x2)
+        y = f.y(x)
+        return cls(x, y)
+
+    @classmethod
+    def on_circle(cls, circle: Circle, theta: float) -> 'Point':
+        ''' Draw a Point on the circle at angle theta '''
+        x, y = circle._xy(theta)
+        return cls(x, y)
