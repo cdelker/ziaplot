@@ -186,3 +186,16 @@ class Segment(Line):
                     endmarker=endmark,
                     dataview=databox)
 
+
+class Vector(Segment):
+    ''' A Vector arrow from (0, 0) to (x, y) '''
+    def __init__(self, x: float, y: float):
+        super().__init__((0, 0), (x, y))
+        self.endmark = '>'
+
+    @classmethod
+    def from_angle(cls, theta: float, d: float = 1):
+        ''' Create Vector from angle and length '''
+        x = d * math.cos(theta)
+        y = d * math.sin(theta)
+        return cls(x, y)
