@@ -54,6 +54,7 @@ class BasePlot(Drawable):
         self.showyticks = True
         self.series: list[Series] = []   # List of XY lines/series
         self.legend = legend
+        self._equal_aspect = False
         axis_stack.push_series(self)
     
     def __enter__(self):
@@ -104,6 +105,11 @@ class BasePlot(Drawable):
         ''' Set this axis x range equal to the other axis's x range '''
         r = other.datarange()
         self.xrange(r.xmin, r.xmax)
+        return self
+
+    def equal_aspect(self) -> BasePlot:
+        ''' Set equal aspect ratio on data limits '''
+        self._equal_aspect = True
         return self
 
     def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,

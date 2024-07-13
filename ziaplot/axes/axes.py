@@ -378,6 +378,17 @@ class XyPlot(BasePlot):
                           ticks.xrange[1]-ticks.xrange[0],
                           ticks.yrange[1]-ticks.yrange[0])
 
+        if self._equal_aspect:
+            daspect = databox.w / databox.h
+            axisaspect = axisbox.w / axisbox.h
+            ratio = daspect / axisaspect
+            axisbox = ViewBox(
+                axisbox.x,
+                axisbox.y,
+                axisbox.w if ratio >= 1 else axisbox.w * ratio,
+                axisbox.h if ratio <= 1 else axisbox.h / ratio
+            )
+
         self._drawframe(canvas, axisbox)
         self._drawticks(canvas, ticks, axisbox, databox)
         self._drawtitle(canvas, axisbox)
@@ -704,6 +715,17 @@ class XyGraph(XyPlot):
         databox = ViewBox(ticks.xrange[0], ticks.yrange[0],
                           ticks.xrange[1]-ticks.xrange[0],
                           ticks.yrange[1]-ticks.yrange[0])
+
+        if self._equal_aspect:
+            daspect = databox.w / databox.h
+            axisaspect = axisbox.w / axisbox.h
+            ratio = daspect / axisaspect
+            axisbox = ViewBox(
+                axisbox.x,
+                axisbox.y,
+                axisbox.w if ratio >= 1 else axisbox.w * ratio,
+                axisbox.h if ratio <= 1 else axisbox.h / ratio
+            )
 
         self._drawframe(canvas, axisbox)
         self._drawticks(canvas, ticks, axisbox, databox)

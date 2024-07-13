@@ -57,7 +57,6 @@ class Ellipse(ShapeBase):
         phi = math.atan2(dy * self.r1**2, dx * self.r2**2)
         tan = phi + math.pi/2 + math.radians(self.theta)
         return (tan + math.tau) % math.tau
-        return (tan + math.pi) % math.tau - math.pi
 
     def _xy(self, theta: float) -> tuple[float, float]:
         ''' Get x, y coordinate on the circle at the angle theta (rad) '''
