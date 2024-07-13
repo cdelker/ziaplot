@@ -1,26 +1,29 @@
 ''' Euclidean Lines '''
 from __future__ import annotations
 from typing import Optional
+from xml.etree import ElementTree as ET
 import math
 
 from ..canvas import Canvas, Borders, ViewBox
 from ..series import Series
 from ..style import MarkerTypes
 from ..axes import XyPlot
+from .function import Function
 
 
 PointType = tuple[float, float]
 
 
-class Line(Series):
+class Line(Function):
     def __init__(self, point: PointType, slope: float = 0):
-        super().__init__()
         self.slope = slope
         self.point = point
+        intercept = -slope * point[0] + point[1]
+        super().__init__(lambda x: intercept + slope * x)
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
 
-    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'PolyLine':
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Line':
         ''' Define markers to show at the start and end of the line. Use defaults
             to show arrowheads pointing outward in the direction of the line.
         '''

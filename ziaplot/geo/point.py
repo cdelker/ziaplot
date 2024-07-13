@@ -8,6 +8,7 @@ from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..series import Series
 from ..shapes import Circle
 from . import Function
+from ..util import root
 
 
 class Point(Series):
@@ -133,6 +134,12 @@ class Point(Series):
         return cls(x, y)
 
     @classmethod
+    def at_y(cls, f: Function, y: float) -> 'Point':
+        ''' Draw a Point at y = f(x) '''
+        x = f.x(y)
+        return cls(x, y)
+
+    @classmethod
     def at_minimum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local minimum of f between x1 and x2 '''
         x = f._local_min(x1, x2)
@@ -150,4 +157,14 @@ class Point(Series):
     def on_circle(cls, circle: Circle, theta: float) -> 'Point':
         ''' Draw a Point on the circle at angle theta (degrees) '''
         x, y = circle._xy(math.radians(theta))
+        return cls(x, y)
+
+    @classmethod
+    def at_intersection(cls, f1: Function, f2: Function,
+                        x1: float, x2: float) -> 'Point':
+        ''' Draw a Point at the intersection of two functions '''
+        tol = (x2-x1) * 1E-4
+        x = root(lambda x: f1.func(x) - f2.func(x),
+                 a=x1, b=x2, tol=tol)
+        y = f1.y(x)
         return cls(x, y)

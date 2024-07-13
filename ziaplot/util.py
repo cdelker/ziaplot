@@ -38,6 +38,24 @@ def interp(newx: Sequence[float], xlist: Sequence[float], ylist: Sequence[float]
     return newy
 
 
+def root(f: Callable, a: float, b: float, tol=1E-4) -> float:
+    ''' Find root of f between a and b '''
+    def samesign(x, y):
+        return x*y > 0
+
+    fa = f(a)
+    if samesign(fa, f(b)):
+        raise ValueError("Root not bounded by a and b.")
+
+    m = (a + b) / 2
+    fm = f(m)
+    if abs(fm) < tol:
+        return m
+
+    if samesign(fa, fm):
+        return root(f, m, b, tol)
+
+    return root(f, a, m, tol)
 
 
 def minimum(f: Callable, a: float, b: float, tolerance: float=1e-5):

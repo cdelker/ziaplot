@@ -8,7 +8,6 @@ from ..series import Series
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox
 from ..axes import XyPlot
-from ..dataplots import PolyLine
 
 
 class Function(Series):
@@ -32,7 +31,7 @@ class Function(Series):
         self._logx = False
         self._logy = False
 
-    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'PolyLine':
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Function':
         ''' Define markers to show at the start and end of the line. Use defaults
             to show arrowheads pointing outward in the direction of the line.
         '''
