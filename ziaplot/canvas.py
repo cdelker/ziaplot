@@ -302,7 +302,8 @@ class Canvas:
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
                strokecolor: str = 'red', strokewidth: float = 1,
                stroke: DashTypes = '-', dataview: Optional[ViewBox] = None):
-        ''' Add a circle to the canvas
+        ''' Add a circle to the canvas (always a circle, the width/height
+            will not be scaled to data coordinates).
 
             Args:
                 x: Center of circle
@@ -441,7 +442,7 @@ class Canvas:
         return path
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
-            theta2: float = 3.14, strokecolor: str = 'black',
+            theta2: float = 180, strokecolor: str = 'black',
             strokewidth: float = 1, dataview: Optional[ViewBox] = None) -> ET.Element:
         ''' Add an open arc
 
@@ -479,3 +480,40 @@ class Canvas:
         if self.clip:
             path.attrib['clip-path'] = f'url(#{self.clip})'
         return path
+
+    def ellipse(self, cx: float, cy: float, r1: float, r2: float,
+                theta: float = 0, color: str = 'black',
+                strokecolor: str = 'black', strokewidth: float = 1,
+                dataview: Optional[ViewBox] = None) -> ET.Element:
+        ''' Add an ellipse
+
+            Args:
+                cx: X-center of arc
+                cy: Y-center of arc
+                rx: X-Radius of arc
+                ry: Y-Radius of arc
+                theta: Rotation of ellipse
+                strokecolor: Border color
+                strokewidth: Border width
+        '''
+        if dataview:
+            xform = Transform(dataview, self.viewbox)
+            cx, cy = xform.apply(cx, cy)
+            r1 = r1 * self.viewbox.w / dataview.w
+            r2 = r2 * self.viewbox.h / dataview.h
+        cy = self.flipy(cy)
+
+        ellipse = ET.SubElement(self.group, 'ellipse')
+        ellipse.set('cx', str(cx))
+        ellipse.set('cy', str(cy))
+        ellipse.set('rx', str(r1))
+        ellipse.set('ry', str(r2))
+        ellipse.set('stroke', strokecolor)
+        ellipse.set('stroke-width', str(strokewidth))
+        ellipse.set('fill', color)
+
+        if theta:
+            ellipse.set('transform', f'rotate({-theta} {cx} {cy})')
+        if self.clip:
+            ellipse.attrib['clip-path'] = f'url(#{self.clip})'
+        return ellipse

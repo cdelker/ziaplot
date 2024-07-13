@@ -11,7 +11,6 @@ from ..axes import XyPlot
 from ..dataplots import PolyLine
 
 
-
 class Function(Series):
     ''' Plot a function
 

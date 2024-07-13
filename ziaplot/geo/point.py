@@ -148,6 +148,6 @@ class Point(Series):
 
     @classmethod
     def on_circle(cls, circle: Circle, theta: float) -> 'Point':
-        ''' Draw a Point on the circle at angle theta '''
-        x, y = circle._xy(theta)
+        ''' Draw a Point on the circle at angle theta (degrees) '''
+        x, y = circle._xy(math.radians(theta))
         return cls(x, y)

@@ -1,1 +1,1 @@
-from .shapes import Circle, Rectangle
+from .shapes import Circle, Ellipse, Rectangle

@@ -3,7 +3,7 @@ from .geo import Function, Line, HLine, VLine, Tangent, Normal, Point, Segment, 
 from .axes import XyPlot, XyGraph, LogYPlot, LogXPlot, LogXYPlot, Polar, Smith, SmithConstResistance, SmithConstReactance
 from .charts import Pie, PieSlice, BarChart, BarSingle, BarChartGrouped, BarSeries
 from .layout import Hlayout, Vlayout, GridLayout, GridEmpty
-from .shapes import Circle, Rectangle
+from .shapes import Circle, Ellipse, Rectangle
 from .style import styles
 from .text import settextmode
 from .config import config

@@ -150,6 +150,22 @@ class Segment(Line):
         ''' Length of the segment '''
         return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
 
+    def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> None:
+        ''' Move endpoints of segment, keeping slope and intercept '''
+        y1, y2 = self.p1[1], self.p2[1]
+        if x1 is not None:
+            y1 = self.slope * x1 + self.intercept
+        else:
+            x1 = self.p1[0]
+        
+        if x2 is not None:
+            y2 = self.slope * x2 + self.intercept
+        else:
+            x2 = self.p2[0]
+
+        self.p1 = (x1, y1)
+        self.p2 = (x2, y2)
+
     def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
         ''' Get endpoints of line that will fill the databox '''
         return (self.p1[0], self.p2[0]), (self.p1[1], self.p2[1])
