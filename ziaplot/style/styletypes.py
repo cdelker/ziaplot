@@ -162,6 +162,16 @@ class ColorBarStyle:
 
 
 @dataclass
+class AngleStyle:
+    ''' Style for angle indicators '''
+    text: TextStyle = field(default_factory=lambda: TextStyle(size=12))
+    radius: float = 15
+    text_radius: float = 20
+    color: str = 'black'
+    strokewidth: float = 1.5
+
+
+@dataclass
 class SeriesStyle:
     ''' Style for generic data series
 
@@ -179,6 +189,7 @@ class SeriesStyle:
     marker: MarkerStyle = field(default_factory=MarkerStyle)
     point: PointStyle = field(default_factory=PointStyle)
     text: TextStyle = field(default_factory=TextStyle)
+    angle: AngleStyle = field(default_factory=AngleStyle)
     yerror: ErrorBarStyle = field(default_factory=ErrorBarStyle)
     xerror: ErrorBarStyle = field(default_factory=lambda: ErrorBarStyle(marker='|'))
     fillcolor: Optional[str] = None  # Fill for LineFill areas

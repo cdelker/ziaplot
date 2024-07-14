@@ -5,7 +5,7 @@ from xml.etree import ElementTree as ET
 import math
 
 from ..canvas import Canvas, Borders, ViewBox
-from ..series import PointType
+from ..series import PointType, Series
 from ..style import MarkerTypes
 from ..axes import XyPlot
 from .function import Function
@@ -241,3 +241,132 @@ class Vector(Segment):
         x = d * math.cos(theta)
         y = d * math.sin(theta)
         return cls(x, y)
+
+
+class Angle(Series):
+    ''' Draw angle between two Lines/Segments '''
+    def __init__(self, line1: Line, line2: Line, quad: int = 1):
+        super().__init__()
+        self.line1 = line1
+        self.line2 = line2
+        self.quad = quad
+        self._label: str = None
+        self.square_right = True
+
+    def label(self, label: str) -> 'Angle':
+        self._label = label
+        return self
+
+    def color(self, color: str) -> 'Angle':
+        ''' Sets the color of the angle arc '''
+        self.style.angle.color = color
+        return self
+
+    def strokewidth(self, width: float) -> 'Angle':
+        ''' Sets the strokewidth of the angle arc '''
+        self.style.angle.strokewidth = width
+        return self
+
+    def radius(self, radius: float, text_radius: Optional[float] = None) -> 'Angle':
+        ''' Sets the radius of the angle arc '''
+        self.style.angle.radius = radius
+        if text_radius:
+            self.style.angle.text_radius = text_radius
+        return self
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        m1, m2 = self.line1.slope, self.line2.slope
+        b1, b2 = self.line1.intercept, self.line2.intercept
+
+        # Point of intersection
+        x = (b2 - b1) / (m2 - m1)
+        y = self.line1.y(x)
+        if not math.isfinite(x):
+            x = self.line1.point[0]
+            y = self.line1.y(x)
+        if not math.isfinite(y):
+            y = self.line2.y(x)
+
+        theta1 = math.atan(m1)
+        theta2 = math.atan(m2)
+
+        if m1 < m2:
+            theta1, theta2 = theta2, theta1
+
+        if self.quad == 2:
+            theta2 += math.pi
+            theta1 += math.pi
+            theta2, theta1 = theta1, theta2
+
+        elif self.quad == 3:
+            theta1 += math.pi
+        elif self.quad == 4:
+            theta2, theta1 = theta1, theta2
+        else:
+            theta2 += math.pi
+
+        theta1 = (theta1 + math.tau) % math.tau
+        theta2 = (theta2 + math.tau) % math.tau
+
+        # Calculate radius of angle arc in data coordinates
+        r = self.style.angle.radius * databox.w / canvas.viewbox.w
+        dtheta = abs(theta1 - theta2) % math.pi
+        if self.square_right and math.isclose(dtheta, math.pi/2):
+            # Right Angle
+            r2 = r / math.sqrt(2)
+            xpath = [x + r2 * math.cos(theta1),
+                     x + r * math.cos(theta1+math.pi/4),
+                     x + r2 * math.cos(theta2)]
+            ypath = [y + r2 * math.sin(theta1),
+                     y + r * math.sin(theta1+math.pi/4),
+                     y + r2 * math.sin(theta2)]
+            canvas.path(xpath, ypath,
+                        color=self.style.angle.color,
+                        width=self.style.angle.strokewidth,
+                        dataview=databox
+                        )
+        else:
+            canvas.arc(x, y, r,
+                    math.degrees(theta1),
+                    math.degrees(theta2),
+                    strokecolor=self.style.angle.color,
+                    strokewidth=self.style.angle.strokewidth,
+                    dataview=databox
+                    )
+
+        if self._label:
+            r = self.style.angle.text_radius
+            labelangle = angle_mean(theta1, theta2)
+            dx = r * math.cos(labelangle)
+            dy = r * math.sin(labelangle)
+
+            if labelangle < math.tau/8 or labelangle > 7*math.tau/8:
+                halign = 'left'
+            elif 3 * math.tau / 8 < labelangle < 5 * math.tau / 8:
+                halign = 'right'
+            else:
+                halign = 'center'
+
+            if math.tau/8 < labelangle < 3 * math.tau / 8:
+                valign = 'bottom'
+            elif 5 * math.tau / 8 < labelangle < 7 * math.tau / 8:
+                valign = 'top'
+            else:
+                valign = 'center'
+
+            canvas.text(x, y, self._label,
+                        color=self.style.angle.text.color,
+                        font=self.style.angle.text.font,
+                        size=self.style.angle.text.size,
+                        halign=halign, valign=valign,
+                        pixelofst=(dx, dy),
+                        dataview=databox)
+
+
+def angle_mean(theta1: float, theta2: float) -> float:
+    ''' Circular mean over 0 to 2pi '''
+    sine = math.sin(theta1) + math.sin(theta2)
+    cosine = math.cos(theta1) + math.cos(theta2)
+    mean = math.atan2(sine, cosine)
+    return (mean + math.tau) % math.tau
