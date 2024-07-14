@@ -5,7 +5,7 @@ from typing import Optional
 import math
 
 from ..series import Series
-from ..canvas import Canvas, Borders, ViewBox
+from ..canvas import Canvas, Borders, ViewBox, DataRange
 
 
 class ShapeBase(Series):
@@ -40,6 +40,10 @@ class Ellipse(ShapeBase):
         self.r1 = r1
         self.r2 = r2
         self.theta = theta
+
+    def datarange(self) -> DataRange:
+        r = max(self.r1, self.r2)
+        return DataRange(self.x-r, self.x+r, self.y-r, self.y+r)
 
     def _dxy(self, theta: float) -> tuple[float, float]:
         ''' Get dx and dy from center to point on ellipse at angle theta (rad) '''
@@ -93,8 +97,7 @@ class Circle(Ellipse):
         super().__init__(x, y, radius, radius)
 
     def _xy(self, theta: float) -> tuple[float, float]:
-        ''' Get x, y coordinate on the circle at the angle theta (degrees) '''
-        theta = math.radians(theta)
+        ''' Get x, y coordinate on the circle at the angle theta (radians) '''
         x = self.x + self.r1 * math.cos(theta)
         y = self.y + self.r1 * math.sin(theta)
         return x, y
