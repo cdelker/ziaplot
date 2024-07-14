@@ -3,6 +3,7 @@
 '''
 from __future__ import annotations
 from typing import Optional, Literal
+import math
 
 import string
 from collections import namedtuple
@@ -60,6 +61,41 @@ def settextmode(mode: TextMode, svg2=True) -> None:
         raise ValueError('Path mode requires ziamath package')
     config.svg2 = svg2
     config.text = mode
+
+
+def text_align_ofst(pos: TextPosition, ofst: float) -> tuple[float, float, str, str]:
+    ''' Get text pixel offset and alignment
+    
+        Args:
+            pos: Text Position relative to anchor
+            ofst: Pixel offset, directionless
+        
+        Returns:
+            dx: x-offset
+            dy: y-offset
+            halign: Horizontal alignment
+            valign: Vertical alignment
+    '''
+    dx = dy = 0
+    halign, valign = 'center', 'center'
+    if 'N' in pos:
+        valign = 'bottom'
+        dy = ofst
+    elif 'S' in pos:
+        valign = 'top'
+        dy = -ofst
+    if 'E' in pos:
+        halign = 'left'
+        dx = ofst
+    elif 'W' in pos:
+        halign = 'right'
+        dx = -ofst
+
+    if dx and dy:
+        dx /= math.sqrt(2)
+        dy /= math.sqrt(2)
+
+    return dx, dy, halign, valign
 
 
 def draw_text(x: float, y: float, s: str, svgelm: ET.Element,

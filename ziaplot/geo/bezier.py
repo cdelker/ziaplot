@@ -21,13 +21,18 @@ class BezierQuad(Series):
         self.n = 200
         self.startmark: MarkerTypes = None
         self.endmark: MarkerTypes = None
+        self.midmark: MarkerTypes = None
 
-    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Function':
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'BezierQuad':
         ''' Define markers to show at the start and end of the curve. Use defaults
             to show arrowheads pointing outward in the direction of the curve.
         '''
         self.startmark = start
         self.endmark = end
+        return self
+
+    def midmarker(self, midmark: MarkerTypes = '<') -> 'BezierQuad':
+        self.midmark = midmark
         return self
 
     def xy(self, t: float) -> PointType:
@@ -69,6 +74,24 @@ class BezierQuad(Series):
                       startmarker=startmark,
                       endmarker=endmark,
                       dataview=databox)
+
+        if self.midmark:
+            midmark = canvas.definemarker(self.midmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+            midx, midy = self.xy(0.5)
+            slope = self._tangent_slope(0.5)
+            dx = midx/1E3
+            midx1 = midx + dx
+            midy1 = midy + dx*slope
+            canvas.path([midx, midx1], [midy, midy1],
+                        color='none',
+                        startmarker=midmark,
+                        dataview=databox)
+
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

@@ -28,6 +28,7 @@ class Function(Series):
         self.n = n
         self.startmark: MarkerTypes = None
         self.endmark: MarkerTypes = None
+        self.midmark: MarkerTypes = None
         self._logx = False
         self._logy = False
 
@@ -37,6 +38,11 @@ class Function(Series):
         '''
         self.startmark = start
         self.endmark = end
+        return self
+
+    def midmarker(self, midmark: MarkerTypes = '<') -> 'Function':
+        ''' Define marker for midpoint (x/2) of Function curve '''
+        self.midmark = midmark
         return self
 
     def logy(self) -> None:
@@ -110,6 +116,20 @@ class Function(Series):
                     startmarker=startmark,
                     endmarker=endmark,
                     dataview=databox)
+
+        if self.midmark:
+            midmark = canvas.definemarker(self.midmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+            midx = (x[0] + x[-1]) / 2
+            midy = self.y(midx)
+            canvas.path([midx], [midy],
+                        startmarker=midmark,
+                        dataview=databox)
+
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

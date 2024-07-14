@@ -3,13 +3,15 @@ from __future__ import annotations
 from typing import Optional
 import math
 
-from ..text import TextPosition
+from ..text import TextPosition, text_align_ofst
+from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..series import Series
 from ..shapes import Circle
 from .function import Function
 from .bezier import BezierQuad
 from ..util import root
+
 
 
 class Point(Series):
@@ -28,9 +30,20 @@ class Point(Series):
         self._guidex = None
         self._guidey = None
         self.style.line.width = 0
-        self.style.marker.shape = 'round'
-        self.style.marker.radius = 4
-        self.style.marker.color = 'C2'
+        self.style.point.marker.shape = 'round'
+        self.style.point.marker.radius = 4
+
+    def color(self, color: str) -> 'Series':
+        ''' Sets the series color '''
+        self.style.point.marker.color = color
+        return self
+
+    def marker(self, marker: MarkerTypes, radius: Optional[float] = None) -> 'Point':
+        ''' Sets the series marker '''
+        self.style.point.marker.shape = marker
+        if radius:
+            self.style.point.marker.radius = radius
+        return self
 
     def label(self, text: str = None,
               pos: TextPosition = 'NE') -> 'Point':
@@ -92,34 +105,16 @@ class Point(Series):
                                         self.style.point.marker.color,
                                         self.style.point.marker.strokecolor,
                                         self.style.point.marker.strokewidth)
-        color = self.style.line.color
         canvas.path([self.x], [self.y],
-                    color=color,
+                    color=self.style.point.marker.color,
                     markerid=markname,
                     dataview=databox)
 
         if self._text:
-            x, y = self.x, self.y
-            dx = dy = 0
-            halign, valign = 'center', 'center'
-            if 'N' in self._text_pos:
-                valign = 'bottom'
-                dy = self.style.point.text_ofst
-            elif 'S' in self._text_pos:
-                valign = 'top'
-                dy = -self.style.point.text_ofst
-            if 'E' in self._text_pos:
-                halign = 'left'
-                dx = self.style.point.text_ofst
-            elif 'W' in self._text_pos:
-                halign = 'right'
-                dx = -self.style.point.text_ofst
+            dx, dy, halign, valign = text_align_ofst(
+                self._text_pos, self.style.point.text_ofst)
 
-            if dx and dy:
-                dx /= math.sqrt(2)
-                dy /= math.sqrt(2)
-
-            canvas.text(x, y, self._text,
+            canvas.text(self.x, self.y, self._text,
                         color=self.style.point.text.color,
                         font=self.style.point.text.font,
                         size=self.style.point.text.size,

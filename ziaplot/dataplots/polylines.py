@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 
 from ..style import SeriesStyle, MarkerTypes, DashTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
+from ..text import TextPosition, text_align_ofst
 from ..axes import XyPlot
 from ..series import Series
 
@@ -313,29 +314,47 @@ class Arrow(PolyLine):
             tailmarker: Arrowhead tail marker
     '''
     def __init__(self, xy: Sequence[float], xytail: Sequence[float],
-                 s: str = '', strofst: Sequence[float] = (0, 0),
                  marker: MarkerTypes = 'arrow', tailmarker: Optional[MarkerTypes] = None):
         self.xy = xy
         self.xytail = xytail
-        self.strofst = strofst
-        self.string = s
+        self._text = None
+        self._text_pos = None
 
         super().__init__([self.xytail[0], self.xy[0]], [self.xytail[1], self.xy[1]])
         self.style = SeriesStyle()
         self.style.marker.strokewidth = 0
         self.endmarkers(start=tailmarker, end=marker)
 
+    def label(self, text: str = None,
+              pos: TextPosition = 'NE') -> 'Arrow':
+        ''' Add a text label to the point
+
+            Args:
+                text: Label
+                text_pos: Position for label with repsect
+                    to the point (N, E, S, W, NE, NW, SE, SW)
+        '''
+        self._text = text
+        self._text_pos = pos
+        return self
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         super()._xml(canvas, databox, borders=borders)
-        x = self.xytail[0] + self.strofst[0]
-        y = self.xytail[1] + self.strofst[1]
-        canvas.text(x, y, self.string,
-                    color=self.style.text.color,
-                    font=self.style.text.font,
-                    size=self.style.text.size,
-                    dataview=databox)
+
+        if self._text:
+            dx, dy, halign, valign = text_align_ofst(
+                self._text_pos, self.style.point.text_ofst)
+
+            canvas.text(self.xytail[0], self.xytail[1], self._text,
+                        color=self.style.point.text.color,
+                        font=self.style.point.text.font,
+                        size=self.style.point.text.size,
+                        halign=halign,
+                        valign=valign,
+                        pixelofst=(dx, dy),
+                        dataview=databox)
 
 
 

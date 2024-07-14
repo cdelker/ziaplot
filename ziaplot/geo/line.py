@@ -12,6 +12,12 @@ from .function import Function
 
 
 class Line(Function):
+    ''' A straight Line extending to infinity
+
+        Args:
+            point: One point on the line
+            slope: Slope of the line
+    '''
     def __init__(self, point: PointType, slope: float = 0):
         self.slope = slope
         self.point = point
@@ -30,9 +36,10 @@ class Line(Function):
 
     @property
     def intercept(self) -> float:
+        ''' Y-intercept of Line '''
         return -self.slope * self.point[0] + self.point[1]
 
-    def x(self, y):
+    def x(self, y) -> float:
         ''' Calculate x at y '''
         if not math.isfinite(self.intercept) or not math.isfinite(self.slope):
             return self.point[0]
@@ -41,7 +48,7 @@ class Line(Function):
         except ZeroDivisionError:
             return math.nan
 
-    def y(self, x: float):
+    def y(self, x: float) -> float:
         ''' Calculate y at x '''
         y = self.slope * x + self.intercept
         return y
@@ -144,11 +151,17 @@ class Segment(Line):
         super().__init__(p1, slope)
         self.p1 = p1
         self.p2 = p2
+        self.midmark: MarkerTypes = None
 
     @property
     def length(self) -> float:
         ''' Length of the segment '''
         return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
+
+    def midmarker(self, marker: MarkerTypes) -> Segment:
+        ''' Add a marker to the center of the Segment '''
+        self.midmark = marker
+        return self
 
     def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> None:
         ''' Move endpoints of segment, keeping slope and intercept '''
@@ -201,6 +214,19 @@ class Segment(Line):
                     startmarker=startmark,
                     endmarker=endmark,
                     dataview=databox)
+
+        if self.midmark:
+            midmark = canvas.definemarker(self.midmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+            midx = [(x[1] + x[0]) / 2]
+            midy = [(y[1] + y[0]) / 2]
+            canvas.path(midx, midy,
+                        startmarker=midmark,
+                        dataview=databox)
 
 
 class Vector(Segment):
