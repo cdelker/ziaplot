@@ -7,7 +7,7 @@ from ..canvas import Canvas, Borders, ViewBox
 from ..series import Series, PointType
 from ..style import MarkerTypes
 from .function import Function
-from ..axes import XyPlot
+from ..axes import AxesPlot
 
 
 class BezierQuad(Series):
@@ -95,7 +95,7 @@ class BezierQuad(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 

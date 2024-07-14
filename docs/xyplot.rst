@@ -11,17 +11,17 @@ Cartesian Plots
 
 Data in Cartesian coordinate plots are defined by x and y quantities.
 Ziaplot has two types of Cartesian axes.
-:py:class:`ziaplot.axes.XyPlot` draws the x and y axes lines along the bottom and left sides of the frame.
+:py:class:`ziaplot.axes.AxesPlot` draws the x and y axes lines along the bottom and left sides of the frame.
 The (0, 0) origin can be anywhere, even outside the plot area.
-:py:class:`ziaplot.axes.XyGraph` always draws the x and y axis lines through the (0, 0) origin and includes arrowheads at the end of the axis lines.
-`XyPlot` is commonly used to plot discrete x and y values, where `XyGraph` is used to plot functions.
+:py:class:`ziaplot.axes.AxesGraph` always draws the x and y axis lines through the (0, 0) origin and includes arrowheads at the end of the axis lines.
+`AxesPlot` is commonly used to plot discrete x and y values, where `AxesGraph` is used to plot functions.
 
 .. jupyter-execute::
     :hide-code:
 
-    p1 = zp.XyPlot(title='XyPlot')
-    p2 = zp.XyGraph(title='XyGraph')
-    zp.Hlayout(p1, p2, width=700, height=300, sep=-20)
+    p1 = zp.AxesPlot(title='AxesPlot')
+    p2 = zp.AxesGraph(title='AxesGraph')
+    zp.LayoutH(p1, p2, width=700, height=300, sep=-20)
 
 In terms of adding and displaying data series, the two are identical.
 
@@ -45,13 +45,13 @@ First, make up some data to plot.
     y3 = [yi*3 for yi in y]
     y4 = [yi*4 for yi in y]
 
-Then, create an XyPlot and add several lines to it.
+Then, create an AxesPlot and add several lines to it.
 Notice the color of each series cycles through the default set of theme colors if not specified manually.
 Use of the context manager (`with` statement) makes every PolyLine created within the manager automatically added to the axis.
 
 .. jupyter-execute::
 
-    with zp.XyPlot():
+    with zp.AxesPlot():
         zp.PolyLine(x, y)
         zp.PolyLine(x, y2).marker('round', radius=8)
         zp.PolyLine(x, y3).stroke('dashed')
@@ -97,7 +97,7 @@ Markers can also be oriented tangent to the data line, for example to show arrow
     tsq = [ti**2 for ti in t]
     tsq2 = [tsqi+20 for tsqi in tsq]
 
-    with zp.XyPlot():
+    with zp.AxesPlot():
         zp.PolyLine(t, tsq).marker('arrow', orient=True)
         zp.PolyLine(t, tsq2).endmarkers(start='square', end='arrow')
 
@@ -113,7 +113,7 @@ Color fading requires hex string colors.
 .. jupyter-execute::
 
     xf = zp.linspace(0, 10, 10)
-    with zp.XyPlot() as p:
+    with zp.AxesPlot() as p:
         p.colorfade('#0000FF', '#FF0000')
         for i in range(10):
             yf = [xi*(i+1) for xi in xf]
@@ -132,7 +132,7 @@ and adds a round marker.
 
 .. jupyter-execute::
 
-    with zp.XyPlot():
+    with zp.AxesPlot():
         zp.Xy(x, y)
         zp.HLine(.5).stroke('dotted')
         zp.VLine(.75).stroke('dashed')
@@ -161,7 +161,7 @@ Annotations
 -----------
 
 To set the axes title and labels for the x and y variables, provide the
-`title`, `xname`, and `yname` arguments to `XyPlot` or `XyGraph`.
+`title`, `xname`, and `yname` arguments to `AxesPlot` or `AxesGraph`.
 Calling :py:meth:`ziaplot.series.Series.name` on a series adds the series line to a legend on the axes, which is displayed
 either to the left or right of the axes.
 Plain text labels can be added at any data point using the :py:class:`ziaplot.dataseries.Text` series.
@@ -169,20 +169,20 @@ Plain text labels can be added at any data point using the :py:class:`ziaplot.da
 
 .. jupyter-execute::
 
-    with zp.XyPlot(title='Title',
+    with zp.AxesPlot(title='Title',
                    xname='Independent Variable',
                    yname='Dependent Variable'):
         zp.PolyLine(x, y).name('Line #1')
         zp.PolyLine(x, y2).name('Line #2')
         zp.Text(0.2, 2, 'Text', halign='center')
-        zp.Arrow((.70, 2.3), (.6, 3), 'Arrow', strofst=(-.05, .1)).color('black')
+        zp.Arrow((.70, 2.3), (.6, 3)).label('Arrow', 'NE').color('black')
 
 If `ziamath <https://ziamath.readthedocs.io>`_ is installed, math expressions can be
 drawn in any label. The expressions are entered in Latex style delimited by $..$.
 
 .. jupyter-execute::
 
-    zp.XyPlot(title=r'Math: $\sqrt{a^2 + b^2}$',
+    zp.AxesPlot(title=r'Math: $\sqrt{a^2 + b^2}$',
               xname=r'Frequency, $\frac{1}{s}$',
               yname=r'Acceleration, $m/s^2$')
 
@@ -192,14 +192,14 @@ Function Series
 ---------------
 
 The :py:class:`ziaplot.dataseries.Function` series takes a callable Python function and plots it over a given data range.
-Often plotted on an `XyGraph` axis to represent a functional relationship rather than discrete or measured data points.
+Often plotted on an `AxesGraph` axis to represent a functional relationship rather than discrete or measured data points.
 The function must take one float argument (the x value) and return a float (the y value).
 
 .. jupyter-execute::
 
-    with zp.XyGraph():
-        zp.Function(math.sin, xmin=-2*math.pi, xmax=2*math.pi).name('sine')
-        zp.Function(math.cos, xmin=-2*math.pi, xmax=2*math.pi).name('cosine')
+    with zp.AxesGraph():
+        zp.Function(math.sin, (-2*math.pi, 2*math.pi)).name('sine')
+        zp.Function(math.cos, (-2*math.pi, 2*math.pi)).name('cosine')
 
 Lambda functions work well here, such as
 
@@ -228,7 +228,7 @@ The data can also be weighted, or plotted as a probability density instead of da
 Log-scale Axes
 --------------
 
-Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`, :py:class:`ziaplot.axeslog.LogXPlot`, and :py:class:`ziaplot.axeslog.LogXYPlot`.
+Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`, :py:class:`ziaplot.axeslog.LogXPlot`, and :py:class:`ziaplot.axeslog.LogAxesPlot`.
 
 .. jupyter-execute::
     :hide-code:
@@ -236,15 +236,15 @@ Data can be plotted on logscales using axes :py:class:`ziaplot.axeslog.LogYPlot`
     x2 = zp.linspace(.1, 1000)
     y2 = x2
     line = zp.PolyLine(x2, y2)
-    p1 = zp.XyPlot(title='XyPlot')
+    p1 = zp.AxesPlot(title='AxesPlot')
     p1 += line
-    p2 = zp.LogYPlot(title='LogYPlot')
+    p2 = zp.AxesLogY(title='AxesLogY')
     p2 += line
-    p3 = zp.LogXPlot(title='LogXPlot')
+    p3 = zp.AxesLogX(title='AxesLogX')
     p3 += line
-    p4 = zp.LogXYPlot(title='LogXYPlot')
+    p4 = zp.AxesLogXY(title='AxesLogXY')
     p4 += line
-    zp.GridLayout(p1, p3, p2, p4, gutter=-20, columns=2)
+    zp.LayoutGrid(p1, p3, p2, p4, gutter=-20, columns=2)
 
 |
 
@@ -259,7 +259,7 @@ To manually set the data range, use :py:meth:`ziaplot.axes.BasePlot.xrange` and 
     x = [i*0.1 for i in range(11)]
     y = [xi**2 for xi in x]
 
-    with zp.XyPlot() as p:
+    with zp.AxesPlot() as p:
         zp.PolyLine(x, y)
         p.xrange(.5, 1).yrange(.3, 1)
 
@@ -270,7 +270,7 @@ names.
 
 .. jupyter-execute::
 
-    with zp.XyPlot() as p:
+    with zp.AxesPlot() as p:
         zp.PolyLine(x, y)
         p.xticks((0, .25, .75, 1))
         p.yticks((0, .5, 1), names=('Low', 'Medium', 'High'))
@@ -279,7 +279,7 @@ To keep the default ticks but change the number formatter, use :py:class:`ziaplo
 
 .. jupyter-execute::
 
-    with zp.XyPlot() as p:
+    with zp.AxesPlot() as p:
         p.style.tick.ystrformat = '.1e'
         zp.PolyLine(x, y)
 
@@ -288,7 +288,7 @@ Minor ticks, without a number label, can also be added between the major, labele
 
 .. jupyter-execute::
 
-    with zp.XyPlot() as p:
+    with zp.AxesPlot() as p:
         zp.PolyLine(x, y)
         p.xticks(values=(0, .2, .4, .6, .8, 1),
                  minor=(zp.linspace(0, 1, 21)))

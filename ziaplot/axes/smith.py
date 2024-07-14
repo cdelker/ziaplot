@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from ..style.styletypes import Style
 from ..series import Series
 from ..canvas import Canvas, Borders, ViewBox
-from .polar import Polar
+from .polar import AxesPolar
 from .axes import getticks
 from .baseplot import Ticks, LegendLoc
 
@@ -152,7 +152,7 @@ def const_react_arc(x: float, rmin: float = 0,
     return ArcType(centerx, centery, radius, theta1, theta2)
 
 
-class Smith(Polar):
+class AxesSmith(AxesPolar):
     ''' Smith Chart Axis
 
         Args:

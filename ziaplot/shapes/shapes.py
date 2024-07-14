@@ -5,7 +5,7 @@ from typing import Optional
 import math
 
 from ..series import Series
-from ..canvas import Canvas, Borders, ViewBox, DataRange
+from ..canvas import Canvas, Borders, ViewBox, DataRange, PointType
 
 
 class ShapeBase(Series):
@@ -45,7 +45,7 @@ class Ellipse(ShapeBase):
         r = max(self.r1, self.r2)
         return DataRange(self.x-r, self.x+r, self.y-r, self.y+r)
 
-    def _dxy(self, theta: float) -> tuple[float, float]:
+    def _dxy(self, theta: float) -> PointType:
         ''' Get dx and dy from center to point on ellipse at angle theta (rad) '''
         theta = theta - math.radians(self.theta)
         e = math.sqrt(1 - (self.r2/self.r1)**2)
@@ -62,7 +62,11 @@ class Ellipse(ShapeBase):
         tan = phi + math.pi/2 + math.radians(self.theta)
         return (tan + math.tau) % math.tau
 
-    def _xy(self, theta: float) -> tuple[float, float]:
+    def xy(self, theta: float) -> PointType:
+        ''' Get x, y coordinate on the circle at the angle theta (degrees) '''
+        return self._xy(math.radians(theta))
+
+    def _xy(self, theta: float) -> PointType:
         ''' Get x, y coordinate on the circle at the angle theta (rad) '''
         dx, dy = self._dxy(theta)
 
@@ -96,7 +100,7 @@ class Circle(Ellipse):
     def __init__(self, x: float, y: float, radius: float):
         super().__init__(x, y, radius, radius)
 
-    def _xy(self, theta: float) -> tuple[float, float]:
+    def _xy(self, theta: float) -> PointType:
         ''' Get x, y coordinate on the circle at the angle theta (radians) '''
         x = self.x + self.r1 * math.cos(theta)
         y = self.y + self.r1 * math.sin(theta)

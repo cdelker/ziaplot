@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Set, Optional
 import xml.etree.ElementTree as ET
 
-from .axes import XyPlot
+from .axes import AxesPlot
 from .series import Series
 from .canvas import Canvas, ViewBox, Borders
 from .drawable import Drawable
@@ -59,7 +59,7 @@ def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> li
     return axwidths
 
 
-class GridLayout(Drawable):
+class LayoutGrid(Drawable):
     ''' Lay out axes in a grid. Axes added to the layout
         fill the grid from left to right, adding rows as needed.
 
@@ -147,7 +147,7 @@ class GridLayout(Drawable):
         drawaxes: list[Drawable] = []
         for ax in self.axes:
             if isinstance(ax, Series):
-                a = XyPlot()
+                a = AxesPlot()
                 a.add(ax)
                 a.colspan, a.rowspan = ax.colspan, ax.rowspan
                 drawaxes.append(a)
@@ -237,7 +237,7 @@ class GridLayout(Drawable):
             canvas.resetviewbox()
 
 
-class GridEmpty(Drawable):
+class LayoutEmpty(Drawable):
     ''' Empty placeholder for layout '''
     def __init__(self):
         axis_stack.push_series(self)
@@ -251,7 +251,7 @@ class GridEmpty(Drawable):
         ''' Add XML elements to the canvas '''
 
 
-class Vlayout(GridLayout):
+class LayoutV(LayoutGrid):
     ''' Lay out axes in vertical stack
 
         Args:
@@ -270,7 +270,7 @@ class Vlayout(GridLayout):
                          columns=1, **kwargs)
 
 
-class Hlayout(GridLayout):
+class LayoutH(LayoutGrid):
     ''' Lay out axis in horizontal row
     
         Args:

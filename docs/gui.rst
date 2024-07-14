@@ -38,7 +38,7 @@ Tk's `PhotoImage` reads the PNG, which must be encoded in base-64.
             avg = sum(y)/len(y)
             x = list(range(n))
 
-            p = zp.XyPlot()
+            p = zp.AxesPlot()
             p += zp.Plot(x, y).marker('o')
             p += zp.HLine(avg)
             img = base64.encodebytes(p.imagebytes('png'))
@@ -95,7 +95,7 @@ It can load Ziaplot `imagebytes()` directly.
             y = [(i*2) + random.normalvariate(10, 2) for i in range(n)]
             avg = sum(y)/len(y)
             x = list(range(n))
-            p = zp.XyPlot()
+            p = zp.AxesPlot()
             p += zp.Line(x, y).marker('o')
             p += zp.HLine(avg)
             self.image.load(p.imagebytes())

@@ -12,7 +12,7 @@ from ..canvas import Canvas, Borders, ViewBox, Halign, Valign
 from ..style import Style
 
 
-class Polar(BasePlot):
+class AxesPolar(BasePlot):
     ''' Polar Plot. Use with LinePolar to define series in (radius, angle)
         format.
 

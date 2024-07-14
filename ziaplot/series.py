@@ -2,15 +2,11 @@
 from __future__ import annotations
 from typing import Optional
 from copy import deepcopy
-import math
 
 from .style import Default, MarkerTypes, DashTypes
 from .drawable import Drawable
-from .canvas import DataRange
+from .canvas import DataRange, PointType
 from . import axis_stack
-
-
-PointType = tuple[float, float]
 
 
 class Series(Drawable):

@@ -6,7 +6,7 @@ from functools import lru_cache
 import math
 from copy import deepcopy
 
-from .axes import XyPlot, Ticks
+from .axes import AxesPlot, Ticks
 from ..canvas import Canvas, ViewBox, DataRange
 from .. import text
 
@@ -41,7 +41,7 @@ def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], l
     return values, names, minor
 
 
-class LogYPlot(XyPlot):
+class AxesLogY(AxesPlot):
     ''' Plot with Y on a log10 scale
 
         Args:
@@ -113,7 +113,7 @@ class LogYPlot(XyPlot):
         self.series = seriesbackup
 
 
-class LogXPlot(XyPlot):
+class AxesLogX(AxesPlot):
     ''' Plot with Y on a log10 scale
 
         Args:
@@ -178,7 +178,7 @@ class LogXPlot(XyPlot):
         self.series = seriesbackup
 
 
-class LogXYPlot(XyPlot):
+class AxesLogXY(AxesPlot):
     ''' Plot with X and Y on a log10 scale
 
         Args:

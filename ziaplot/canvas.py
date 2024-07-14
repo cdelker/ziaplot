@@ -55,7 +55,7 @@ class Transform:
         return (f'Transform(scale=({fmt(self.xscale)},{fmt(self.yscale)}); '
                 f'shift=({fmt(self.xshift)},{fmt(self.yshift)}))')
 
-    def apply(self, x: float, y: float) -> tuple[float, float]:
+    def apply(self, x: float, y: float) -> PointType:
         ''' Apply the transformation to the x, y point '''
         return (x*self.xscale + self.xshift,
                 y*self.yscale + self.yshift)
@@ -337,7 +337,7 @@ class Canvas:
              halign: Halign = 'left',
              valign: Valign = 'bottom',
              rotate: Optional[float] = None,
-             pixelofst: Optional[tuple[float, float]] = None,
+             pixelofst: Optional[PointType] = None,
              dataview: Optional[ViewBox] = None) -> None:
         ''' Add text to the canvas
 
@@ -375,7 +375,7 @@ class Canvas:
                        valign=valign,
                        rotate=rotate)
 
-    def poly(self, points: Sequence[tuple[float, float]], color: str = 'black',
+    def poly(self, points: Sequence[PointType], color: str = 'black',
              strokecolor: str = 'red', strokewidth: float = 1, alpha: float = 1.0,
              dataview: Optional[ViewBox] = None):
         ''' Add a polygon to the canvas

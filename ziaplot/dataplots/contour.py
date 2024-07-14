@@ -7,7 +7,7 @@ import math
 from ..util import zrange
 from ..style import ColorFade
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..axes import XyPlot
+from ..axes import AxesPlot
 from ..series import Series
 
 
@@ -242,6 +242,6 @@ class Contour(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)

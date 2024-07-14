@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from ..style import SeriesStyle, MarkerTypes, DashTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..text import TextPosition, text_align_ofst
-from ..axes import XyPlot
+from ..axes import AxesPlot
 from ..series import Series
 
 
@@ -88,7 +88,7 @@ class PolyLine(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
@@ -296,7 +296,7 @@ class LineFill(PolyLine):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 

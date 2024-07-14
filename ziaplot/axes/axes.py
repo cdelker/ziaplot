@@ -6,7 +6,7 @@ from functools import lru_cache
 import math
 
 from ..style.styletypes import Style
-from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders
+from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders, PointType
 from .. import text
 from ..util import zrange, linspace
 from .baseplot import BasePlot, LegendLoc, Ticks
@@ -51,7 +51,7 @@ def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> lis
     return ticks
 
 
-class XyPlot(BasePlot):
+class AxesPlot(BasePlot):
     ''' Plot of x-y data
 
         Args:
@@ -396,7 +396,7 @@ class XyPlot(BasePlot):
         self._drawlegend(canvas, axisbox, ticks)
 
 
-class XyGraph(XyPlot):
+class AxesGraph(AxesPlot):
     ''' X-Y Graph. Axes are drawn as arrows pointing to infinity with
         xname and yname labels at the ends of the arrows. Often used
         to visualize functions (e.g. y = x**2) rather than empirical data.
@@ -476,7 +476,7 @@ class XyGraph(XyPlot):
 
     @lru_cache
     def datarange(self) -> DataRange:
-        ''' Get range of x-y data. XyGraph datarange must include x=0 and y=0 '''
+        ''' Get range of x-y data. AxesGraph datarange must include x=0 and y=0 '''
         drange = super().datarange()
         xmin = min(0, drange.xmin)
         xmax = max(0, drange.xmax)
@@ -506,7 +506,7 @@ class XyGraph(XyPlot):
             canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
                         strokecolor='none', fill=self.style.axis.bgcolor)
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
+    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
         ''' Calculate legend location
 
             Args:
@@ -729,6 +729,56 @@ class XyGraph(XyPlot):
 
         self._drawframe(canvas, axisbox)
         self._drawticks(canvas, ticks, axisbox, databox)
+        self._drawtitle(canvas, axisbox)
+        self._drawseries(canvas, axisbox, databox)
+        self._drawlegend(canvas, axisbox, ticks)
+
+
+class AxesBlank(AxesPlot):
+    ''' Blank Axes - draw Series with no frame or ticks, and equal
+        aspect ratio.
+
+        Args:
+            title: Title for top of axes
+            style: Axis style
+    '''
+    def __init__(self, title: Optional[str] = None, style: Optional[Style] = None):
+        super().__init__(title=title, style=style)
+        self._equal_aspect = True
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        ticks = self._maketicks()
+        dborders = self._borders()
+        if borders is not None:
+            dborders = Borders(
+                dborders.left if borders.left is None else borders.left,
+                dborders.right if borders.right is None else borders.right,
+                dborders.top if borders.top is None else borders.top,
+                dborders.bottom if borders.bottom is None else borders.bottom)
+
+        axisbox = ViewBox(
+            canvas.viewbox.x + dborders.left,
+            canvas.viewbox.y + dborders.bottom,
+            canvas.viewbox.w - (dborders.left + dborders.right),
+            canvas.viewbox.h - (dborders.top + dborders.bottom))
+
+        databox = ViewBox(ticks.xrange[0], ticks.yrange[0],
+                          ticks.xrange[1]-ticks.xrange[0],
+                          ticks.yrange[1]-ticks.yrange[0])
+
+        if self._equal_aspect:
+            daspect = databox.w / databox.h
+            axisaspect = axisbox.w / axisbox.h
+            ratio = daspect / axisaspect
+            axisbox = ViewBox(
+                axisbox.x,
+                axisbox.y,
+                axisbox.w if ratio >= 1 else axisbox.w * ratio,
+                axisbox.h if ratio <= 1 else axisbox.h / ratio
+            )
+
         self._drawtitle(canvas, axisbox)
         self._drawseries(canvas, axisbox, databox)
         self._drawlegend(canvas, axisbox, ticks)

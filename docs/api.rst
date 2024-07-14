@@ -16,25 +16,25 @@ Axes
 .. autoclass:: ziaplot.axes.baseplot.BasePlot
     :members:
 
-.. autoclass:: ziaplot.axes.axes.XyPlot
+.. autoclass:: ziaplot.axes.axes.AxesPlot
     :members:
 
-.. autoclass:: ziaplot.axes.axes.XyGraph
+.. autoclass:: ziaplot.axes.axes.AxesGraph
     :members:
 
-.. autoclass:: ziaplot.axes.axeslog.LogYPlot
+.. autoclass:: ziaplot.axes.axeslog.AxesLogY
     :members:
 
-.. autoclass:: ziaplot.axes.axeslog.LogXPlot
+.. autoclass:: ziaplot.axes.axeslog.AxesLogX
     :members:
 
-.. autoclass:: ziaplot.axes.axeslog.LogXYPlot
+.. autoclass:: ziaplot.axes.axeslog.AxesLogXY
     :members:
 
-.. autoclass:: ziaplot.axes.polar.Polar
+.. autoclass:: ziaplot.axes.polar.AxesPolar
     :members:
 
-.. autoclass:: ziaplot.axes.smith.Smith
+.. autoclass:: ziaplot.axes.smith.AxesSmith
     :members:
 
 .. autoclass:: ziaplot.charts.pie.Pie
@@ -80,12 +80,6 @@ Data Series
 .. autoclass:: ziaplot.dataplots.polylines.Arrow
     :members:
 
-.. autoclass:: ziaplot.dataplots.polylines.HLine
-    :members:
-
-.. autoclass:: ziaplot.dataplots.polylines.VLine
-    :members:
-
 .. autoclass:: ziaplot.dataplots.bars.Bars
     :members:
 
@@ -104,21 +98,30 @@ Data Series
 .. autoclass:: ziaplot.axes.smith.SmithConstReactance
     :members:
 
-Functions
+Geometric
 ---------
 
 .. autoclass:: ziaplot.geo.Function
     :members:
 
+.. autoclass:: ziaplot.geo.Line
+
+.. autoclass:: ziaplot.geo.line.VLine
+    :members:
+
+.. autoclass:: ziaplot.geo.line.HLine
+    :members:
+
+
 
 Layouts
 -------
 
-.. autoclass:: ziaplot.layout.Hlayout
+.. autoclass:: ziaplot.layout.LayoutH
     :members:
 
-.. autoclass:: ziaplot.layout.Vlayout
+.. autoclass:: ziaplot.layout.LayoutV
     :members:
 
-.. autoclass:: ziaplot.layout.GridLayout
+.. autoclass:: ziaplot.layout.LayoutGrid
     :members:

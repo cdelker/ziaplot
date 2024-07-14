@@ -5,7 +5,7 @@ from typing import Optional, Sequence, Union
 from ..drawable import Drawable
 from ..series import Series
 from ..dataplots import Bars, BarsHoriz
-from ..axes import XyPlot, LegendLoc
+from ..axes import AxesPlot, LegendLoc
 from ..style import Style
 from ..canvas import Canvas, Borders, ViewBox
 from .. import axis_stack
@@ -22,7 +22,7 @@ class BarSingle(Series):
         self.value = value
 
 
-class BarChart(XyPlot):
+class BarChart(AxesPlot):
     ''' A bar chart with a single data series. Independent variable is qualitative.
 
         Args:
@@ -34,7 +34,7 @@ class BarChart(XyPlot):
             style: Plotting style
 
         Note:
-            For a bar graph with quantitative x values, use XyPlot and add Bars instances.
+            For a bar graph with quantitative x values, use AxesPlot and add Bars instances.
     '''
     def __init__(self,
                  horiz: bool = False,
@@ -124,7 +124,7 @@ class BarSeries(Series):
         self.values = values
 
 
-class BarChartGrouped(XyPlot):
+class BarChartGrouped(AxesPlot):
     ''' A grouped bar chart, where independent variable is qualitative.
 
         Args:
@@ -137,7 +137,7 @@ class BarChartGrouped(XyPlot):
             style: Plotting style
 
         Note:
-            For a bar graph with quantitative x values, use XyPlot and add Bars instances.
+            For a bar graph with quantitative x values, use AxesPlot and add Bars instances.
     '''
     def __init__(self, groups: Sequence[str],
                  horiz: bool = False,

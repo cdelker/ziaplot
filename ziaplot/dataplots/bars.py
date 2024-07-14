@@ -6,12 +6,12 @@ import xml.etree.ElementTree as ET
 from collections import Counter
 
 from ..canvas import Canvas, Borders, ViewBox, DataRange, Halign
-from ..axes import XyPlot
+from ..axes import AxesPlot
 from ..series import Series
 
 
 class Bars(Series):
-    ''' A series of bars to add to an XyPlot (quantitative x values)
+    ''' A series of bars to add to an AxesPlot (quantitative x values)
         For qualitative bar chart, use a BarChart instance.
 
         Args:
@@ -68,7 +68,7 @@ class Bars(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 

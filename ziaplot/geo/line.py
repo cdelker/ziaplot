@@ -5,9 +5,10 @@ from xml.etree import ElementTree as ET
 import math
 
 from ..canvas import Canvas, Borders, ViewBox
+from ..text import TextPosition, text_align_ofst
 from ..series import PointType, Series
 from ..style import MarkerTypes
-from ..axes import XyPlot
+from ..axes import AxesPlot
 from .function import Function
 
 
@@ -124,7 +125,7 @@ class Line(Function):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)
 
@@ -152,11 +153,37 @@ class Segment(Line):
         self.p1 = p1
         self.p2 = p2
         self.midmark: MarkerTypes = None
+        self._label_start: Optional[tuple[str, TextPosition]] = None
+        self._label_end: Optional[tuple[str, TextPosition]] = None
 
     @property
     def length(self) -> float:
         ''' Length of the segment '''
         return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
+
+    def label_start(self, text: str = None,
+                    pos: TextPosition = 'NE') -> 'Segment':
+        ''' Add a text label to the start of the segment
+
+            Args:
+                text: Label
+                text_pos: Position for label with repsect
+                    to the point (N, E, S, W, NE, NW, SE, SW)
+        '''
+        self._label_start = text, pos
+        return self
+
+    def label_end(self, text: str = None,
+                  pos: TextPosition = 'NE') -> 'Segment':
+        ''' Add a text label to the end of the segment
+
+            Args:
+                text: Label
+                text_pos: Position for label with repsect
+                    to the point (N, E, S, W, NE, NW, SE, SW)
+        '''
+        self._label_end = text, pos
+        return self
 
     def midmarker(self, marker: MarkerTypes) -> Segment:
         ''' Add a marker to the center of the Segment '''
@@ -228,6 +255,39 @@ class Segment(Line):
                         startmarker=midmark,
                         dataview=databox)
 
+        if self._label_start is not None:
+            self._draw_label(
+                x[0], y[0], self._label_start[0], self._label_start[1],
+                canvas, databox)
+
+        if self._label_end is not None:
+            self._draw_label(
+                x[1], y[1], self._label_end[0], self._label_end[1],
+                canvas, databox)
+
+    def _draw_label(self, x, y, text, pos, canvas, databox):
+        ''' Draw the label
+
+            Args:
+                x: X anchor position
+                y: Y anchor position
+                text: Text to draw
+                pos: Position/alignment of text about the anchor
+                canvas: Canvas to draw on
+                databox: Databox within the canvas
+        '''
+        dx, dy, halign, valign = text_align_ofst(
+            pos, self.style.point.text_ofst)
+
+        canvas.text(x, y, text,
+                    color=self.style.point.text.color,
+                    font=self.style.point.text.font,
+                    size=self.style.point.text.size,
+                    halign=halign,
+                    valign=valign,
+                    pixelofst=(dx, dy),
+                    dataview=databox)
+
 
 class Vector(Segment):
     ''' A Vector arrow from (0, 0) to (x, y) '''
@@ -280,7 +340,7 @@ class Angle(Series):
         b1, b2 = self.line1.intercept, self.line2.intercept
 
         # Point of intersection
-        x = (b2 - b1) / (m2 - m1)
+        x = (b2 - b1) / (m1 - m2)
         y = self.line1.y(x)
         if not math.isfinite(x):
             x = self.line1.point[0]

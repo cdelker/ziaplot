@@ -1,8 +1,8 @@
 from .dataplots import PolyLine, Plot, Xy, Scatter, Text, LinePolar, Bars, BarsHoriz, Histogram, ErrorBar, LineFill, Arrow, Contour
 from .geo import Function, Line, HLine, VLine, Tangent, Normal, Point, Segment, TangentSegment, NormalSegment, Vector, IntegralFill, BezierQuad, BezierCubic, Curve, Diameter, Radius, Secant, Chord, Sagitta, Angle
-from .axes import XyPlot, XyGraph, LogYPlot, LogXPlot, LogXYPlot, Polar, Smith, SmithConstResistance, SmithConstReactance, ticker
+from .axes import AxesPlot, AxesGraph, AxesLogY, AxesLogX, AxesLogXY, AxesPolar, AxesSmith, SmithConstResistance, SmithConstReactance, ticker, AxesBlank
 from .charts import Pie, PieSlice, BarChart, BarSingle, BarChartGrouped, BarSeries
-from .layout import Hlayout, Vlayout, GridLayout, GridEmpty
+from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
 from .shapes import Circle, Ellipse, Rectangle
 from .style import styles
 from .text import settextmode

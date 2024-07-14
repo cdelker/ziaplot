@@ -34,7 +34,7 @@ class Window:
         avg = sum(y)/len(y)
         x = list(range(n))
 
-        p = zp.XyPlot()
+        p = zp.AxesPlot()
         p += zp.Line(x, y).marker('o')
         p += zp.HLine(avg)
         img = base64.encodebytes(p.imagebytes('png'))

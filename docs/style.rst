@@ -24,7 +24,7 @@ To customize the style, typically start with the base `Style` and modify its att
     sty.axis.bgcolor = '#d9f2fa'
     sty.canvasw = 300
     sty.canvash = 300
-    zp.XyPlot(style=sty)
+    zp.AxesPlot(style=sty)
 
 To use the style for all plots, set the default style using :py:meth:`ziaplot.style.styles.setdefault`:
 
@@ -50,14 +50,14 @@ For example, to enable the "Taffy" theme for all plots, use:
 
     def teststyle():
         p = zp.Pie().fromdict({'a':3, 'b':2, 'c':3, 'd':2, 'e':4, 'f':2}, legend='none')
-        p2 = zp.XyGraph()
+        p2 = zp.AxesGraph()
         p2 += zp.Function(lambda x: x**2).endmarkers()
         p2 += zp.Function(lambda x: x**3/2).endmarkers()
         p2 += zp.Function(lambda x: -x**4/20).endmarkers()
 
         x = zp.linspace(10, 20, 10)
         y = [math.exp(xi/10) for xi in x]
-        p3 = zp.XyPlot()
+        p3 = zp.AxesPlot()
         p3 += zp.PolyLine(x, y).marker('round')
         p3 += zp.Scatter(x, [yi*2 for yi in y]).marker('square')
         p3 += zp.PolyLine(x, [yi*4 for yi in y]).marker('arrow', orient=True)
@@ -67,7 +67,7 @@ For example, to enable the "Taffy" theme for all plots, use:
         p4 += zp.BarSeries(2, 2, 4, 3)
         p4 += zp.BarSeries(2, 3, 1, 4)
 
-        fig = zp.GridLayout(p3, p4, p2, p, columns=2)
+        fig = zp.LayoutGrid(p3, p4, p2, p, columns=2)
         return fig
 
 |

@@ -2,7 +2,7 @@ Layout and Subplots
 ===================
 
 Multiple plots can be added to a single figure using layouts.
-Inspired by QT's box layouts, :py:class:`ziaplot.layout.Hlayout` and :py:class:`ziaplot.layout.Vlayout` take any number
+Inspired by QT's box layouts, :py:class:`ziaplot.layout.LayoutH` and :py:class:`ziaplot.layout.LayoutV` take any number
 of Drawables, including other layouts, as arguments, and stack the plots
 horizontally or vertically.
 
@@ -17,7 +17,7 @@ horizontally or vertically.
 
 .. jupyter-execute::
 
-    with zp.Hlayout(height=200):
+    with zp.LayoutH(height=200):
         zp.Plot([1,3,5], [1,2,5]).marker('o')
         zp.Plot([1,3,5], [1,2,5]).marker('square')
         zp.Plot([1,3,5], [1,2,5]).marker('triangle')
@@ -27,7 +27,7 @@ are automatically added as needed.
 
 .. jupyter-execute::
 
-    with zp.GridLayout(columns=2):
+    with zp.LayoutGrid(columns=2):
         zp.Plot([1,2,3], [1,2,5])
         zp.Plot([1,2,3], [1,2,5]).color('blue')
         zp.Plot([1,2,3], [1,2,5]).color('green')
@@ -37,7 +37,7 @@ Subplots may span multiple rows or columns using `.span`. The first parameter is
 
 .. jupyter-execute::
 
-    with zp.GridLayout(columns=3, width=800):
+    with zp.LayoutGrid(columns=3, width=800):
         zp.Plot([1,2,3], [1,2,5]).span(3)
         zp.Plot([1,2,3], [3,3,2]).color('blue').span(1, 2)
         zp.Plot([1,2,3], [4,1,3]).color('green')
@@ -46,12 +46,12 @@ Subplots may span multiple rows or columns using `.span`. The first parameter is
         zp.Plot([1,2,3], [0,2,6]).color('purple')
 
 
-Use :py:class:`ziaplot.layout.GridEmpty` to leave an empty spot in a layout.
+Use :py:class:`ziaplot.layout.LayoutEmpty` to leave an empty spot in a layout.
 
 .. jupyter-execute::
 
-    with zp.GridLayout(columns=2):
+    with zp.LayoutGrid(columns=2):
         zp.Plot([0, 1], [0, 1])
-        zp.GridEmpty()
+        zp.LayoutEmpty()
         zp.Plot([0, 1], [1, 1]).color('orange')
         zp.Plot([0, 1], [1, 0]).color('green')

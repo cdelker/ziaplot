@@ -10,7 +10,7 @@ from ..style import styles
 from ..style.styletypes import Style
 from ..series import Series
 from ..style import colors
-from ..canvas import Canvas, ViewBox, DataRange, Borders
+from ..canvas import Canvas, ViewBox, DataRange, Borders, PointType
 from .. import text
 from ..drawable import Drawable
 from .. import axis_stack
@@ -225,7 +225,7 @@ class BasePlot(Drawable):
         boxh = self.style.legend.margin + len(series)*self.style.legend.text.size*self.style.legend.linespacing
         return boxw, boxh
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
+    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
         ''' Calculate legend location
 
             Args:

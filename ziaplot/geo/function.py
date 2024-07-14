@@ -7,7 +7,7 @@ from .. import util
 from ..series import Series
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox
-from ..axes import XyPlot
+from ..axes import AxesPlot
 
 
 class Function(Series):
@@ -133,6 +133,6 @@ class Function(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = XyPlot(style=self._axisstyle)
+        ax = AxesPlot(style=self._axisstyle)
         ax.add(self)
         return ax.svgxml(border=border)

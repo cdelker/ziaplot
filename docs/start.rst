@@ -39,7 +39,7 @@ Quick Example
 -------------
 
 Figures in Ziaplot are made from Series objects, which represent sets of x-y data, added to Axes on which the Series are drawn.
-Here, an `XyPlot` axis is created, and a `PolyLine` is added to it.
+Here, an `AxesPlot` axis is created, and a `PolyLine` is added to it.
 
 .. jupyter-execute::
 
@@ -48,7 +48,7 @@ Here, an `XyPlot` axis is created, and a `PolyLine` is added to it.
     x = list(range(6))
     y = [xi**2 for xi in x]
 
-    with zp.XyPlot():
+    with zp.AxesPlot():
         zp.PolyLine(x, y)
 
 
@@ -57,7 +57,7 @@ Series may also be added using the += operator, with the same results:
 
 .. jupyter-input::
 
-    p = zp.XyPlot()
+    p = zp.AxesPlot()
     p += zp.PolyLine(x, y)
 
 
@@ -72,7 +72,7 @@ Ziaplot is optimized for use in Jupyter, as every drawable object has a Jupyter 
 In Jupyter, leaving the `with` block automatically draws the plot.
 
 Nearly everything in Ziaplot can be drawn (inherits from the `Drawable` class). A `PolyLine` (also called `Plot`)
-can be drawn by itself from the representation of zp.Plot, but in this case, the PolyLine will be added to an empty XyPlot.
+can be drawn by itself from the representation of zp.Plot, but in this case, the PolyLine will be added to an empty `AxesPlot`.
 
 |
 
