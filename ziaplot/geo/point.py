@@ -7,7 +7,8 @@ from ..text import TextPosition
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..series import Series
 from ..shapes import Circle
-from . import Function
+from .function import Function
+from .bezier import BezierQuad
 from ..util import root
 
 
@@ -167,4 +168,9 @@ class Point(Series):
         x = root(lambda x: f1.func(x) - f2.func(x),
                  a=x1, b=x2, tol=tol)
         y = f1.y(x)
+        return cls(x, y)
+
+    @classmethod
+    def on_bezier(cls, b: BezierQuad, t: float) -> 'Point':
+        x, y = b.xy(t)
         return cls(x, y)

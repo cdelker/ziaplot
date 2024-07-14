@@ -10,6 +10,9 @@ from .canvas import DataRange
 from . import axis_stack
 
 
+PointType = tuple[float, float]
+
+
 class Series(Drawable):
     ''' Base class for data series, defining a single object in a plot '''
     def __init__(self):

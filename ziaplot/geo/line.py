@@ -5,13 +5,10 @@ from xml.etree import ElementTree as ET
 import math
 
 from ..canvas import Canvas, Borders, ViewBox
-from ..series import Series
+from ..series import PointType
 from ..style import MarkerTypes
 from ..axes import XyPlot
 from .function import Function
-
-
-PointType = tuple[float, float]
 
 
 class Line(Function):

@@ -10,7 +10,7 @@ from . import text
 from .config import config
 from .style import MarkerTypes, DashTypes
 
-
+PointType = tuple[float, float]
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
@@ -517,3 +517,58 @@ class Canvas:
         if self.clip:
             ellipse.attrib['clip-path'] = f'url(#{self.clip})'
         return ellipse
+
+    def bezier(self,
+               p1: PointType, p2: PointType,
+               p3: PointType, p4: Optional[PointType] = None,
+               stroke: DashTypes = '-',
+               color: str = 'black', width: float = 2, markerid: Optional[str] = None,
+               startmarker: Optional[str] = None, endmarker: Optional[str] = None,
+               dataview: Optional[ViewBox] = None):
+        ''' Add a bezier curve to the SVG
+
+            Args:
+                p1, p2, p3: Control Points
+                p4: Optional control point for Cubic curve
+                stroke: Stroke/linestyle of hte path
+                color: Path color
+                width: Width of path line
+                startmarker: ID name of marker for start point of path
+                endmarker: ID name of marker for end point of path
+                dataview: Viewbox for transforming x, y data into SVG coordinates
+        '''
+        if dataview:  # apply transform from dataview -> self.viewbox
+            xform = Transform(dataview, self.viewbox)
+            p1 = xform.apply(*p1)
+            p2 = xform.apply(*p2)
+            p3 = xform.apply(*p3)
+            p4 = xform.apply(*p4) if p4 is not None else p4
+
+        p1 = p1[0], self.flipy(p1[1])
+        p2 = p2[0], self.flipy(p2[1])
+        p3 = p3[0], self.flipy(p3[1])
+        if p4 is not None:
+            p4 = p4[0], self.flipy(p4[1])
+
+        path = ET.SubElement(self.group, 'path')
+        pointstr = f'M {fmt(p1[0])},{fmt(p1[1])} '
+        pointstr += 'C ' if p4 is not None else 'Q '
+        pointstr += f'{fmt(p2[0])},{fmt(p2[1])}'
+        pointstr += f' {fmt(p3[0])},{fmt(p3[1])}'
+        if p4 is not None:
+            pointstr += f' {fmt(p4[0])},{fmt(p4[1])}'
+
+        path.attrib['d'] = pointstr
+        path.attrib['stroke'] = color
+        path.attrib['stroke-width'] = str(width)
+        path.attrib['fill'] = 'none'
+        if startmarker is not None:
+            path.attrib['marker-start'] = f'url(#{startmarker})'
+        if endmarker is not None:
+            path.attrib['marker-end'] = f'url(#{endmarker})'
+        if stroke != '-' and stroke not in [None, 'none', '']:
+            path.attrib['stroke-dasharray'] = getdash(stroke, width)
+        if stroke in [None, 'none', '']:
+            path.attrib['stroke'] = 'none'
+        if self.clip:
+            path.attrib['clip-path'] = f'url(#{self.clip})'
