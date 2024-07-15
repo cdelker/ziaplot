@@ -58,6 +58,21 @@ def root(f: Callable, a: float, b: float, tol=1E-4) -> float:
     return root(f, a, m, tol)
 
 
+def root_newton(f: Callable, x0: float, tol=1E-4) -> float:
+    ''' Find root using Newton-Raphson method
+
+        Args:
+            f: Function
+            x0: Initial guess
+            tol: Tolerance
+    '''
+    if abs(f(x0)) < tol:
+        return x0
+    else:
+        df = derivative(f, x0)
+        return root_newton(f, x0 - f(x0)/df, tol)
+
+
 def minimum(f: Callable, a: float, b: float, tolerance: float=1e-5):
     """
     Golden-section search

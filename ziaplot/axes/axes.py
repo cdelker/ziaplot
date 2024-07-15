@@ -562,8 +562,8 @@ class AxesGraph(AxesPlot):
                                       strokecolor=self.style.axis.color,
                                       color=self.style.axis.color, orient=True)
 
-        xmarker = startmark
-        ymarker = endmark
+        xmarker: Optional[str] = startmark
+        ymarker: Optional[str] = endmark
         if databox.x == 0:
             xmarker = None
             xaxis = [xleft[0],

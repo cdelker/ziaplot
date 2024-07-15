@@ -317,15 +317,15 @@ class Arrow(PolyLine):
                  marker: MarkerTypes = 'arrow', tailmarker: Optional[MarkerTypes] = None):
         self.xy = xy
         self.xytail = xytail
-        self._text = None
-        self._text_pos = None
+        self._text: Optional[str] = None
+        self._text_pos: Optional[TextPosition] = None
 
         super().__init__([self.xytail[0], self.xy[0]], [self.xytail[1], self.xy[1]])
         self.style = SeriesStyle()
         self.style.marker.strokewidth = 0
         self.endmarkers(start=tailmarker, end=marker)
 
-    def label(self, text: str = None,
+    def label(self, text: str,
               pos: TextPosition = 'NE') -> 'Arrow':
         ''' Add a text label to the point
 

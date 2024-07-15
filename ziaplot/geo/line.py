@@ -1,11 +1,11 @@
 ''' Euclidean Lines '''
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, cast
 from xml.etree import ElementTree as ET
 import math
 
 from ..canvas import Canvas, Borders, ViewBox
-from ..text import TextPosition, text_align_ofst
+from ..text import TextPosition, text_align_ofst, Halign, Valign
 from ..series import PointType, Series
 from ..style import MarkerTypes
 from ..axes import AxesPlot
@@ -161,7 +161,7 @@ class Segment(Line):
         ''' Length of the segment '''
         return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
 
-    def label_start(self, text: str = None,
+    def label_start(self, text: str,
                     pos: TextPosition = 'NE') -> 'Segment':
         ''' Add a text label to the start of the segment
 
@@ -173,7 +173,7 @@ class Segment(Line):
         self._label_start = text, pos
         return self
 
-    def label_end(self, text: str = None,
+    def label_end(self, text: str,
                   pos: TextPosition = 'NE') -> 'Segment':
         ''' Add a text label to the end of the segment
 
@@ -185,9 +185,9 @@ class Segment(Line):
         self._label_end = text, pos
         return self
 
-    def midmarker(self, marker: MarkerTypes) -> Segment:
+    def midmarker(self, midmark: MarkerTypes = '<') -> Segment:
         ''' Add a marker to the center of the Segment '''
-        self.midmark = marker
+        self.midmark = midmark
         return self
 
     def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> Segment:
@@ -315,7 +315,7 @@ class Angle(Series):
         self.line1 = line1
         self.line2 = line2
         self.quad = quad
-        self._label: str = None
+        self._label: Optional[str] = None
         self.square_right = True
 
     def label(self, label: str) -> 'Angle':
@@ -375,6 +375,7 @@ class Angle(Series):
         theta2 = (theta2 + math.tau) % math.tau
 
         # Calculate radius of angle arc in data coordinates
+        assert databox is not None
         r = self.style.angle.radius * databox.w / canvas.viewbox.w
         dtheta = abs(theta1 - theta2) % math.pi
         if self.square_right and math.isclose(dtheta, math.pi/2):
@@ -424,7 +425,8 @@ class Angle(Series):
                         color=self.style.angle.text.color,
                         font=self.style.angle.text.font,
                         size=self.style.angle.text.size,
-                        halign=halign, valign=valign,
+                        halign=cast(Halign, halign),
+                        valign=cast(Valign, valign),
                         pixelofst=(dx, dy),
                         dataview=databox)
 

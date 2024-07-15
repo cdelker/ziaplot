@@ -53,11 +53,16 @@ class Function(Series):
         ''' Convert x values to log(x) '''
         self._logx = True
 
-    def y(self, x: float):
+    def y(self, x: float) -> float:
         y = self.func(x)
         if self._logy:
             y = math.log10(y) if y > 0 else math.nan
         return y
+
+    def x(self, y: float) -> float:
+        ''' Calculate x at given y '''
+        x0 = self.xrange[0] if self.xrange else 1
+        return util.root_newton(lambda x: self.func(x) - y, x0=x0, tol=y/1E4)
 
     def _tangent_slope(self, x: float) -> float:
         ''' Calculate angle tangent to Series at x '''
@@ -75,7 +80,7 @@ class Function(Series):
         '''
         return util.minimum(self.func, x1, x2)
 
-    def _evaluate(self, x: Sequence[float]) -> tuple[list[float], list[float]]:
+    def _evaluate(self, x: Sequence[float]) -> tuple[Sequence[float], Sequence[float]]:
         y = [self.func(xx) for xx in x]
         if self._logy:
             y = [math.log10(yy) if yy > 0 else math.nan for yy in y]
@@ -86,11 +91,11 @@ class Function(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
+        assert databox is not None
         xrange = self.xrange
         if xrange is None:
             xrange = databox.x, databox.x+databox.w
-        x = util.linspace(*xrange, self.n)
-        x, y = self._evaluate(x)
+        x, y = self._evaluate(util.linspace(*xrange, self.n))
         startmark = None
         endmark = None
         if self.startmark:
@@ -124,7 +129,8 @@ class Function(Series):
                                           self.style.marker.strokecolor,
                                           self.style.marker.strokewidth,
                                           orient=True)
-            midx, midy = self.xy(0.5)
+            midx = (xrange[0]+xrange[1])/2
+            midy = self.y(midx)
             slope = self._tangent_slope(0.5)
             dx = midx/1E3
             midx1 = midx + dx

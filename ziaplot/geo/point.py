@@ -25,8 +25,8 @@ class Point(Series):
         super().__init__()
         self.x = x
         self.y = y
-        self._text: str = None
-        self._text_pos: str = None
+        self._text: Optional[str] = None
+        self._text_pos: Optional[TextPosition] = None
         self._guidex: Optional[float] = None
         self._guidey: Optional[float] = None
         self.style.line.width = 0
@@ -43,14 +43,15 @@ class Point(Series):
         self.style.point.marker.color = color
         return self
 
-    def marker(self, marker: MarkerTypes, radius: Optional[float] = None) -> 'Point':
+    def marker(self, marker: MarkerTypes, radius: Optional[float] = None,
+               orient: bool = False) -> 'Point':
         ''' Sets the series marker '''
         self.style.point.marker.shape = marker
         if radius:
             self.style.point.marker.radius = radius
         return self
 
-    def label(self, text: str = None,
+    def label(self, text: str,
               pos: TextPosition = 'NE') -> 'Point':
         ''' Add a text label to the point
 

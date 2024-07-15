@@ -17,11 +17,11 @@ class BezierQuad(Series):
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
-        self.p4 = None
+        self.p4: Optional[PointType] = None
         self.n = 200
-        self.startmark: MarkerTypes = None
-        self.endmark: MarkerTypes = None
-        self.midmark: MarkerTypes = None
+        self.startmark: Optional[MarkerTypes] = None
+        self.endmark: Optional[MarkerTypes] = None
+        self.midmark: Optional[MarkerTypes] = None
 
     def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'BezierQuad':
         ''' Define markers to show at the start and end of the curve. Use defaults
@@ -109,12 +109,14 @@ class BezierCubic(BezierQuad):
 
     def xy(self, t: float) -> PointType:
         ''' Evaluate curve at parameter t '''
+        assert self.p4 is not None
         x = (self.p1[0]*(1-t)**3 + self.p2[0]*3*t*(1-t)**2 + self.p3[0]*3*(1-t)*t**2 + self.p4[0]*t**3)
         y = (self.p1[1]*(1-t)**3 + self.p2[1]*3*t*(1-t)**2 + self.p3[1]*3*(1-t)*t**2 + self.p4[1]*t**3)
         return x, y
 
     def _tangent_slope(self, t: float) -> float:
         ''' Get slope of tangent at parameter t '''
+        assert self.p4 is not None
         bprime_x = 3*(1-t)**2 * (self.p2[0]-self.p1[0]) + 6*(1-t)*t*(self.p3[0]-self.p2[0]) + 3*t**2*(self.p4[0]-self.p3[0])
         bprime_y = 3*(1-t)**2 * (self.p2[1]-self.p1[1]) + 6*(1-t)*t*(self.p3[1]-self.p2[1]) + 3*t**2*(self.p4[1]-self.p3[1])
         return bprime_y / bprime_x

@@ -58,14 +58,6 @@ class Contour(Series):
                              min(min(y) for y in self.y),
                              max(max(y) for y in self.y))
 
-    def logy(self) -> None:
-        ''' Convert y coordinates to log(y) '''
-        self.y = [math.log10(y) for y in self.y]
-
-    def logx(self) -> None:
-        ''' Convert x values to log(x) '''
-        self.x = [math.log10(x) for x in self.x]
-
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''

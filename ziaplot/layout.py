@@ -90,8 +90,8 @@ class LayoutGrid(Drawable):
                  row_gap: float = 10,
                  **kwargs):
         self.axes = list(axes)
-        self.width = 600
-        self.height = 400
+        self.width = 600.
+        self.height = 400.
         self.columns = columns
         self.column_widths = column_widths
         self.row_heights = row_heights
