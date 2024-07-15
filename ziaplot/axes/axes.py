@@ -242,16 +242,16 @@ class AxesPlot(BasePlot):
                             font=self.style.tick.text.font,
                             size=self.style.tick.text.size,
                             halign='center', valign='top')
-                                  
-                if ticks.xminor:
-                    for xminor in ticks.xminor:
-                        if xminor in ticks.xticks:
-                            continue  # Don't double-draw
-                        x, _ = xform.apply(xminor, 0)
-                        y1 = axisbox.y
-                        y2 = y1 - self.style.tick.minorlength
-                        canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                                    width=self.style.tick.minorwidth)
+
+        if ticks.xminor:
+            for xminor in ticks.xminor:
+                if xminor in ticks.xticks:
+                    continue  # Don't double-draw
+                x, _ = xform.apply(xminor, 0)
+                y1 = axisbox.y
+                y2 = y1 - self.style.tick.minorlength
+                canvas.path([x, x], [y1, y2], color=self.style.axis.color,
+                            width=self.style.tick.minorwidth)
 
         for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
             _, y = xform.apply(0, ytick)
@@ -276,15 +276,15 @@ class AxesPlot(BasePlot):
                             size=self.style.tick.text.size,
                             halign='right', valign='center')
     
-                if ticks.yminor:
-                    for yminor in ticks.yminor:
-                        if yminor in ticks.yticks:
-                            continue  # Don't double-draw
-                        _, y = xform.apply(0, yminor)
-                        x1 = axisbox.x
-                        x2 = axisbox.x - self.style.tick.minorlength
-                        canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                                    width=self.style.tick.minorwidth)
+        if ticks.yminor:
+            for yminor in ticks.yminor:
+                if yminor in ticks.yticks:
+                    continue  # Don't double-draw
+                _, y = xform.apply(0, yminor)
+                x1 = axisbox.x
+                x2 = axisbox.x - self.style.tick.minorlength
+                canvas.path([x1, x2], [y, y], color=self.style.axis.color,
+                            width=self.style.tick.minorwidth)
 
         if self.xname:
             centerx = axisbox.x + axisbox.w/2
@@ -615,6 +615,7 @@ class AxesGraph(AxesPlot):
                             font=self.style.tick.text.font,
                             size=self.style.tick.text.size,
                             halign='center', valign='top')
+
         if ticks.xminor:
             for xminor in ticks.xminor:
                 if xminor in ticks.xticks:

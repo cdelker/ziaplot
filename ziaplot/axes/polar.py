@@ -176,15 +176,3 @@ class AxesPolar(BasePlot):
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         self._drawseries(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)
-
-    def svgxml(self, border: bool = False) -> ET.Element:
-        ''' XML for standalone SVG '''
-        canvas = Canvas(self.style.canvasw, self.style.canvash,
-                        fill=self.style.bgcolor)
-        self._xml(canvas)
-        if border:
-            attrib = {'x': '0', 'y': '0',
-                      'width': '100%', 'height': '100%',
-                      'fill': 'none', 'stroke': 'black'}
-            ET.SubElement(canvas.group, 'rect', attrib=attrib)
-        return canvas.xml()

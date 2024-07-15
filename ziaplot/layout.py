@@ -65,8 +65,6 @@ class LayoutGrid(Drawable):
 
         Args:
             axes: The axes to add
-            width: Width of the grid
-            height: Height of the grid
             columns: Number of columns
             column_widths: String specifying widths of each column (see Note)
             row_heights: String specifying widths of each column (see Note)
@@ -85,8 +83,6 @@ class LayoutGrid(Drawable):
     '''
     def __init__(self,
                  *axes: Drawable,
-                 width: float = 600,
-                 height: float = 400,
                  columns: int = 1,
                  column_widths: Optional[str] = None,
                  row_heights: Optional[str] = None,
@@ -94,8 +90,8 @@ class LayoutGrid(Drawable):
                  row_gap: float = 10,
                  **kwargs):
         self.axes = list(axes)
-        self.width = width
-        self.height = height
+        self.width = 600
+        self.height = 400
         self.columns = columns
         self.column_widths = column_widths
         self.row_heights = row_heights
@@ -125,6 +121,12 @@ class LayoutGrid(Drawable):
     def add(self, axis: Drawable):
         ''' Add an axis to the grid '''
         self.axes.append(axis)
+
+    def size(self, w: float = 600, h: float = 400) -> 'LayoutGrid':
+        ''' Set canvas width and height '''
+        self.width = w
+        self.height = h
+        return self
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
@@ -256,16 +258,12 @@ class LayoutV(LayoutGrid):
 
         Args:
             axes: The axes to add
-            width: Width of the grid
-            height: Height of the grid
             row_gap: Spacing between rows
     '''
     def __init__(self,
                  *axes: Drawable,
-                 width: float = 600,
-                 height: float = 400,
                  row_gap: float = 10, **kwargs):
-        super().__init__(*axes, width=width, height=height,
+        super().__init__(*axes,
                          row_gap=row_gap,
                          columns=1, **kwargs)
 
@@ -275,15 +273,11 @@ class LayoutH(LayoutGrid):
     
         Args:
             axes: The axes to add
-            width: Width of the grid
-            height: Height of the grid
             column_gap: Spacing between columns
     '''
     def __init__(self,
                  *axes: Drawable,
-                 width: float = 600,
-                 height: float = 400,
                  column_gap: float = 10, **kwargs):
-        super().__init__(*axes, width=width, height=height,
+        super().__init__(*axes,
                          column_gap=column_gap,
                          columns=-1, **kwargs)

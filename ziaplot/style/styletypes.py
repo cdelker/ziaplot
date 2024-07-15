@@ -162,6 +162,14 @@ class ColorBarStyle:
 
 
 @dataclass
+class ShapeStyle:
+    ''' Style for shapes '''
+    color: str = 'none'
+    strokecolor: str = 'black'
+    strokewidth: float = 2.0
+
+
+@dataclass
 class AngleStyle:
     ''' Style for angle indicators '''
     text: TextStyle = field(default_factory=lambda: TextStyle(size=12))
@@ -188,6 +196,7 @@ class SeriesStyle:
     border: BorderStyle = field(default_factory=BorderStyle)
     marker: MarkerStyle = field(default_factory=MarkerStyle)
     point: PointStyle = field(default_factory=PointStyle)
+    shape: ShapeStyle = field(default_factory=ShapeStyle)
     text: TextStyle = field(default_factory=TextStyle)
     angle: AngleStyle = field(default_factory=AngleStyle)
     yerror: ErrorBarStyle = field(default_factory=ErrorBarStyle)

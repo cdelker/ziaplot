@@ -37,7 +37,7 @@ Subplots may span multiple rows or columns using `.span`. The first parameter is
 
 .. jupyter-execute::
 
-    with zp.LayoutGrid(columns=3, width=800):
+    with zp.LayoutGrid(columns=3).size(800, 400):
         zp.Plot([1,2,3], [1,2,5]).span(3)
         zp.Plot([1,2,3], [3,3,2]).color('blue').span(1, 2)
         zp.Plot([1,2,3], [4,1,3]).color('green')

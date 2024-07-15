@@ -190,7 +190,7 @@ class Segment(Line):
         self.midmark = marker
         return self
 
-    def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> None:
+    def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> Segment:
         ''' Move endpoints of segment, keeping slope and intercept '''
         y1, y2 = self.p1[1], self.p2[1]
         if x1 is not None:
@@ -205,6 +205,7 @@ class Segment(Line):
 
         self.p1 = (x1, y1)
         self.p2 = (x2, y2)
+        return self
 
     def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
         ''' Get endpoints of line that will fill the databox '''
@@ -249,9 +250,13 @@ class Segment(Line):
                                           self.style.marker.strokecolor,
                                           self.style.marker.strokewidth,
                                           orient=True)
-            midx = [(x[1] + x[0]) / 2]
-            midy = [(y[1] + y[0]) / 2]
-            canvas.path(midx, midy,
+            midx, midy = (x[0]+x[1])/2, (y[0]+y[1])/2
+            slope = self._tangent_slope(0.5)
+            dx = midx/1E3
+            midx1 = midx + dx
+            midy1 = midy + dx*slope
+            canvas.path([midx, midx1], [midy, midy1],
+                        color='none',
                         startmarker=midmark,
                         dataview=databox)
 

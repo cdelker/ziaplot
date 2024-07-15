@@ -54,6 +54,18 @@ def Lobo() -> styletypes.Style:
     return styletypes.Style()
 
 
+def BlackWhite() -> styletypes.Style:
+    ''' Black and White theme (good for plotting Euclidean Geometry) '''
+    s = styletypes.Style()
+    s.colorcycle = ColorCycle('black')
+    s.series.point.marker.color = 'black'
+    s.series.marker.color = 'black'
+    setaxiscolor(s, 'black')
+    s.axis.bgcolor = 'none'
+    s.axis.gridcolor = 'none'
+    return s
+
+
 def Taffy() -> styletypes.Style:
     ''' Taffy theme '''
     s = styletypes.Style()

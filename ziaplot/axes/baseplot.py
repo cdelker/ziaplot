@@ -55,6 +55,8 @@ class BasePlot(Drawable):
         self.series: list[Series] = []   # List of XY lines/series
         self.legend = legend
         self._equal_aspect = False
+        self.width: Optional[float] = None
+        self.height: Optional[float] = None
         axis_stack.push_series(self)
     
     def __enter__(self):
@@ -82,6 +84,12 @@ class BasePlot(Drawable):
 
     def _borders(self) -> Borders:
         return Borders(0, 0, 0, 0)
+
+    def size(self, w: float = 600, h: float = 400) -> BasePlot:
+        ''' Set canvas width and height '''
+        self.width = w
+        self.height = h
+        return self
 
     def xrange(self, xmin: float, xmax: float) -> BasePlot:
         ''' Set x-range of data display '''
@@ -160,7 +168,9 @@ class BasePlot(Drawable):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
-        canvas = Canvas(self.style.canvasw, self.style.canvash)
+        width = self.width if self.width else self.style.canvasw
+        height = self.height if self.height else self.style.canvash
+        canvas = Canvas(width, height)
         self._xml(canvas)
         if border:
             attrib = {'x': '0', 'y': '0',

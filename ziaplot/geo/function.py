@@ -124,9 +124,13 @@ class Function(Series):
                                           self.style.marker.strokecolor,
                                           self.style.marker.strokewidth,
                                           orient=True)
-            midx = (x[0] + x[-1]) / 2
-            midy = self.y(midx)
-            canvas.path([midx], [midy],
+            midx, midy = self.xy(0.5)
+            slope = self._tangent_slope(0.5)
+            dx = midx/1E3
+            midx1 = midx + dx
+            midy1 = midy + dx*slope
+            canvas.path([midx, midx1], [midy, midy1],
+                        color='none',
                         startmarker=midmark,
                         dataview=databox)
 

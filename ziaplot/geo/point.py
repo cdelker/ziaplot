@@ -4,9 +4,9 @@ from typing import Optional
 import math
 
 from ..text import TextPosition, text_align_ofst
-from ..style import MarkerTypes
+from ..style import MarkerTypes, DashTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..series import Series
+from ..series import Series, PointType
 from ..shapes import Circle
 from .function import Function
 from .bezier import BezierQuad
@@ -25,13 +25,18 @@ class Point(Series):
         super().__init__()
         self.x = x
         self.y = y
-        self._text = None
-        self._text_pos = None
-        self._guidex = None
-        self._guidey = None
+        self._text: str = None
+        self._text_pos: str = None
+        self._guidex: Optional[float] = None
+        self._guidey: Optional[float] = None
         self.style.line.width = 0
         self.style.point.marker.shape = 'round'
         self.style.point.marker.radius = 4
+
+    @property
+    def point(self) -> PointType:
+        ''' XY coordinate tuple '''
+        return self.x, self.y
 
     def color(self, color: str) -> 'Series':
         ''' Sets the series color '''
@@ -58,14 +63,32 @@ class Point(Series):
         self._text_pos = pos
         return self
 
-    def guidex(self, toy: float = 0) -> 'Point':
+    def guidex(self, toy: float = 0,
+               color: Optional[str] = None,
+               stroke: Optional[DashTypes] = None,
+               width: Optional[float] = None) -> 'Point':
         ''' Draw a vertical guide line between point and toy '''
         self._guidex = toy
+        if color:
+            self.style.point.guidex.color = color
+        if stroke:
+            self.style.point.guidex.stroke = stroke
+        if width:
+            self.style.point.guidex.width = width
         return self
 
-    def guidey(self, tox: float = 0) -> 'Point':
+    def guidey(self, tox: float = 0,
+               color: Optional[str] = None,
+               stroke: Optional[DashTypes] = None,
+               width: Optional[float] = None) -> 'Point':
         ''' Draw a horizontal guide line between point and tox '''
         self._guidey = tox
+        if color:
+            self.style.point.guidey.color = color
+        if stroke:
+            self.style.point.guidey.stroke = stroke
+        if width:
+            self.style.point.guidey.width = width
         return self
 
     def datarange(self) -> DataRange:

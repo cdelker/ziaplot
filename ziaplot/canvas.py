@@ -187,6 +187,7 @@ class Canvas:
         elif shape == '|':
             sh = ET.SubElement(mark, 'path')
             sh.attrib['d'] = f'M {radius},{diam} L {radius},0'
+            sh.attrib['stroke-width'] = str(radius/4)
             sh.attrib['stroke'] = color
         elif shape in ['+', 'x']:
             sh = ET.SubElement(mark, 'polygon')
@@ -207,7 +208,7 @@ class Canvas:
         if shape not in ['-', '|']:
             sh.attrib['fill'] = color
             sh.attrib['stroke'] = strokecolor
-        sh.attrib['stroke-width'] = str(strokewidth)
+            sh.attrib['stroke-width'] = str(strokewidth)
 
         return name
 

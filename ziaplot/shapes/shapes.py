@@ -10,14 +10,14 @@ from ..canvas import Canvas, Borders, ViewBox, DataRange, PointType
 
 class ShapeBase(Series):
     ''' Filled shape '''
-    def color(self, color: str) -> 'Series':
+    def color(self, color: str) -> 'ShapeBase':
         ''' Sets the fill color '''
-        self.style.marker.color = color
+        self.style.shape.color = color
         return self
 
-    def strokecolor(self, color: str) -> 'Series':
+    def strokecolor(self, color: str) -> 'ShapeBase':
         ''' Sets the fill color '''
-        self.style.marker.strokecolor = color
+        self.style.shape.strokecolor = color
         return self
 
 
@@ -83,9 +83,9 @@ class Ellipse(ShapeBase):
         ''' Add XML elements to the canvas '''
         canvas.ellipse(self.x, self.y, self.r1, self.r2,
                        theta=self.theta,
-                       color=self.style.marker.color,
-                       strokecolor=self.style.marker.strokecolor,
-                       strokewidth=self.style.line.width,
+                       color=self.style.shape.color,
+                       strokecolor=self.style.shape.strokecolor,
+                       strokewidth=self.style.shape.strokewidth,
                        dataview=databox)
 
 
@@ -128,8 +128,8 @@ class Rectangle(ShapeBase):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         canvas.rect(self.x, self.y, self.width, self.height,
-                    fill=self.style.marker.color,
-                    strokecolor=self.style.marker.strokecolor,
-                    strokewidth=self.style.line.width,
+                    fill=self.style.shape.color,
+                    strokecolor=self.style.shape.strokecolor,
+                    strokewidth=self.style.shape.strokewidth,
                     rcorner=self.cornerradius,
                     dataview=databox)
