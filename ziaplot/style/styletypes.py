@@ -177,6 +177,7 @@ class AngleStyle:
     text_radius: float = 20
     color: str = 'black'
     strokewidth: float = 1.5
+    arcgap: float = 4.0
 
 
 @dataclass

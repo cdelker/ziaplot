@@ -282,11 +282,12 @@ class Vector(Segment):
 
 class Angle(Series):
     ''' Draw angle between two Lines/Segments '''
-    def __init__(self, line1: Line, line2: Line, quad: int = 1):
+    def __init__(self, line1: Line, line2: Line, quad: int = 1, arcs: int = 1):
         super().__init__()
         self.line1 = line1
         self.line2 = line2
         self.quad = quad
+        self.arcs = arcs
         self._label: Optional[str] = None
         self.square_right = True
 
@@ -365,13 +366,15 @@ class Angle(Series):
                         dataview=databox
                         )
         else:
-            canvas.arc(x, y, r,
-                    math.degrees(theta1),
-                    math.degrees(theta2),
-                    strokecolor=self.style.angle.color,
-                    strokewidth=self.style.angle.strokewidth,
-                    dataview=databox
-                    )
+            dradius = self.style.angle.arcgap * databox.w / canvas.viewbox.w
+            for i in range(self.arcs):
+                canvas.arc(x, y, r - i * dradius,
+                        math.degrees(theta1),
+                        math.degrees(theta2),
+                        strokecolor=self.style.angle.color,
+                        strokewidth=self.style.angle.strokewidth,
+                        dataview=databox
+                        )
 
         if self._label:
             r = self.style.angle.text_radius
