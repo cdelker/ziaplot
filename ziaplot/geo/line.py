@@ -1,6 +1,7 @@
 ''' Euclidean Lines '''
 from __future__ import annotations
 from typing import Optional, cast
+from dataclasses import dataclass
 from xml.etree import ElementTree as ET
 import math
 
@@ -10,6 +11,22 @@ from ..series import PointType, Series
 from ..style import MarkerTypes
 from ..axes import AxesPlot
 from .function import Function
+
+
+@dataclass
+class LineLabel:
+    ''' A label along a line
+
+        Args:
+            label: The label text
+            loc: Location as fraction (0-1) along the line
+            align: Alignment with respect to position
+            rotate: Rotate text in direction of line
+    '''
+    label: str
+    loc: float = 0.5
+    align: TextPosition = 'N'
+    rotate: bool = False
 
 
 class Line(Function):
@@ -26,14 +43,8 @@ class Line(Function):
         super().__init__(lambda x: intercept + slope * x)
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
-
-    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Line':
-        ''' Define markers to show at the start and end of the line. Use defaults
-            to show arrowheads pointing outward in the direction of the line.
-        '''
-        self.startmark = start
-        self.endmark = end
-        return self
+        self.midmark: Optional[MarkerTypes] = None
+        self._labels: list[LineLabel] = []
 
     @property
     def intercept(self) -> float:
@@ -53,6 +64,32 @@ class Line(Function):
         ''' Calculate y at x '''
         y = self.slope * x + self.intercept
         return y
+
+    def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Line':
+        ''' Define markers to show at the start and end of the line. Use defaults
+            to show arrowheads pointing outward in the direction of the line.
+        '''
+        self.startmark = start
+        self.endmark = end
+        return self
+
+    def midmarker(self, midmark: MarkerTypes = '<') -> 'Line':
+        ''' Add a marker to the center of the Segment '''
+        self.midmark = midmark
+        return self
+
+    def label(self, text: str, loc: float = 0,
+              align: TextPosition = 'N', rotate: bool = False) -> 'Line':
+        ''' Add a label along the Line
+
+            Args:
+                text: The text to add
+                loc: Position along the line as fraction from 0-1
+                align: Text alignment
+                rotate: Rotate the text with the line
+        '''
+        self._labels.append(LineLabel(text, loc, align, rotate))
+        return self
 
     def _tangent_slope(self, x: float) -> float:
         ''' Calculate angle tangent to Series at x '''
@@ -93,6 +130,35 @@ class Line(Function):
             slope = math.inf
         return cls(p1, slope)
 
+    def _place_labels(self, x0: PointType,
+                      canvas: Canvas, databox: ViewBox) -> None:
+        ''' Draw labels along line
+
+            Args:
+                x0: The x endpoints of the line
+                canvas: Canvas to draw on
+                databox: Databox within the canvas
+        '''
+        for label in self._labels:
+            dx, dy, halign, valign = text_align_ofst(
+                label.align, self.style.point.text_ofst)
+
+            x = x0[0] + (x0[1] - x0[0]) * label.loc
+            y = self.y(x)
+            angle = None
+            if label.rotate:
+                angle = math.degrees(math.atan(self.slope))
+
+            canvas.text(x, y, label.label,
+                        color=self.style.point.text.color,
+                        font=self.style.point.text.font,
+                        size=self.style.point.text.size,
+                        halign=halign,
+                        valign=valign,
+                        rotate=angle,
+                        pixelofst=(dx, dy),
+                        dataview=databox)
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
@@ -122,6 +188,26 @@ class Line(Function):
                     startmarker=startmark,
                     endmarker=endmark,
                     dataview=databox)
+
+        if self.midmark:
+            midmark = canvas.definemarker(self.midmark,
+                                          self.style.marker.radius,
+                                          self.style.marker.color,
+                                          self.style.marker.strokecolor,
+                                          self.style.marker.strokewidth,
+                                          orient=True)
+
+            midx, midy = (x[0]+x[1])/2, (y[0]+y[1])/2
+            slope = self._tangent_slope(0.5)
+            dx = midx/1E3
+            midx1 = midx + dx
+            midy1 = midy + dx*slope
+            canvas.path([midx, midx1], [midy, midy1],
+                        color='none',
+                        startmarker=midmark,
+                        dataview=databox)
+
+        self._place_labels(x, canvas, databox)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
@@ -152,43 +238,11 @@ class Segment(Line):
         super().__init__(p1, slope)
         self.p1 = p1
         self.p2 = p2
-        self.midmark: MarkerTypes = None
-        self._label_start: Optional[tuple[str, TextPosition]] = None
-        self._label_end: Optional[tuple[str, TextPosition]] = None
 
     @property
     def length(self) -> float:
         ''' Length of the segment '''
         return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
-
-    def label_start(self, text: str,
-                    pos: TextPosition = 'NE') -> 'Segment':
-        ''' Add a text label to the start of the segment
-
-            Args:
-                text: Label
-                text_pos: Position for label with repsect
-                    to the point (N, E, S, W, NE, NW, SE, SW)
-        '''
-        self._label_start = text, pos
-        return self
-
-    def label_end(self, text: str,
-                  pos: TextPosition = 'NE') -> 'Segment':
-        ''' Add a text label to the end of the segment
-
-            Args:
-                text: Label
-                text_pos: Position for label with repsect
-                    to the point (N, E, S, W, NE, NW, SE, SW)
-        '''
-        self._label_end = text, pos
-        return self
-
-    def midmarker(self, midmark: MarkerTypes = '<') -> Segment:
-        ''' Add a marker to the center of the Segment '''
-        self.midmark = midmark
-        return self
 
     def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> Segment:
         ''' Move endpoints of segment, keeping slope and intercept '''
@@ -210,88 +264,6 @@ class Segment(Line):
     def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
         ''' Get endpoints of line that will fill the databox '''
         return (self.p1[0], self.p2[0]), (self.p1[1], self.p2[1])
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        assert databox is not None
-        color = self.style.line.color
-        x, y = self._endpoints(databox)
-        startmark = None
-        endmark = None
-        if self.startmark:
-            startmark = canvas.definemarker(self.startmark,
-                                            self.style.marker.radius,
-                                            self.style.marker.color,
-                                            self.style.marker.strokecolor,
-                                            self.style.marker.strokewidth,
-                                            orient=True)
-        if self.endmark:
-            endmark = canvas.definemarker(self.endmark,
-                                          self.style.marker.radius,
-                                          self.style.marker.color,
-                                          self.style.marker.strokecolor,
-                                          self.style.marker.strokewidth,
-                                          orient=True)
-
-        color = self.style.line.color
-        canvas.path(x, y,
-                    stroke=self.style.line.stroke,
-                    color=color,
-                    width=self.style.line.width,
-                    startmarker=startmark,
-                    endmarker=endmark,
-                    dataview=databox)
-
-        if self.midmark:
-            midmark = canvas.definemarker(self.midmark,
-                                          self.style.marker.radius,
-                                          self.style.marker.color,
-                                          self.style.marker.strokecolor,
-                                          self.style.marker.strokewidth,
-                                          orient=True)
-            midx, midy = (x[0]+x[1])/2, (y[0]+y[1])/2
-            slope = self._tangent_slope(0.5)
-            dx = midx/1E3
-            midx1 = midx + dx
-            midy1 = midy + dx*slope
-            canvas.path([midx, midx1], [midy, midy1],
-                        color='none',
-                        startmarker=midmark,
-                        dataview=databox)
-
-        if self._label_start is not None:
-            self._draw_label(
-                x[0], y[0], self._label_start[0], self._label_start[1],
-                canvas, databox)
-
-        if self._label_end is not None:
-            self._draw_label(
-                x[1], y[1], self._label_end[0], self._label_end[1],
-                canvas, databox)
-
-    def _draw_label(self, x, y, text, pos, canvas, databox):
-        ''' Draw the label
-
-            Args:
-                x: X anchor position
-                y: Y anchor position
-                text: Text to draw
-                pos: Position/alignment of text about the anchor
-                canvas: Canvas to draw on
-                databox: Databox within the canvas
-        '''
-        dx, dy, halign, valign = text_align_ofst(
-            pos, self.style.point.text_ofst)
-
-        canvas.text(x, y, text,
-                    color=self.style.point.text.color,
-                    font=self.style.point.text.font,
-                    size=self.style.point.text.size,
-                    halign=halign,
-                    valign=valign,
-                    pixelofst=(dx, dy),
-                    dataview=databox)
 
 
 class Vector(Segment):
