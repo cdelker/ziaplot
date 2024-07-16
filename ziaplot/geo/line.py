@@ -22,11 +22,15 @@ class LineLabel:
             loc: Location as fraction (0-1) along the line
             align: Alignment with respect to position
             rotate: Rotate text in direction of line
+            color: Color of text
+            size: Size of text
     '''
     label: str
     loc: float = 0.5
     align: TextPosition = 'N'
     rotate: bool = False
+    color: Optional[str] = None
+    size: Optional[float] = None
 
 
 class Line(Function):
@@ -78,8 +82,12 @@ class Line(Function):
         self.midmark = midmark
         return self
 
-    def label(self, text: str, loc: float = 0,
-              align: TextPosition = 'N', rotate: bool = False) -> 'Line':
+    def label(self, text: str,
+              loc: float = 0,
+              align: TextPosition = 'N',
+              rotate: bool = False,
+              color: Optional[str] = None,
+              size: Optional[float] = None) -> 'Line':
         ''' Add a label along the Line
 
             Args:
@@ -87,8 +95,10 @@ class Line(Function):
                 loc: Position along the line as fraction from 0-1
                 align: Text alignment
                 rotate: Rotate the text with the line
+                color: Text color
+                size: Text size
         '''
-        self._labels.append(LineLabel(text, loc, align, rotate))
+        self._labels.append(LineLabel(text, loc, align, rotate, color, size))
         return self
 
     def _tangent_slope(self, x: float) -> float:
@@ -149,10 +159,12 @@ class Line(Function):
             if label.rotate:
                 angle = math.degrees(math.atan(self.slope))
 
+            color = label.color if label.color else self.style.point.text.color
+            size = label.size if label.size else self.style.point.text.size
             canvas.text(x, y, label.label,
-                        color=self.style.point.text.color,
+                        color=color,
                         font=self.style.point.text.font,
-                        size=self.style.point.text.size,
+                        size=size,
                         halign=halign,
                         valign=valign,
                         rotate=angle,
@@ -288,11 +300,12 @@ class Angle(Series):
         self.line2 = line2
         self.quad = quad
         self.arcs = arcs
-        self._label: Optional[str] = None
+        self._label: Optional[LineLabel] = None
         self.square_right = True
 
-    def label(self, label: str) -> 'Angle':
-        self._label = label
+    def label(self, label: str, color: Optional[str] = None,
+              size: Optional[float] = None) -> 'Angle':
+        self._label = LineLabel(label, color=color, size=size)
         return self
 
     def color(self, color: str) -> 'Angle':
@@ -378,6 +391,8 @@ class Angle(Series):
 
         if self._label:
             r = self.style.angle.text_radius
+            color = self._label.color if self._label.color else self.style.angle.text.color
+            size = self._label.size if self._label.size else self.style.angle.text.size
             labelangle = angle_mean(theta1, theta2)
             dx = r * math.cos(labelangle)
             dy = r * math.sin(labelangle)
@@ -396,10 +411,10 @@ class Angle(Series):
             else:
                 valign = 'center'
 
-            canvas.text(x, y, self._label,
-                        color=self.style.angle.text.color,
+            canvas.text(x, y, self._label.label,
+                        color=color,
                         font=self.style.angle.text.font,
-                        size=self.style.angle.text.size,
+                        size=size,
                         halign=cast(Halign, halign),
                         valign=cast(Valign, valign),
                         pixelofst=(dx, dy),

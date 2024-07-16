@@ -171,10 +171,19 @@ class ShapeStyle:
 
 @dataclass
 class AngleStyle:
-    ''' Style for angle indicators '''
-    text: TextStyle = field(default_factory=lambda: TextStyle(size=12))
-    radius: float = 15
-    text_radius: float = 20
+    ''' Style for angle indicators
+
+        Args:
+            text: Style for text marking the angle
+            radius: Radius of the arc
+            text_radius: Radius to place the text
+            color: Arc color
+            strokewidth: Arc width
+            arcgap: Distance between multiple arcs
+    '''
+    text: TextStyle = field(default_factory=lambda: TextStyle(size=14))
+    radius: float = 20
+    text_radius: float = 25
     color: str = 'black'
     strokewidth: float = 1.5
     arcgap: float = 4.0
