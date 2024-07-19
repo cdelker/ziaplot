@@ -35,7 +35,7 @@ class Window:
         x = list(range(n))
 
         p = zp.AxesPlot()
-        p += zp.Line(x, y).marker('o')
+        p += zp.PolyLine(x, y).marker('o')
         p += zp.HLine(avg)
         img = base64.encodebytes(p.imagebytes('png'))
         self.plot = tk.PhotoImage(data=img)

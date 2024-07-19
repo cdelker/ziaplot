@@ -11,6 +11,8 @@ from ..series import PointType, Series
 from ..style import MarkerTypes
 from ..axes import AxesPlot
 from .function import Function
+from ..util import angle_mean
+from .. import axis_stack
 
 
 @dataclass
@@ -54,6 +56,24 @@ class Line(Function):
     def intercept(self) -> float:
         ''' Y-intercept of Line '''
         return -self.slope * self.point[0] + self.point[1]
+
+    @property
+    def point2(self) -> PointType:
+        ''' Get a second point on the line, 1 unit away '''
+        theta = math.atan(self.slope)
+        x2 = self.point[0] + math.cos(theta)
+        y2 = self.point[1] + math.sin(theta)
+        return x2, y2
+
+    @property
+    def homogeneous(self) -> tuple[float, float, float]:
+        ''' Line in homogeneous coordinates '''
+        p1 = self.point
+        p2 = self.point2
+        a = p1[1] - p2[1]
+        b = p2[0] - p1[0]
+        c = (p1[0]*p2[1] - p2[0]*p1[1])
+        return a, b, -c
 
     def x(self, y) -> float:
         ''' Calculate x at y '''
@@ -140,7 +160,7 @@ class Line(Function):
             slope = math.inf
         return cls(p1, slope)
 
-    def _place_labels(self, x0: PointType,
+    def _place_labels(self, x0: PointType, y0: PointType,
                       canvas: Canvas, databox: ViewBox) -> None:
         ''' Draw labels along line
 
@@ -154,13 +174,13 @@ class Line(Function):
                 label.align, self.style.point.text_ofst)
 
             x = x0[0] + (x0[1] - x0[0]) * label.loc
-            y = self.y(x)
+            y = y0[0] + (y0[1] - y0[0]) * label.loc
             angle = None
             if label.rotate:
                 angle = math.degrees(math.atan(self.slope))
 
-            color = label.color if label.color else self.style.point.text.color
-            size = label.size if label.size else self.style.point.text.size
+            color = label.color if label.color else self.style.text.color
+            size = label.size if label.size else self.style.text.size
             canvas.text(x, y, label.label,
                         color=color,
                         font=self.style.point.text.font,
@@ -219,7 +239,7 @@ class Line(Function):
                         startmarker=midmark,
                         dataview=databox)
 
-        self._place_labels(x, canvas, databox)
+        self._place_labels(x, y, canvas, databox)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
@@ -256,6 +276,10 @@ class Segment(Line):
         ''' Length of the segment '''
         return math.sqrt((self.p1[0]- self.p2[0])**2 + (self.p1[1] - self.p2[1])**2)
 
+    @property
+    def point2(self) -> PointType:
+        return self.p2
+
     def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> Segment:
         ''' Move endpoints of segment, keeping slope and intercept '''
         y1, y2 = self.p1[1], self.p2[1]
@@ -276,6 +300,16 @@ class Segment(Line):
     def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
         ''' Get endpoints of line that will fill the databox '''
         return (self.p1[0], self.p2[0]), (self.p1[1], self.p2[1])
+
+    @classmethod
+    def horizontal(cls, p: PointType, tox: float = 0) -> 'Segment':
+        ''' Create a horizontal segment from p to the tox x value '''
+        return cls(p, (tox, p[1]))
+
+    @classmethod
+    def vertical(cls, p: PointType, toy: float = 0) -> 'Segment':
+        ''' Create a vertical segment from p to the toy y value '''
+        return cls(p, (p[0], toy))
 
 
 class Vector(Segment):
@@ -324,6 +358,14 @@ class Angle(Series):
         if text_radius:
             self.style.angle.text_radius = text_radius
         return self
+
+    @classmethod
+    def to_zero(cls, line: Line, quad: int = 1):
+        ''' Create angle between line and y=0 '''
+        axis_stack.pause = True
+        line2 = Line((0, 0), 0)
+        axis_stack.pause = False
+        return cls(line, line2, quad=quad)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -419,11 +461,3 @@ class Angle(Series):
                         valign=cast(Valign, valign),
                         pixelofst=(dx, dy),
                         dataview=databox)
-
-
-def angle_mean(theta1: float, theta2: float) -> float:
-    ''' Circular mean over 0 to 2pi '''
-    sine = math.sin(theta1) + math.sin(theta2)
-    cosine = math.cos(theta1) + math.cos(theta2)
-    mean = math.atan2(sine, cosine)
-    return (mean + math.tau) % math.tau

@@ -6,7 +6,6 @@ from xml.etree import ElementTree as ET
 from ..canvas import Canvas, Borders, ViewBox
 from ..series import Series, PointType
 from ..style import MarkerTypes
-from .function import Function
 from ..axes import AxesPlot
 
 

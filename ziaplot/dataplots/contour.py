@@ -104,7 +104,7 @@ class Contour(Series):
             except TypeError:
                 # z is list of lists - much slower
                 z0 = [[(z < contour) for z in row] for row in self.z]
-                Y = [y[0] for y in self.y]
+                Y = self.y[0]
 
             X = self.x[0]
             z = self.z

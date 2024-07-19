@@ -22,6 +22,9 @@ Axes
 .. autoclass:: ziaplot.axes.axes.AxesGraph
     :members:
 
+.. autoclass:: ziaplot.axes.axes.AxesBlank
+    :members:
+
 .. autoclass:: ziaplot.axes.axeslog.AxesLogY
     :members:
 
@@ -35,6 +38,9 @@ Axes
     :members:
 
 .. autoclass:: ziaplot.axes.smith.AxesSmith
+    :members:
+
+.. autoclass:: ziaplot.axes.ticker._Ticker
     :members:
 
 .. autoclass:: ziaplot.charts.pie.Pie
@@ -98,13 +104,16 @@ Data Series
 .. autoclass:: ziaplot.axes.smith.SmithConstReactance
     :members:
 
+|
+
 Geometric
 ---------
 
 .. autoclass:: ziaplot.geo.Function
     :members:
 
-.. autoclass:: ziaplot.geo.Line
+.. autoclass:: ziaplot.geo.line.Line
+    :members:
 
 .. autoclass:: ziaplot.geo.line.VLine
     :members:
@@ -112,6 +121,62 @@ Geometric
 .. autoclass:: ziaplot.geo.line.HLine
     :members:
 
+.. autoclass:: ziaplot.geo.line.Segment
+    :members:
+
+.. autoclass:: ziaplot.geo.line.Vector
+    :members:
+
+.. autoclass:: ziaplot.geo.line.Angle
+    :members:
+
+.. autoclass:: ziaplot.geo.point.Point
+    :members:
+
+.. autoclass:: ziaplot.geo.bezier.BezierQuad
+    :members:
+
+.. autoclass:: ziaplot.geo.bezier.BezierCubic
+    :members:
+
+.. autoclass:: ziaplot.geo.bezier.Curve
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.Tangent
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.TangentSegment
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.Normal
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.NormalSegment
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.Diameter
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.Secant
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.Chord
+    :members:
+
+.. autoclass:: ziaplot.geo.tangents.Sagitta
+    :members:
+
+.. autoclass:: ziaplot.geo.integral.IntegralFill
+    :members:
+
+.. autoclass:: ziaplot.shapes.shapes.Circle
+    :members:
+
+.. autoclass:: ziaplot.shapes.shapes.Ellipse
+    :members:
+
+.. autoclass:: ziaplot.shapes.shapes.Rectangle
+    :members:
 
 
 Layouts
@@ -124,4 +189,7 @@ Layouts
     :members:
 
 .. autoclass:: ziaplot.layout.LayoutGrid
+    :members:
+
+.. autoclass:: ziaplot.layout.LayoutEmpty
     :members:

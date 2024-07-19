@@ -8,5 +8,6 @@ from .style import styles
 from .text import settextmode
 from .config import config
 from .util import linspace
+from .find import line_intersection, func_intersection, local_max, local_min
 
 __version__ = '0.6a0'

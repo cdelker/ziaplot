@@ -135,3 +135,11 @@ def derivative(f: Callable, a: float):
     ''' Calculate derivative of f at a '''
     h = a/1E6 if a != 0 else 1E-6
     return (f(a+h) - f(a)) / h
+
+
+def angle_mean(theta1: float, theta2: float) -> float:
+    ''' Circular mean over 0 to 2pi '''
+    sine = math.sin(theta1) + math.sin(theta2)
+    cosine = math.cos(theta1) + math.cos(theta2)
+    mean = math.atan2(sine, cosine)
+    return (mean + math.tau) % math.tau

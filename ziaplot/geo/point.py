@@ -9,9 +9,9 @@ from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..series import Series, PointType
 from ..shapes import Circle
 from .function import Function
+from .line import Line
 from .bezier import BezierQuad
-from ..util import root
-
+from ..find import line_intersection, func_intersection, local_min, local_max
 
 
 class Point(Series):
@@ -162,15 +162,13 @@ class Point(Series):
     @classmethod
     def at_minimum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local minimum of f between x1 and x2 '''
-        x = f._local_min(x1, x2)
-        y = f.y(x)
+        x, y = local_min(f, x1, x2)
         return cls(x, y)
 
     @classmethod    
     def at_maximum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local maximum of f between x1 and x2 '''
-        x = f._local_max(x1, x2)
-        y = f.y(x)
+        x, y = local_max(f, x1, x2)
         return cls(x, y)
 
     @classmethod
@@ -183,10 +181,10 @@ class Point(Series):
     def at_intersection(cls, f1: Function, f2: Function,
                         x1: float, x2: float) -> 'Point':
         ''' Draw a Point at the intersection of two functions '''
-        tol = (x2-x1) * 1E-4
-        x = root(lambda x: f1.func(x) - f2.func(x),
-                 a=x1, b=x2, tol=tol)
-        y = f1.y(x)
+        if isinstance(f1, Line) and isinstance(f2, Line):
+            x, y= line_intersection(f1, f2)
+        else:
+            x, y = func_intersection(f1, f2, x1, x2)
         return cls(x, y)
 
     @classmethod

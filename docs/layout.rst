@@ -17,7 +17,7 @@ horizontally or vertically.
 
 .. jupyter-execute::
 
-    with zp.LayoutH(height=200):
+    with zp.LayoutH().size(400, 200):
         zp.Plot([1,3,5], [1,2,5]).marker('o')
         zp.Plot([1,3,5], [1,2,5]).marker('square')
         zp.Plot([1,3,5], [1,2,5]).marker('triangle')
@@ -37,7 +37,7 @@ Subplots may span multiple rows or columns using `.span`. The first parameter is
 
 .. jupyter-execute::
 
-    with zp.LayoutGrid(columns=3).size(800, 400):
+    with zp.LayoutGrid(columns=3).size(700, 400):
         zp.Plot([1,2,3], [1,2,5]).span(3)
         zp.Plot([1,2,3], [3,3,2]).color('blue').span(1, 2)
         zp.Plot([1,2,3], [4,1,3]).color('green')

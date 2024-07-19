@@ -36,7 +36,7 @@ class MainGUI(QtWidgets.QMainWindow):
         avg = sum(y)/len(y)
         x = list(range(n))
         p = zp.AxesPlot()
-        p += zp.Line(x, y).marker('o')
+        p += zp.PolyLine(x, y).marker('o')
         p += zp.HLine(avg)
         self.image.load(p.imagebytes())
 

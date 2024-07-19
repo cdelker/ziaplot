@@ -12,7 +12,7 @@ Plot Style
     zp.styles.setdefault(zp.styles.DocStyle)
 
 
-Plotting style is set using a :py:class:`ziaplot.style.style.styletypes.Style` dataclass.
+Plotting style is set using a :py:class:`ziaplot.style.styletypes.Style` dataclass.
 Individual drawing axes take a `style` argument to specify the style of the axis
 and any data series it contains.
 To customize the style, typically start with the base `Style` and modify its attributes:
@@ -176,6 +176,21 @@ Dark Bold
     teststyle()
 
 |
+
+
+Black and White
+***************
+
+.. code-block:: python
+
+    zp.styles.setdefault(zp.styles.BlackWhite)
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.styles.setdefault(zp.styles.BlackWhite)
+    teststyle()
+
 
 Style Dataclass
 ---------------

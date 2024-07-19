@@ -30,6 +30,7 @@ Math rendering interprets any string label enclosed in $..$ to be Latex math.
 .. jupyter-execute::
     :hide-code:
 
+    import math
     import ziaplot as zp
     zp.styles.setdefault(zp.styles.DocStyle)
 
@@ -38,30 +39,70 @@ Math rendering interprets any string label enclosed in $..$ to be Latex math.
 Quick Example
 -------------
 
-Figures in Ziaplot are made from Series objects, which represent sets of x-y data, added to Axes on which the Series are drawn.
-Here, an `AxesPlot` axis is created, and a `PolyLine` is added to it.
+To create a figure, first define the Axes on which to plot, then add Series representing data
+and other geometric objects.
+
+
+Discrete data
+*************
+
+Discrete (x, y) data may be plotted using `PolyLine` or `Scatter`. Here, a `AxesPlot` is
+created and a `PolyLine` added with the x and y values.
 
 .. jupyter-execute::
 
     import ziaplot as zp
-    
+    import math
+
     x = list(range(6))
     y = [xi**2 for xi in x]
 
     with zp.AxesPlot():
         zp.PolyLine(x, y)
 
+|
 
-Any Series created within a context manager are automatically added to the Axes.
+
+Functions
+*********
+
+To plot a mathematical function, a `Function` is created with a Python callable
+function to plot. The function must take a single x-value argument and return
+the y-value at that point. A range of x values may also be specified. Here, 
+a sine function is plotted between -2π and 2π.
+
+.. jupyter-execute::
+
+    with zp.AxesGraph():
+        zp.Function(math.sin, (-math.tau, math.tau))
+
+This function was plotted on an `AxesGraph`, which is similar to `AxesPlot` but
+uses a different tick style and keeps the (0, 0) origin always in view.
+
+
+Any Series created within an Axes context manager are automatically added to the Axes.
 Series may also be added using the += operator, with the same results:
 
 .. jupyter-input::
 
-    p = zp.AxesPlot()
-    p += zp.PolyLine(x, y)
+    p = zp.AxesGraph()
+    p += zp.Function(math.sin, (-math.tau, math.tau))
+
+|
+
+Customizing
+-----------
+
+In general, the drawing style of individual series and axes can be customized using a chained method interface.
+For example, the `marker`, `color`, and `stroke` methods below
+all return the PolyLine instance itself, so the series can be set up on a single line of code.
+
+.. jupyter-execute::
+
+    zp.PolyLine(x, y).marker('round', radius=8).color('orange').stroke('dashed')
 
 
-Note the x and y arrays could more easily be created as Numpy arrays, but Ziaplot does not require Numpy as a dependency so this documentation does not use it.
+See :ref:`styles` for additional styling options and global plot themes.
 
 |
 
@@ -71,8 +112,8 @@ Use in Jupyter Notebooks
 Ziaplot is optimized for use in Jupyter, as every drawable object has a Jupyter representer function.
 In Jupyter, leaving the `with` block automatically draws the plot.
 
-Nearly everything in Ziaplot can be drawn (inherits from the `Drawable` class). A `PolyLine` (also called `Plot`)
-can be drawn by itself from the representation of zp.Plot, but in this case, the PolyLine will be added to an empty `AxesPlot`.
+Nearly everything in Ziaplot can be drawn (inherits from the `Drawable` class). A `PolyLine` not added to an Axes
+will still be drawn using a Jupyter representer, but in this case, the `PolyLine`` will be added to an empty `AxesPlot`.
 
 |
 
@@ -100,31 +141,21 @@ This may result in larger file sizes as each glyph is included as its own <path>
 
 |
 
-Customizing
------------
-
-In general, the drawing style of individual series and axes can be customized using a chained method interface. For example, the `marker`, `color`, and `stroke` methods below
-all return the PolyLine instance itself, so the series can be set up on a single line of code (here, using the `Plot` alias for `PolyLine`)
-
-.. jupyter-execute::
-
-    zp.Plot(x, y).marker('round', radius=8).color('orange').stroke('dashed')
-
-
-See :ref:`styles` for additional styling options and global plot themes.
-
-|
 
 Why another plotting library?
 -----------------------------
 
-Anyone who has been around Python long enough should be familiSar with Matplotlib, the de facto standard for data visualization with Python.
-Matplotlib is powerful and flexible - it can plot anything. But face it, it has a terrible, non-Pythonic programming interface.
-What's the difference between a `figure()` and `Figure()`?
-Why does documentation sometimes use `plt..`, sometimes `ax..`, and sometimes the truly awful `from pylab import *`?
-It is also a huge dependency, requiring Numpy libraries and usually bundling several UI backends along with it.
-A simple Tkinter UI experiment (see :ref:`ziagui`), built into an executable with Pyinstaller, was 16 MB when the data was plotted with Ziaplot, but over 340 MB using Matplotlib!
+Anyone who has been around Python long enough should be familiar with Matplotlib, the de facto standard for data visualization with Python.
+Matplotlib is powerful and flexible - it can plot anything.
+However, it was designed for plotting empirical data in the form of arrays of x and y values, so graphing true mathematical functions or
+geometric objects (lines, circles, segments, etc.) becomes a chore of discretizing the function or shape into an array first.
 
+Additionally, Matplotlib has a confusing, non-Pythonic programming interface.
+What's the difference between a `figure()` and `Figure()`?
+Why does documentation sometimes use `plt..`, sometimes `ax..`, and sometimes the awful `from pylab import *`?
+It is also a huge dependency, requiring Numpy libraries and usually bundling several UI backends along with it.
+A simple Tkinter UI experiment (see :ref:`ziagui`), built into an executable with Pyinstaller, was 25 MB when the data was plotted with Ziaplot, but over 500 MB using Matplotlib!
 There are some Matplotlib alternatives. Seaborn just wraps Matplotlib to improve its interface. Plotly and Bokeh focus on interactivity and web applications.
 
 Ziaplot was created as a light-weight, easy to use, fast, and Pythonic alternative for making static plots in SVG format.
+It also treats mathematical functions and Euclidean geometric objects as first-class citizens.

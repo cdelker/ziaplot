@@ -15,8 +15,8 @@ In Ziaplot, the term "chart" is used for figures where the x value is qualitativ
 Bar Chart
 ---------
 
-A bar chart with a single series of data is made using :py:class:`ziaplot.bar.BarChart`. Using the chart's context
-manager, each bar is added using :py:class:`ziaplot.bar.BarSingle`.
+A bar chart with a single series of data is made using :py:class:`ziaplot.charts.bar.BarChart`. Using the chart's context
+manager, each bar is added using :py:class:`ziaplot.charts.bar.BarSingle`.
 
 .. jupyter-execute::
 
@@ -44,9 +44,9 @@ Alternatively, bar charts may be created from using the `fromdict` class method:
          title='Bar Chart From Dictionary')
 
 
-A :py:class:`ziaplot.bar.BarChartGrouped` creates a bar chart with multiple data series, grouped by x-value.
+A :py:class:`ziaplot.charts.bar.BarChartGrouped` creates a bar chart with multiple data series, grouped by x-value.
 The group value names are provided when the BarChart is instantiated.
-Sets of bars are then added as :py:class:`ziaplot.bar.BarChart.BarSeries`.
+Sets of bars are then added as :py:class:`ziaplot.charts.bar.BarSeries`.
 
 .. jupyter-execute::
 
@@ -82,7 +82,7 @@ Or from a dictionary:
 Pie Chart
 ---------
 
-:py:class:`ziaplot.pie.Pie` charts consist of wedges that are added to the pie as :py:class:`ziaplot.pie.Pie.PieSlice`.
+:py:class:`ziaplot.charts.pie.Pie` charts consist of wedges that are added to the pie as :py:class:`ziaplot.charts.pie.PieSlice`.
 Note the use of `extrude` to pull a single pie wedge out from the center.
 The slice values are normalized so the pie will always fill to 100\%.
 

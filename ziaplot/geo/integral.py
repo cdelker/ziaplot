@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from .. import util
+from ..find import func_intersection
 from ..canvas import Canvas, Borders, ViewBox
 from ..series import Series
 from .function import Function
@@ -76,17 +77,6 @@ class IntegralFill(Series):
             x1 and x2 are points outside the intersection
         '''
         mid = (x1+x2)/2
-        tol = abs(x2-x1) * 1E-4
-        try:
-            a = util.root(lambda x: f.func(x) - f2.func(x),
-                        x1, mid, tol)
-        except ValueError:
-            a = x1
-
-        try:
-            b = util.root(lambda x: f.func(x) - f2.func(x),
-                        mid, x2, tol)
-        except ValueError:
-            b = x2
-
+        a, _ = func_intersection(f, f2, x1, mid)
+        b, _ = func_intersection(f, f2, mid, x2)
         return cls(f, f2, a, b)

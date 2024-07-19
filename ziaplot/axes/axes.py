@@ -593,70 +593,72 @@ class AxesGraph(AxesPlot):
                     startmarker=startmark,
                     endmarker=ymarker)
 
-        for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
-            if xtick == 0:
-                continue
-            x, _ = xform.apply(xtick, 0)
-            y1 = xleft[1] + self.style.tick.length/2
-            y2 = xleft[1] - self.style.tick.length/2
-            if self.style.axis.xgrid:
-                canvas.path([x, x], [ybot[1], ytop[1]],
-                            color=self.style.axis.gridcolor,
-                            stroke=self.style.axis.gridstroke,
-                            width=self.style.axis.gridlinewidth)
-                
-            if xleft[0] < x < xrght[0]:
-                # Don't draw ticks outside the arrows
-                canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                            width=self.style.tick.width)
+        if self.showxticks:
+            for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
+                if xtick == 0:
+                    continue
+                x, _ = xform.apply(xtick, 0)
+                y1 = xleft[1] + self.style.tick.length/2
+                y2 = xleft[1] - self.style.tick.length/2
+                if self.style.axis.xgrid:
+                    canvas.path([x, x], [ybot[1], ytop[1]],
+                                color=self.style.axis.gridcolor,
+                                stroke=self.style.axis.gridstroke,
+                                width=self.style.axis.gridlinewidth)
+                    
+                if xleft[0] < x < xrght[0]:
+                    # Don't draw ticks outside the arrows
+                    canvas.path([x, x], [y1, y2], color=self.style.axis.color,
+                                width=self.style.tick.width)
 
-                canvas.text(x, y2-self.style.tick.textofst, xtickname,
-                            color=self.style.tick.text.color,
-                            font=self.style.tick.text.font,
-                            size=self.style.tick.text.size,
-                            halign='center', valign='top')
+                    canvas.text(x, y2-self.style.tick.textofst, xtickname,
+                                color=self.style.tick.text.color,
+                                font=self.style.tick.text.font,
+                                size=self.style.tick.text.size,
+                                halign='center', valign='top')
 
-        if ticks.xminor:
-            for xminor in ticks.xminor:
-                if xminor in ticks.xticks:
-                    continue  # Don't double-draw
-                x, _ = xform.apply(xminor, 0)
-                y1 = xleft[1] + self.style.tick.minorlength/2
-                y2 = xleft[1] - self.style.tick.minorlength/2
-                canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                            width=self.style.tick.minorwidth)
+            if ticks.xminor:
+                for xminor in ticks.xminor:
+                    if xminor in ticks.xticks:
+                        continue  # Don't double-draw
+                    x, _ = xform.apply(xminor, 0)
+                    y1 = xleft[1] + self.style.tick.minorlength/2
+                    y2 = xleft[1] - self.style.tick.minorlength/2
+                    canvas.path([x, x], [y1, y2], color=self.style.axis.color,
+                                width=self.style.tick.minorwidth)
 
-        for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
-            if ytick == 0:
-                continue
-            _, y = xform.apply(0, ytick)
-            x1 = ytop[0] + self.style.tick.length/2
-            x2 = ytop[0] - self.style.tick.length/2
-            if self.style.axis.ygrid:
-                canvas.path([xleft[0], xrght[0]], [y, y],
-                            color=self.style.axis.gridcolor,
-                            stroke=self.style.axis.gridstroke,
-                            width=self.style.axis.gridlinewidth)
+        if self.showyticks:
+            for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
+                if ytick == 0:
+                    continue
+                _, y = xform.apply(0, ytick)
+                x1 = ytop[0] + self.style.tick.length/2
+                x2 = ytop[0] - self.style.tick.length/2
+                if self.style.axis.ygrid:
+                    canvas.path([xleft[0], xrght[0]], [y, y],
+                                color=self.style.axis.gridcolor,
+                                stroke=self.style.axis.gridstroke,
+                                width=self.style.axis.gridlinewidth)
 
-            if ybot[1] < y < ytop[1]:
-                # Don't draw ticks outside the arrows
-                canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                            width=self.style.tick.width)
+                if ybot[1] < y < ytop[1]:
+                    # Don't draw ticks outside the arrows
+                    canvas.path([x1, x2], [y, y], color=self.style.axis.color,
+                                width=self.style.tick.width)
 
-                canvas.text(x2-self.style.tick.textofst, y, ytickname,
-                            color=self.style.tick.text.color,
-                            font=self.style.tick.text.font,
-                            size=self.style.tick.text.size,
-                            halign='right', valign='center')
-        if ticks.yminor:
-            for yminor in ticks.yminor:
-                if yminor in ticks.yticks:
-                    continue  # Don't double-draw
-                _, y = xform.apply(0, yminor)
-                x1 = ytop[0] + self.style.tick.minorlength/2
-                x2 = ytop[0] - self.style.tick.minorlength/2
-                canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                            width=self.style.tick.minorwidth)
+                    canvas.text(x2-self.style.tick.textofst, y, ytickname,
+                                color=self.style.tick.text.color,
+                                font=self.style.tick.text.font,
+                                size=self.style.tick.text.size,
+                                halign='right', valign='center')
+            if ticks.yminor:
+                for yminor in ticks.yminor:
+                    if yminor in ticks.yticks:
+                        continue  # Don't double-draw
+                    _, y = xform.apply(0, yminor)
+                    x1 = ytop[0] + self.style.tick.minorlength/2
+                    x2 = ytop[0] - self.style.tick.minorlength/2
+                    canvas.path([x1, x2], [y, y], color=self.style.axis.color,
+                                width=self.style.tick.minorwidth)
 
         if self.xname:
             canvas.text(xrght[0]+self.style.tick.textofst+self.arrowwidth,
