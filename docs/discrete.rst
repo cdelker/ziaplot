@@ -190,6 +190,8 @@ The data can also be weighted, or plotted as a probability density instead of da
     v = [random.normalvariate(100, 5) for k in range(1000)]
     zp.Histogram(v)
 
+Horizontal histograms may be created using :py:class:`ziaplot.dataplots.bars.HistogramHoriz`.
+
 |
 
 Contour Plots

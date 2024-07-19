@@ -20,6 +20,16 @@ def line_intersection(line1: Line, line2: Line) -> PointType:
     return dx/d, dy/d
 
 
+def y_intercept(line: Line) -> PointType:
+    ''' Get XY point of line's y-intercept '''
+    return (0, line.intercept)
+
+
+def x_intercept(line: Line) -> PointType:
+    ''' Get XY point of line's x-intercept '''
+    return (-line.intercept/line.slope, 0)
+
+
 def func_intersection(f1: Function, f2: Function,
                       x1: float, x2: float) -> PointType:
     ''' Find intersection between two Functions (either of

@@ -153,3 +153,7 @@ class Histogram(Bars):
             counts = [c/cmax for c in counts]
 
         super().__init__(binlefts, counts, align='left')
+
+
+class HistogramHoriz(Histogram, BarsHoriz):
+    pass

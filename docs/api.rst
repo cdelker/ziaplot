@@ -95,6 +95,9 @@ Data Series
 .. autoclass:: ziaplot.dataplots.bars.Histogram
     :members:
 
+.. autoclass:: ziaplot.dataplots.bars.HistogramHoriz
+    :members:
+
 .. autoclass:: ziaplot.dataplots.polar.LinePolar
     :members:
     

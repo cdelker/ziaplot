@@ -5,6 +5,7 @@ Examples
     :hide-code:
 
     import math
+    import random
     import ziaplot as zp
     zp.styles.setdefault(zp.styles.DocStyle)
     
@@ -26,6 +27,7 @@ Functional Plots
         zp.Point.at(f1, .9).guidex().guidey()
         zp.Point.at(f1, .7).guidex().guidey()
 
+|
 
 .. jupyter-execute::
 
@@ -37,6 +39,8 @@ Functional Plots
         zp.Point.at_minimum(f, 1, 2).color('olive').guidex().guidey()
         zp.Point.at_maximum(f, 2, 2.5).color('red').guidex().guidey()
         zp.Point.at_maximum(f, 3, 4).color('blue').guidex().guidey()
+
+|
 
 .. jupyter-execute::
 
@@ -55,6 +59,50 @@ Functional Plots
         zp.TangentSegment.to(f, 5).trim(3, 7).color('plum')
         zp.Point.at(f, 5).color('yellow')
 
+|
+
+Discrete Data
+-------------
+
+.. jupyter-execute::
+
+    highs = [49, 55, 63, 71, 81, 91, 92, 89, 83, 71, 58, 48]
+    lows = [27, 30, 36, 43, 53, 62, 67, 65, 59, 46, 35, 27]
+    means = [38, 42, 50, 57, 67, 77, 79, 77, 71, 59, 46, 37]
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    with zp.AxesPlot(
+            title='Monthly Average Temperature, Albuquerque NM, USA',
+            yname='Degrees Fahrenheit').xticks(range(12), months).size(600,300):
+        zp.LineFill(range(12), highs, lows)
+        zp.PolyLine(range(12), means).color('C2')
+
+|
+
+.. jupyter-execute::
+
+    x = [random.normalvariate(10, 1) for _ in range(500)]
+    y = [xx/2 + random.normalvariate(0, .5) for xx in x]
+    x2 = [random.normalvariate(11, .75) for _ in range(500)]
+    y2 = [xx/2 + random.normalvariate(1.5, .5) for xx in x2]
+
+    with zp.LayoutGrid(columns=2, row_heights='1fr 2fr', column_widths='3fr 1fr'):
+        with zp.AxesPlot().xrange(6, 14).noxticks().noyticks() as plot1:
+            zp.Histogram(x2, bins=40).color('#ba0c2f88')
+            zp.Histogram(x, bins=40).color('#007a8688')
+
+        zp.LayoutEmpty()
+        
+        with zp.AxesPlot().match_x(plot1) as scatter:
+            zp.Scatter(x2, y2).marker('o', 4).color('#ba0c2f88')
+            zp.Scatter(x, y).marker('o', 4).color('#007a8688')
+
+        with zp.AxesPlot().match_y(scatter).noyticks().noxticks():
+            zp.HistogramHoriz(y2, bins=30).color('#ba0c2f88')
+            zp.HistogramHoriz(y, bins=30).color('#007a8688')
+
+
+|
 
 Geometric
 ---------
@@ -77,6 +125,8 @@ Geometric
         zp.Angle(b, c, quad=3).label('60°')
         zp.Angle(a, c, quad=4).label('60°')
 
+|
+
 .. jupyter-execute::
 
     with zp.AxesBlank(style=zp.styles.BlackWhite()).xrange(0, 1).yrange(0, .6).size(300,200):
@@ -86,6 +136,8 @@ Geometric
         zp.Angle(b, c, quad=4).color('red').label(r'$\alpha$', color='red')
         zp.Angle(a, c, quad=2).color('red').label(r'$\beta$', color='red')
         zp.Angle(a, b, quad=3).color('red').label(r'$\gamma$', color='red')
+
+|
 
 .. jupyter-execute::
 
@@ -98,12 +150,14 @@ Geometric
         zp.Tangent.to_circle(c, -15).color('darkviolet').label('Tangent', .4, 'SE', rotate=True, color='darkviolet')
         zp.Point(0, 0)
 
+|
+
 .. jupyter-execute::
 
     with (zp.AxesGraph(style=zp.styles.BlackWhite())
-          .size(500, 500)
-          .xrange(-2, 2).xticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])
-          .yrange(-2, 2).yticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])):    
+            .size(500, 500)
+            .xrange(-2, 2).xticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])
+            .yrange(-2, 2).yticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])):
         theta = 40
         circ = zp.Circle(0, 0, 1)
         xaxis = zp.HLine(0)
@@ -111,20 +165,48 @@ Geometric
         y1 = zp.HLine(1).stroke('--').label('y=1', .25, 'N')
         hyp = zp.Line((0,0), math.tan(math.radians(theta)))
         tan = zp.Tangent.to_circle(circ, theta)
-        E = zp.Point.at_y(tan, 0).label('E', 'SW').color('red')
-        C = zp.Point.at_intersection(y1, hyp, 0, 2).label('C', 'N').color('red')
-        B = zp.Point.at_intersection(x1, hyp, 1, 2).label('B', 'W').color('red')
-        D = zp.Point.at(tan, 0).label('D', 'E').color('red')
-        A = zp.Point.on_circle(circ, theta).label('A', 'E').color('red')
-        O = zp.Point(0, 0).label('O', 'SE').color('red')
-        sec = zp.Segment((0, 0), (E.point)).strokewidth(4).color('purple').label(r'$\sec\theta$', .5, 'S', color='purple')
-        csc = zp.Segment((0, 0), (D.point)).strokewidth(4).color('orange').label(r'$\csc\theta$', .5, 'W', color='orange')
-        cot = zp.Segment((0, 1), (C.x, 1)).strokewidth(4).color('green').label(r'$\cot\theta$', .6, 'N', color='green')
-        tan = zp.Segment((1, 0), (B.point)).strokewidth(4).color('blue').label(r'$\tan\theta$', .6, 'E', color='blue')
-        cos = zp.Segment.horizontal(A.point, 0).strokewidth(4).color('lime').label(r'$\cos\theta$', .6, 'N', color='lime')
-        sin = zp.Segment.vertical(A.point, 0).strokewidth(4).color('cyan').label(r'$\sin\theta$', .6, 'W', color='cyan')
+        # Find point locations, but draw them later so they stay on top
+        E = zp.x_intercept(tan)
+        D = zp.y_intercept(tan)
+        C = zp.line_intersection(y1, hyp)
+        B = zp.line_intersection(x1, hyp)
+        A = zp.line_intersection(hyp, tan)
+        sec = zp.Segment((0, 0), E).strokewidth(4).color('purple').label(r'$\sec\theta$', .5, 'S', color='purple')
+        csc = zp.Segment((0, 0), D).strokewidth(4).color('orange').label(r'$\csc\theta$', .5, 'W', color='orange')
+        cot = zp.Segment.horizontal(C).strokewidth(4).color('green').label(r'$\cot\theta$', .4, 'N', color='green')
+        tan = zp.Segment.vertical(B).strokewidth(4).color('blue').label(r'$\tan\theta$', .6, 'E', color='blue')
+        cos = zp.Segment.horizontal(A).strokewidth(4).color('lime').label(r'$\cos\theta$', .6, 'N', color='lime')
+        sin = zp.Segment.vertical(A).strokewidth(4).color('cyan').label(r'$\sin\theta$', .6, 'W', color='cyan')
         zp.Angle.to_zero(hyp, quad=4).label(r'$\theta$')
+        zp.Point(0, 0).label('O', 'SE').color('red')
+        zp.Point(*A).label('A', 'E').color('red')
+        zp.Point(*B).label('B', 'W').color('red')
+        zp.Point(*C).label('C', 'N').color('red')
+        zp.Point(*D).label('D', 'E').color('red')
+        zp.Point(*E).label('E', 'SW').color('red')
 
+(`Based on Unit Circle from Wikipedia <https://en.wikipedia.org/wiki/Trigonometric_functions#/media/File:Unit_Circle_Definitions_of_Six_Trigonometric_Functions.svg>`_)
+
+
+|
+
+.. jupyter-execute::
+
+    with (zp.AxesGraph(xname='Volume', yname='Pressure',
+                       style=zp.styles.BlackWhite())
+            .xrange(0, 1).yrange(0, 1)
+            .noxticks().noyticks()
+            .equal_aspect()):
+        p1 = zp.Point(.1, .9).label('1', 'NW')
+        p2 = zp.Point(.6, .6).label('2', 'NE')
+        p3 = zp.Point(.8, .1).label('3', 'E')
+        p4 = zp.Point(.3, .3).label('4', 'SW')
+        zp.Curve(p2.point, p1.point).midmarker('>')
+        zp.Curve(p3.point, p2.point).midmarker('>')
+        zp.Curve(p3.point, p4.point).midmarker('<')
+        zp.Curve(p4.point, p1.point).midmarker('<')
+
+|
 
 Contour Plots
 -------------

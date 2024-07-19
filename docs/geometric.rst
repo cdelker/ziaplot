@@ -85,8 +85,11 @@ Bezier curves are drawn with either :py:class:`ziaplot.geo.bezier.BezierQuad` or
         zp.BezierCubic(b1, b2, b3, b4).color('blue') 
 
 
-The :py:class:`ziaplot.geo.bezier.Curve` class provides a means to create a
-quadratic Bezier curve from three points on the curve itself.
+Two additional classes simplify the process for setting up curves.
+:py:class:`ziaplot.geo.bezier.Curve` provides a means to create a
+symmetric quadratic Bezier curve from the two endpoints and a deeflection constant.
+:py:class:`ziaplot.geo.bezier.CurvevThreePoint` sets up a curve that passes through
+the three given points on the curve itself.
 
 .. jupyter-execute::
 
@@ -94,10 +97,11 @@ quadratic Bezier curve from three points on the curve itself.
     a2 = (3, 4)
     a3 = (4, 1)
     with zp.AxesGraph().xrange(-5, 5).yrange(-5, 5).equal_aspect():
-        zp.Curve(a1, a3, a2)
+        zp.CurveThreePoint(a1, a3, a2)
         zp.Point(*a1)
         zp.Point(*a2)
         zp.Point(*a3)
+        zp.Curve((-2, -2), (2, -2), k=.5)
 
 |
 
@@ -178,9 +182,9 @@ at which to place the tangent or normal:
 .. jupyter-execute::
 
     with zp.AxesPlot().equal_aspect().xrange(-5, 5).yrange(-5, 5):
-        b = zp.Curve((-2, 0), (1, 4), (3, 1))
-        zp.Tangent.to_bezier(b, t=.5).color('orange')
-        zp.Normal.to_bezier(b, t=.5).color('blue')
+        b = zp.Curve((-2, 0), (3, 1), k=1)
+        zp.Tangent.to_bezier(b, t=.4).color('orange')
+        zp.Normal.to_bezier(b, t=.4).color('blue')
 
 |
 
@@ -204,7 +208,7 @@ parameters to bound the bisection algorithm search for the location of interest.
 
     with zp.AxesPlot().equal_aspect().xrange(-5, 5).yrange(-5, 5):
         func = zp.Function(lambda x: x*math.sin(x), (-2, 6)).color('red')
-        curve = zp.Curve((1, 6), (2, 3), (4, 3)).color('blue')
+        curve = zp.CurveThreePoint((1, 6), (2, 3), (4, 3)).color('blue')
         circle = zp.Circle(-2, 4, 1)
         line = zp.Line((-4, -2), .1)
         zp.Point.at(func, x=3).label('A')

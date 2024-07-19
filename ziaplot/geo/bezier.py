@@ -1,12 +1,14 @@
 ''' Bezier Curves '''
 from __future__ import annotations
 from typing import Optional
+import math
 from xml.etree import ElementTree as ET
 
 from ..canvas import Canvas, Borders, ViewBox
 from ..series import Series, PointType
 from ..style import MarkerTypes
 from ..axes import AxesPlot
+from .. import util
 
 
 class BezierQuad(Series):
@@ -122,6 +124,19 @@ class BezierCubic(BezierQuad):
 
 
 class Curve(BezierQuad):
+    ''' Symmetric curve connecting the two points with deflection k
+        as fraction of distance between endpoints 
+    '''
+    def __init__(self, p1: PointType, p2: PointType, k: float = .15):
+        thetanorm = math.atan2((p2[1] - p1[1]), (p2[0] - p1[0])) + math.pi/2
+        mid = (p1[0] + p2[0])/2, (p1[1] + p2[1]) / 2
+        length = util.distance(p1, p2) * k
+        pc = (mid[0] + length * math.cos(thetanorm),
+              mid[1] + length * math.sin(thetanorm))
+        super().__init__(p1, pc, p2)        
+
+
+class CurveThreePoint(BezierQuad):
     ''' Bezier Curve passing through three points and parameter t '''
     def __init__(self, start: PointType, end: PointType, mid: PointType,
                  t: float = 0.5):

@@ -4,6 +4,8 @@ from typing import Sequence, Callable
 import bisect
 import math
 
+PointType = tuple[float, float]
+
 
 def zrange(start: float, stop: float, step: float) -> list[float]:
     ''' Like builtin range, but works with floats '''
@@ -143,3 +145,8 @@ def angle_mean(theta1: float, theta2: float) -> float:
     cosine = math.cos(theta1) + math.cos(theta2)
     mean = math.atan2(sine, cosine)
     return (mean + math.tau) % math.tau
+
+
+def distance(p1: PointType, p2: PointType):
+    ''' Distance between two points '''
+    return math.sqrt((p1[0]- p2[0])**2 + (p1[1] - p2[1])**2)
