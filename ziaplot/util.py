@@ -1,10 +1,10 @@
 ''' Utility Functions. Most are pure-python replacements for numpy functions '''
 from __future__ import annotations
-from typing import Sequence, Callable
+from typing import Sequence, Callable, Tuple
 import bisect
 import math
 
-PointType = tuple[float, float]
+PointType = Tuple[float, float]
 
 
 def zrange(start: float, stop: float, step: float) -> list[float]:

@@ -2,13 +2,20 @@
 
 ### 0.6 - In progress
 
-Includes several breaking changes:
+This release includes major BREAKING CHANGES. The API was reworked to focus more on
+graphing of geometric primitives (Lines, circles, Points, etc.) in addition to empirical data.
 
-- Added `Point` and `Line`
+- Added geometric objects and shapes, including `Line`, `Point`, `Circle`, `BezierQuad`, `Function`, etc., in the `geo` submodule.
 - The old `Line` has become `PolyLine`, with alias `Plot`. The new `Line` represents a true Euclidean line rather than a set of (x, y) coordinates connected by line segments.
-- Added `GridLayout` for placing axes in a grid. `Hlayout` and `Vlayout` now inherit from `GridLayout`, and no longer support nested layouts.
+- Added `LayoutGrid` for placing axes in a grid. `LayoutH` and `LayoutV` now inherit from `LayoutGrid`, and no longer support nested layouts.
 - Added more legend location options
-- Code restructured into submodules
+- Added `HistogramHoriz` for horizontal histograms
+- Added `Implicit` to plot implicit functions
+- Renamed axes to `AxesPlot`, `AxesGraph`, `AxesPolar`, `AxesSmith`
+- Added tangent and normal lines
+- Added `BlackWhite` style
+- Added `ticker` for easy forming of tick locations
+- Added `equal_aspect` method to equalize x and y scales
 
 
 ### 0.5 - 2023-12-20

@@ -1,7 +1,7 @@
 ''' SVG-drawing functions '''
 
 from __future__ import annotations
-from typing import Sequence, Literal, Optional
+from typing import Sequence, Literal, Optional, Tuple
 import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
@@ -10,7 +10,7 @@ from . import text
 from .config import config
 from .style import MarkerTypes, DashTypes
 
-PointType = tuple[float, float]
+PointType = Tuple[float, float]
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
