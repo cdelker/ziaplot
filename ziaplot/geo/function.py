@@ -32,13 +32,6 @@ class Function(Series):
         self._logx = False
         self._logy = False
 
-    def datarange(self) -> DataRange:
-        if self.xrange is None:
-            return DataRange(None, None, None, None)
-        return DataRange(self.xrange[0], self.xrange[1],
-                         self._local_min(*self.xrange),
-                         self._local_max(*self.xrange))
-
     def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Function':
         ''' Define markers to show at the start and end of the line. Use defaults
             to show arrowheads pointing outward in the direction of the line.

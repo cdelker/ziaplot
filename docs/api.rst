@@ -115,6 +115,9 @@ Geometric
 .. autoclass:: ziaplot.geo.Function
     :members:
 
+.. autoclass:: ziaplot.geo.implicit.Implicit
+    :members:
+
 .. autoclass:: ziaplot.geo.line.Line
     :members:
 

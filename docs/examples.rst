@@ -61,6 +61,16 @@ Functional Plots
 
 |
 
+.. jupyter-execute::
+
+    with zp.AxesGraph().equal_aspect():
+        zp.Implicit(
+            lambda x, y: x**2 + (5*y/4 - math.sqrt(abs(x)))**2 -1,
+            xlim=(-1.5, 1.5),
+            ylim=(-1.0, 1.5))
+
+|
+
 Discrete Data
 -------------
 
@@ -213,13 +223,20 @@ Contour Plots
 
 .. jupyter-execute::
 
+    with zp.AxesGraph().equal_aspect() as g:
+        g.colorfade('#ed8b00', '#007a86')
+        for c in zp.linspace(-3, 3, 8):
+            zp.Implicit(lambda x, y: .25*(5*x**2 + y**2 -4)*(x**2+5*y**2 - 4) - c,
+                        xlim=(-3, 3), ylim=(-3, 3))
+
+|
+
+.. jupyter-execute::
+
     delta = .1
     x = zp.util.zrange(-2, 3, delta)
     y = zp.util.zrange(-2, 3, delta)
     z = [[2 * (math.sin(-xx**2 - yy**2) - math.cos(-(xx-1)**2 - (yy-1)**2)) for xx in x] for yy in y]
-
-    x0 = [x] * len(y)
-    y0 = [y] * len(x)
     with zp.AxesPlot().size(400,300):
-        p = zp.Contour(x0, y0, z, levels=12, colorbar='right')
+        p = zp.Contour(x, y, z, levels=12, colorbar='right')
         p.style.colorbar.colors = zp.style.colors.ColorFade('#DB5A42', '#9D69A3', '#0F4C5C')

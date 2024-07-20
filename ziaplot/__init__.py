@@ -36,7 +36,8 @@ from .geo import (
     Secant,
     Chord,
     Sagitta,
-    Angle
+    Angle,
+    Implicit
 )
 from .axes import (
     AxesPlot,

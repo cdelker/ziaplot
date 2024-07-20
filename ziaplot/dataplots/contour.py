@@ -18,8 +18,8 @@ class Contour(Series):
     ''' Contour Plot
 
         Args:
-            x: 2D array of x values
-            y: 2D array of y values
+            x: 1D array of x values
+            y: 1D array of y values
             z: 2D array of z (height) values
             levels: Number of contour lines, or array of
                 contour line levels
@@ -27,8 +27,8 @@ class Contour(Series):
                 `left`, or `right`.
     '''
     def __init__(self,
-                 x: Sequence[Sequence[float]],
-                 y: Sequence[Sequence[float]],
+                 x: Sequence[float],
+                 y: Sequence[float],
                  z: Sequence[Sequence[float]],
                  levels: Union[int, Sequence[float]] = 7,
                  colorbar: Optional[ColorBarPos] = None):
@@ -53,16 +53,20 @@ class Contour(Series):
                              self.y.min(),  # type: ignore
                              self.y.max())  # type: ignore
         except AttributeError:  # Not numpy
-            return DataRange(min(min(x) for x in self.x),
-                             max(max(x) for x in self.x),
-                             min(min(y) for y in self.y),
-                             max(max(y) for y in self.y))
+            return DataRange(min(self.x),
+                             max(self.x),
+                             min(self.y),
+                             max(self.y))
+
+    def _get_colors(self):
+        ''' Function to get colorbar (so it can be overridden by Implicit )'''
+        return self.style.colorbar.colors
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         segments = self._build_contours()
-        colors = self.style.colorbar.colors
+        colors = self._get_colors()
         colors.steps(len(segments))
         for (xsegs, ysegs), color in zip(segments, colors):
             if len(xsegs) > 0:
@@ -100,22 +104,17 @@ class Contour(Series):
             segmenty = []
             try:
                 z0 = self.z < contour  # z is Numpy array
-                Y = self.y[:, 0]
             except TypeError:
                 # z is list of lists - much slower
                 z0 = [[(z < contour) for z in row] for row in self.z]
-                Y = self.y[0]
 
-            X = self.x[0]
-            z = self.z
-
-            blockhalfw = (X[1]-X[0])/2
-            blockhalfh = (Y[1]-Y[0])/2
+            blockhalfw = (self.x[1]-self.x[0])/2
+            blockhalfh = (self.y[1]-self.y[0])/2
             blockw = blockhalfw*2
             blockh = blockhalfh*2
 
-            for row in range(len(z) - 1):
-                for col in range(len(z[0]) - 1):
+            for row in range(len(self.z) - 1):
+                for col in range(len(self.z[0]) - 1):
                     try:
                         # Numpy
                         block = (z0[row:row+2, col:col+2][::-1])
@@ -125,11 +124,11 @@ class Contour(Series):
                     except TypeError:
                         # Not Numpy
                         block = [zi[col:col+2] for zi in z0[row:row+2]][::-1]
-                        corners = [zi[col:col+2] for zi in z[row:row+2]][::-1]
+                        corners = [zi[col:col+2] for zi in self.z[row:row+2]][::-1]
                         blockid = block[1][0] + 2*block[1][1] + 4*block[0][1] + 8*block[0][0]
 
-                    blockx = (X[col] + X[col+1])/2
-                    blocky = (Y[row] + Y[row+1])/2
+                    blockx = (self.x[col] + self.x[col+1])/2
+                    blocky = (self.y[row] + self.y[row+1])/2
                     x1 = x2 = y1 = y2 = None
                     if blockid in [1, 14]:
                         x1 = blockx

@@ -210,10 +210,8 @@ of a colorbar. The color palette is defined in the style `style.series.colorbar.
     y = zp.util.zrange(-2., 3., delta)
     z = [[2 * (math.exp(-xx**2 - yy**2) - math.exp(-(xx-1)**2 - (yy-1)**2)) for xx in x] for yy in y]
 
-    x0 = [x] * len(y)
-    y0 = [y] * len(x)
     with zp.AxesPlot().size(400,300):
-        p = zp.Contour(x0, y0, z, levels=12, colorbar='right')
+        p = zp.Contour(x, y, z, levels=12, colorbar='right')
 
 
 Note the data for the above plot may be genereated more efficiently using Numpy,
@@ -230,4 +228,4 @@ but Numpy is not a required dependency:
     Z = (Z1 - Z2) * 2
 
     with zp.AxesPlot().size(400,300):
-        p = zp.Contour(X, Y, Z, levels=12, colorbar='right')
+        p = zp.Contour(x, y, Z, levels=12, colorbar='right')

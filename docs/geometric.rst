@@ -125,6 +125,24 @@ Lambda functions work well here, such as
 
 |
 
+Implicit Functions
+------------------
+
+To plot implicit functions, use :py:class:`ziaplot.geo.implicit.Implicit`. The first parameter
+is a callable function taking x and y arguments. The function f(x, y) = 0 will be plotted.
+The `xlim` and `ylim` parameters define the domain and range to plot over.
+For example, to plot a circle with radius 1 using its implicit form:
+
+.. jupyter-execute::
+
+    with zp.AxesGraph().equal_aspect():
+        zp.Implicit(
+            lambda x, y: x**2 + y**2 - 1,
+            xlim=(-1.5, 1.5),
+            ylim=(-1.5, 1.5))
+
+|
+
 Shapes
 ------
 
