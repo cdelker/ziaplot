@@ -1,56 +1,81 @@
 ''' Series of X-Y Data, base class '''
 from __future__ import annotations
-from typing import Optional
-from copy import deepcopy
 
-from .style import Default, MarkerTypes, DashTypes
+from .style import DashTypes
 from .drawable import Drawable
-from .canvas import DataRange, PointType
+from .canvas import DataRange
 from . import axis_stack
+from .style.style import Style
+from .style.css import merge_css, CssStyle
+from .style import theme
 
 
-class Series(Drawable):
-    ''' Base class for data series, defining a single object in a plot '''
+class Element(Drawable):
+    ''' Base class for things added to an axes '''
+    step_color = False
+
     def __init__(self):
         super().__init__()
-        self._name = ''
-        axis = axis_stack.current_axis()
-        if axis and hasattr(axis, 'style'):
-            self.style = deepcopy(axis.style.series)
-            self._axisstyle = axis.style
-        else:
-            self._axisstyle = Default()
-            self.style = self._axisstyle.series
-
-        self._markername = None  # SVG ID of marker
+        self._style = Style()
+        self._containerstyle: CssStyle | None = None
+        self._name = None
         axis_stack.push_series(self)
 
-    def datarange(self) -> DataRange:
-        return DataRange(None, None, None, None)
+    def style(self, style: str) -> 'Series':
+        ''' Add CSS key-name pairs to the style '''
+        self._style = merge_css(self._style, style)
+        return self
+
+    def build_style(self, name: str|None = None) -> Style:
+        ''' Build the style '''
+        if name is None:
+            classes = [p.__qualname__ for p in self.__class__.mro()]
+        else:
+            classes = [name, '*']
+
+        return theme.style(*classes,
+                           cssid=self._cssid,
+                           cssclass=self._csscls,
+                           container=self._containerstyle,
+                           instance=self._style)
 
     def color(self, color: str) -> 'Series':
         ''' Sets the series color '''
-        self.style.line.color = color
-        self.style.marker.color = color
+        self._style.color = color
         return self
 
     def stroke(self, stroke: DashTypes) -> 'Series':
         ''' Sets the series stroke/linestyle '''
-        self.style.line.stroke = stroke
+        self._style.stroke = stroke
         return self
 
     def strokewidth(self, width: float) -> 'Series':
         ''' Sets the series strokewidth '''
-        self.style.line.width = width
+        self._style.stroke_width = width
         return self
 
-    def marker(self, marker: MarkerTypes, radius: Optional[float] = None, orient: bool = False) -> 'Series':
-        ''' Sets the series marker '''
-        self.style.marker.shape = marker
-        self.style.marker.orient = orient
-        if radius:
-            self.style.marker.radius = radius
-        return self
+    def datarange(self) -> DataRange:
+        ''' Get range of data '''
+        return DataRange(None, None, None, None)
+
+
+
+class Series(Element):
+    ''' Base class for data series, defining a single object in a plot '''
+    step_color = False  # Whether to increment the color cycle
+    legend_square = False  # Draw legend item as a square
+
+    def __init__(self):
+        super().__init__()
+        self._style = Style()
+        self._name = ''
+        self._containerstyle: CssStyle | None = None
+        self._markername = None  # SVG ID of marker for legend
+        axis_stack.push_series(self)
+
+    def set_cycle_index(self, index: int = 0):
+        ''' Set the index of this series within the colorcycle '''
+        self._style.set_cycle_index(index)
 
     def name(self, name: str) -> 'Series':
         ''' Sets the series name to include in the legend '''

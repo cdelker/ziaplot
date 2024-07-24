@@ -1,14 +1,13 @@
 ''' Logscale axes '''
-
 from __future__ import annotations
 from typing import Sequence
 from functools import lru_cache
-import math
 from copy import deepcopy
+import math
 
-from .axes import AxesPlot, Ticks
 from ..canvas import Canvas, ViewBox, DataRange
 from .. import text
+from .axes import AxesPlot, Ticks
 
 
 def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], list[float]]:
@@ -41,20 +40,18 @@ def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], l
     return values, names, minor
 
 
-class AxesLogY(AxesPlot):
-    ''' Plot with Y on a log10 scale
+class AxesLog(AxesPlot):
+    ''' Base Class for log-scale axes '''
+    def __init__(self):
+        super().__init__()
+        self.xlogdivisions = 10
+        self.ylogdivisions = 10
 
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
 
-        Attributes:
-            style: Drawing style
-    '''
+class AxesLogY(AxesLog):
+    ''' Plot with Y on a log10 scale '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -82,14 +79,15 @@ class AxesLogY(AxesPlot):
                 ticks: Tick names and positions
         '''
         ticks = super()._maketicks()
-        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.style.tick.ylogdivisions)
+        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.ylogdivisions)
         yrange = yticks[0], yticks[-1]
+        sty = self.build_style()
 
         ywidth = 0.
         for tick in ynames:
             ywidth = max(ywidth, text.text_size(tick,
-                         fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font).width)
+                         fontsize=sty.font_size,
+                         font=sty.font).width)
 
         ticks = Ticks(ticks.xticks, yticks, ticks.xnames,
                       ynames, ywidth, ticks.xrange, yrange,
@@ -113,20 +111,10 @@ class AxesLogY(AxesPlot):
         self.series = seriesbackup
 
 
-class AxesLogX(AxesPlot):
-    ''' Plot with Y on a log10 scale
-
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
-    '''
+class AxesLogX(AxesLog):
+    ''' Plot with Y on a log10 scale '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -154,7 +142,7 @@ class AxesLogX(AxesPlot):
                 ticks: Tick names and positions
         '''
         ticks = super()._maketicks()
-        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.style.tick.xlogdivisions)
+        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.xlogdivisions)
         xrange = xticks[0], xticks[-1]
 
         ticks = Ticks(xticks, ticks.yticks, xnames, ticks.ynames,
@@ -178,20 +166,10 @@ class AxesLogX(AxesPlot):
         self.series = seriesbackup
 
 
-class AxesLogXY(AxesPlot):
-    ''' Plot with X and Y on a log10 scale
-
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
-    '''
+class AxesLogXY(AxesLog):
+    ''' Plot with X and Y on a log10 scale '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -229,16 +207,17 @@ class AxesLogXY(AxesPlot):
                 ticks: Tick names and positions
         '''
         ticks = super()._maketicks()
-        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.style.tick.xlogdivisions)
+        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.xlogdivisions)
         xrange = xticks[0], xticks[-1]
-        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.style.tick.ylogdivisions)
+        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.ylogdivisions)
         yrange = yticks[0], yticks[-1]
+        sty = self.build_style()
 
         ywidth = 0.
         for tick in ynames:
             ywidth = max(ywidth, text.text_size(tick,
-                         fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font).width)
+                         fontsize=sty.font_size,
+                         font=sty.font).width)
 
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)

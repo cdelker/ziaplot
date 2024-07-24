@@ -12,19 +12,25 @@ class Drawable:
         plus _repr_ for Jupyter
     '''
     def __init__(self):
-        self.colspan = 1
-        self.rowspan = 1
+        self._cssid: str | None = None
+        self._csscls: str | None = None
 
     def __contains__(self, other: 'Drawable'):
         return None
 
-    def add(self, series: 'Drawable') -> None:
-        ''' Add a data series to the axis '''
-        raise NotImplementedError
+    def cssid(self, idn: str) -> 'Drawable':
+        ''' Set the CSS id for the item. Matches items in CSS with #name selector '''
+        self.cssid = idn
+
+    def cssclass(self, cls: str) -> 'Drawable':
+        ''' Set the CSS class name for the item. Matches items in CSS with .name selector '''
+        self._csscls = cls
 
     def span(self, columns: int = 1, rows: int = 1) -> 'Drawable':
-        self.colspan = columns
-        self.rowspan = rows
+        ''' Set the row and column span for the item when placed in a
+            grid layout.
+        '''
+        self._style.span = (rows, columns)
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,

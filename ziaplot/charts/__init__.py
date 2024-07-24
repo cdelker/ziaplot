@@ -1,2 +1,2 @@
-from .bar import BarSingle, BarChart, BarChartGrouped, BarSeries
+from .bar import Bar, BarChart, BarChartHoriz, BarChartGrouped, BarChartGroupedHoriz, BarSeries
 from .pie import Pie, PieSlice

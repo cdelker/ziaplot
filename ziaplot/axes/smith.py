@@ -4,15 +4,13 @@ from typing import Optional
 import math
 from functools import lru_cache
 from collections import namedtuple
-import xml.etree.ElementTree as ET
 
-from ..style.styletypes import Style
 from ..series import Series
 from ..canvas import Canvas, Borders, ViewBox
 from .polar import AxesPolar
 from .axes import getticks
-from .baseplot import Ticks, LegendLoc
-
+from .baseplot import Ticks
+from .smithgrid import smithgrids, SmithGridLevels
 
 ArcType = namedtuple('ArcType', ['x', 'y', 'r', 't1', 't2'])
 
@@ -157,22 +155,16 @@ class AxesSmith(AxesPolar):
 
         Args:
             grid: Smith grid spacing
-            title: Title to draw above axes
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
     '''
-    def __init__(self, grid: str = 'coarse', title: Optional[str] = None,
-                 legend: LegendLoc = 'left', style: Optional[Style] = None):
-        super().__init__(title=title, legend=legend, style=style)
-        if grid not in self.style.smith.grid:
+    def __init__(self, grid: SmithGridLevels = 'coarse'):
+        super().__init__()
+        if grid not in smithgrids:
             raise ValueError(f'Undefined grid type {grid}. Avaliable grids are '
-                             + ', '.join(self.style.smith.grid.keys()))
+                             + ', '.join(smithgrids.keys()))
         self.grid = grid
 
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
 
@@ -182,6 +174,7 @@ class AxesSmith(AxesPolar):
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
+        xsty = self.build_style('Axes.TickX')
         _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
@@ -192,7 +185,7 @@ class AxesSmith(AxesPolar):
 
         xnames = self._xticknames
         if xnames is None:
-            xnames = [format(xt, self.style.tick.xstrformat) for xt in xticks]
+            xnames = [format(xt, xsty.num_format) for xt in xticks]
 
         yticks = [0, 45, 90, 135, 180, 225, 270, 315]
         if self.labeldegrees:
@@ -209,34 +202,40 @@ class AxesSmith(AxesPolar):
                 canvas: SVG canvas to draw on
                 ticks: Tick names and positions
         '''
-        radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - self.style.polar.edgepad*2
+        ysty = self.build_style('Axes.TickY')
+        sty = self.build_style()
+        radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - sty.pad*2 - ysty.font_size
         cx = canvas.viewbox.x + canvas.viewbox.w/2
         cy = canvas.viewbox.y + canvas.viewbox.h/2
+        sty = self.build_style()
+        gridsty = self.build_style('Smith.Grid')
+        gridminorsty = self.build_style('Smith.GridMinor')
 
-        if self.title:
-            radius -= self.style.polar.title.size/2
-            cy -= self.style.polar.title.size/2
+        if self._title:
+            titlesty = self.build_style('Axes.Title')
+            radius -= titlesty.font_size/2
+            cy -= titlesty.font_size/2
             canvas.text(canvas.viewbox.x + canvas.viewbox.w/2,
                         canvas.viewbox.y + canvas.viewbox.h,
-                        self.title, font=self.style.polar.title.font,
-                        size=self.style.polar.title.size,
-                        color=self.style.polar.title.color,
+                        self._title, font=titlesty.font,
+                        size=titlesty.font_size,
+                        color=titlesty.get_color(),
                         halign='center', valign='top')
 
         # Fill/background circle
-        canvas.circle(cx, cy, radius, color=self.style.axis.bgcolor,
+        canvas.circle(cx, cy, radius, color=sty.get_color(),
                       strokecolor='none',
-                      strokewidth=self.style.axis.framelinewidth)
+                      strokewidth=sty.edge_width)
 
         dest = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         src = ViewBox(-1, -1, 2, 2)
         canvas.setviewbox(dest, clippad=5)
 
         # Arcs of constant reactance
-        for b, rmax, rmin, major in self.style.smith.grid.get(self.grid).arcs:    # type: ignore
+        for b, rmax, rmin, major in smithgrids.get(self.grid).arcs:
             arc = const_react_arc(b, rmin, rmax)
-            color = self.style.smith.majorcolor if major else self.style.smith.minorcolor
-            width = self.style.smith.majorwidth if major else self.style.smith.minorwidth
+            color = gridsty.get_color() if major else gridminorsty.get_color()
+            width = gridsty.stroke_width if major else gridminorsty.stroke_width
 
             canvas.arc(arc.x, arc.y, arc.r,
                        theta1=arc.t1,
@@ -265,12 +264,12 @@ class AxesSmith(AxesPolar):
                             dataview=src)
 
         # Circles of constant resistance
-        for a, xmax, xmin, major in self.style.smith.grid.get(self.grid).circles:  # type: ignore
+        for a, xmax, xmin, major in smithgrids.get(self.grid).circles:  # type: ignore
             if xmin == 0:
                 xmin = -xmax
             arc = const_resist_circle(a, xmin, xmax)
-            color = self.style.smith.majorcolor if major else self.style.smith.minorcolor
-            width = self.style.smith.majorwidth if major else self.style.smith.minorwidth
+            color = gridsty.get_color() if major else gridminorsty.get_color()
+            width = gridsty.stroke_width if major else gridminorsty.stroke_width
 
             if arc.t1 == arc.t2:
                 canvas.circle(arc.x, arc.y, arc.r,
@@ -301,8 +300,8 @@ class AxesSmith(AxesPolar):
 
         # Horizontal
         canvas.path([-1, 1], [0, 0],
-                    color=self.style.smith.majorcolor,
-                    width=self.style.smith.majorwidth,
+                    color=gridsty.get_color(),
+                    width=gridsty.stroke_width,
                     dataview=src)
 
         canvas.text(-1.01, 0, '0',
@@ -312,8 +311,8 @@ class AxesSmith(AxesPolar):
 
         # Dark border circle
         canvas.circle(cx, cy, radius, color='none',
-                      strokecolor=self.style.axis.color,
-                      strokewidth=self.style.axis.framelinewidth)
+                      strokecolor=sty.edge_color,
+                      strokewidth=sty.edge_width)
         canvas.resetviewbox()
         return radius, cx, cy
 
@@ -327,21 +326,7 @@ class AxesSmith(AxesPolar):
                 cx, cy: canvas center of full circle
                 ticks: Tick definitions
         '''
-        colorseries = [s for s in self.series if s.__class__.__name__ != 'Text']
-        self.style.colorcycle.steps(len(colorseries))
-
-        for i, s in enumerate(colorseries):
-            if s.style.line.color == 'undefined':
-                s.style.line.color = self.style.colorcycle[i]
-            elif s.style.line.color.startswith('C') and s.style.line.color[1:].isnumeric():
-                # Convert things like 'C1'
-                s.style.line.color = self.style.colorcycle[s.style.line.color]
-
-            if s.style.marker.color == 'undefined':
-                s.style.marker.color = self.style.colorcycle[i]
-            elif s.style.marker.color.startswith('C') and s.style.marker.color[1:].isnumeric():
-                s.style.marker.color = self.style.colorcycle[s.style.marker.color]
-
+        self.assign_series_colors(self.series)
         databox = ViewBox(-1, -1, 2, 2)
         viewbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         canvas.setviewbox(viewbox)
@@ -370,6 +355,8 @@ class SmithConstResistance(Series):
         Notes:
             Leave xmin and xmax at inf to draw full circle
     '''
+    step_color = True
+
     def __init__(self, resistance: float, xmin: float = -math.inf, xmax: float = math.inf):
         super().__init__()
         self.resistance = resistance
@@ -379,17 +366,18 @@ class SmithConstResistance(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        color = self.style.line.color
+        sty = self.build_style()
+        color = sty.get_color()
         arc = const_resist_circle(self.resistance, self.xmin, self.xmax)
         if arc.t1 is not None and arc.t2 is not None:
             canvas.arc(arc.x, arc.y, arc.r, arc.t1, arc.t2,
                        strokecolor=color,
-                       strokewidth=self.style.line.width,
+                       strokewidth=sty.stroke_width,
                        dataview=databox)
         else:
             canvas.circle(arc.x, arc.y, arc.r,
                           color='none', strokecolor=color,
-                          strokewidth=self.style.line.width,
+                          strokewidth=sty.stroke_width,
                           dataview=databox)
 
 
@@ -402,6 +390,8 @@ class SmithConstReactance(Series):
             rmax: maximum resistance intersection value
             rmin: minimum resistance intersection value
     '''
+    step_color = True
+
     def __init__(self, reactance: float, rmax: float = math.inf, rmin: float = 0):
         super().__init__()
         self.reactance = abs(reactance)
@@ -411,13 +401,14 @@ class SmithConstReactance(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        color = self.style.line.color
+        sty = self.build_style()
+        color = sty.get_color()
         arc = const_react_arc(self.reactance, rmax=self.rmax, rmin=self.rmin)
         canvas.arc(arc.x, arc.y, arc.r, theta1=arc.t1, theta2=arc.t2,
                    strokecolor=color,
-                   strokewidth=self.style.line.width,
+                   strokewidth=sty.stroke_width,
                    dataview=databox)
         canvas.arc(arc.x, -arc.y, arc.r, theta1=-arc.t2, theta2=-arc.t1,
                    strokecolor=color,
-                   strokewidth=self.style.line.width,
+                   strokewidth=sty.stroke_width,
                    dataview=databox)

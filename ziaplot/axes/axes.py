@@ -5,12 +5,10 @@ from typing import Sequence, Optional
 from functools import lru_cache
 import math
 
-from ..style.styletypes import Style
-from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders, PointType
 from .. import text
+from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders, PointType
 from ..util import zrange, linspace
-from .baseplot import BasePlot, LegendLoc, Ticks
-
+from .baseplot import Axes, Ticks
 
 
 def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> list[float]:
@@ -51,20 +49,10 @@ def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> lis
     return ticks
 
 
-class AxesPlot(BasePlot):
-    ''' Plot of x-y data
-
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
-    '''
+class AxesPlot(Axes):
+    ''' Plot of x-y data with axes lines at arbitrary values '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -76,14 +64,17 @@ class AxesPlot(BasePlot):
             Returns:
                 ticks: Tick names and positions
         '''
+        xsty = self.build_style('Axes.TickX')
+        ysty = self.build_style('Axes.TickY')
+
         xmin, xmax, ymin, ymax = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
             xmin = min(xmin, min(xticks))
             xmax = max(xmax, max(xticks))
         else:
-            xticks = getticks(xmin, xmax, maxticks=self.style.tick.maxticksx,
-                              fmt=self.style.tick.xstrformat)
+            xticks = getticks(xmin, xmax, maxticks=self.max_xticks,
+                              fmt=xsty.num_format)
             xmin, xmax = xticks[0], xticks[-1]
 
         if self._ytickvalues:
@@ -91,40 +82,40 @@ class AxesPlot(BasePlot):
             ymin = min(ymin, min(yticks))
             ymax = max(ymax, max(yticks))
         else:
-            yticks = getticks(ymin, ymax, maxticks=self.style.tick.maxticksy,
-                              fmt=self.style.tick.ystrformat)
+            yticks = getticks(ymin, ymax, maxticks=self.max_yticks,
+                              fmt=ysty.num_format)
             ymin, ymax = yticks[0], yticks[-1]
 
         # Apply string format if not named manually
         xnames = self._xticknames
         if xnames is None:
-            xnames = [format(xt, self.style.tick.xstrformat) for xt in xticks]
+            xnames = [format(xt, xsty.num_format) for xt in xticks]
         ynames = self._yticknames
         if ynames is None:
-            ynames = [format(yt, self.style.tick.ystrformat) for yt in yticks]
+            ynames = [format(yt, ysty.num_format) for yt in yticks]
 
         # Calculate width of y names for padding left side of figure
         ywidth = 0.
         for tick in ynames:
             ywidth = max(ywidth, text.text_size(tick,
-                         fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font).width)
+                         fontsize=ysty.font_size,
+                         font=ysty.font).width)
 
         # Add minor ticks
         xminor: Optional[Sequence[float]]
         yminor: Optional[Sequence[float]]
         if self._xtickminor:
             xminor = self._xtickminor
-        elif self.style.tick.xminordivisions > 0:
-            step = (xticks[1] - xticks[0]) / (self.style.tick.xminordivisions)
+        elif self.xminordivisions > 0:
+            step = (xticks[1] - xticks[0]) / (self.xminordivisions)
             xminor = zrange(xticks[0], xticks[-1], step)
         else:
             xminor = None
 
         if self._ytickminor:
             yminor = self._ytickminor
-        elif self.style.tick.yminordivisions > 0:
-            step = (yticks[1] - yticks[0]) / (self.style.tick.yminordivisions)
+        elif self.yminordivisions > 0:
+            step = (yticks[1] - yticks[0]) / (self.yminordivisions)
             yminor = zrange(yticks[0], yticks[-1], step)
         else:
             yminor = None
@@ -132,10 +123,10 @@ class AxesPlot(BasePlot):
         # Add a bit of padding to data range
         dx = xticks[1]-xticks[0]
         dy = yticks[1]-yticks[0]
-        xrange = (xmin - dx*self.style.axis.xtickpad,
-                  xmax + dx*self.style.axis.xtickpad)
-        yrange = (ymin - dy*self.style.axis.ytickpad,
-                  ymax + dy*self.style.axis.ytickpad)
+        xrange = (xmin - dx*xsty.pad,
+                  xmax + dx*xsty.pad)
+        yrange = (ymin - dy*ysty.pad,
+                  ymax + dy*ysty.pad)
 
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)
@@ -143,46 +134,44 @@ class AxesPlot(BasePlot):
 
     @lru_cache
     def _borders(self) -> Borders:
-        ''' Calculate bounding box of where to place axis within frame,
-            shifting left/up to account for labels
+        ''' Calculate borders around axis box to fit the ticks and legend '''
+        xsty = self.build_style('Axes.TickX')
+        ysty = self.build_style('Axes.TickY')
+        lsty = self.build_style('Axes.Legend')
 
-            Args:
-                fullframe: ViewBox full size of svg
-                ticks: Tick definitions
-
-            Returns:
-                ViewBox of axis within the full frame
-        '''
         ticks = self._maketicks()
         legw, _ = self._legendsize()
         if self.showyticks:
-            leftborder = ticks.ywidth + self.style.tick.length + self.style.tick.textofst
+            leftborder = ticks.ywidth + ysty.height + ysty.margin
         else:
             leftborder = 0
-        if self.yname:
-            _, h = text.text_size(self.yname, fontsize=self.style.axis.yname.size,
-                                  font=self.style.axis.yname.font)
-            leftborder += h + self.style.tick.textofst
-        if self.legend == 'left':
-            leftborder += legw + self.style.tick.textofst
+        if self._yname:
+            nsty = self.build_style('Axes.YName')
+            _, h = text.text_size(self._yname, fontsize=nsty.font_size,
+                                  font=nsty.font)
+            leftborder += h + ysty.margin
+        if self._legend == 'left':
+            leftborder += legw + ysty.margin
 
         if self.showxticks:
-            botborder = self.style.tick.length + self.style.tick.text.size + 4
+            botborder = xsty.height + xsty.font_size + 4
         else:
             botborder = 0
-        if self.xname:
+        if self._xname:
+            nsty = self.build_style('Axes.XName')
             botborder += text.text_size(
-                self.xname, fontsize=self.style.axis.xname.size,
-                font=self.style.axis.xname.font).height + 2
+                self._xname, fontsize=nsty.font_size,
+                font=nsty.font).height + 2
 
-        topborder = self.style.axis.framelinewidth
-        if self.title:
+        topborder = lsty.edge_width + ysty.font_size / 2
+        if self._title:
+            nsty = self.build_style('Axes.Title')
             topborder += text.text_size(
-                self.title, fontsize=self.style.axis.title.size,
-                font=self.style.axis.title.font).height
+                self._title, fontsize=nsty.font_size,
+                font=nsty.font).height
 
-        rightborder = self.style.axis.framelinewidth
-        if self.legend == 'right':
+        rightborder = lsty.edge_width
+        if self._legend == 'right':
             rightborder += legw + 5
 
         borders = Borders(leftborder, rightborder, topborder, botborder)
@@ -195,20 +184,22 @@ class AxesPlot(BasePlot):
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
         '''
+        sty = self.build_style()
         canvas.newgroup()
-        if self.style.axis.bgcolor:
+        bgcolor = sty.get_color()
+        if bgcolor:
             canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
-                        strokecolor='none', fill=self.style.axis.bgcolor)
+                        strokecolor='none', fill=sty.color)
 
-        if self.style.axis.fullbox:
+        if self.fullbox:
             canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
-                        strokecolor=self.style.axis.color,
-                        strokewidth=self.style.axis.framelinewidth)
+                        strokecolor=sty.edge_color,
+                        strokewidth=sty.edge_width)
         else:
             canvas.path([axisbox.x, axisbox.x, axisbox.x+axisbox.w],
                         [axisbox.y+axisbox.h, axisbox.y, axisbox.y],
-                        color=self.style.axis.color,
-                        width=self.style.axis.framelinewidth)
+                        color=sty.edge_color,
+                        width=sty.edge_width)
 
     def _drawticks(self, canvas: Canvas, ticks: Ticks, axisbox: ViewBox, databox: ViewBox) -> None:
         ''' Draw tick marks and labels
@@ -219,91 +210,101 @@ class AxesPlot(BasePlot):
                 axisbox: ViewBox of axis within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
+        sty = self.build_style()
+        xsty = self.build_style('Axes.TickX')
+        ysty = self.build_style('Axes.TickY')
+        gridx_sty = self.build_style('Axes.GridX')
+        gridy_sty = self.build_style('Axes.GridY')
+
         canvas.newgroup()
         xform = Transform(databox, axisbox)
         for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
             x, _ = xform.apply(xtick, 0)
             y1 = axisbox.y
-            y2 = y1 - self.style.tick.length
-            if (self.style.axis.xgrid
-                    and x > axisbox.x+self.style.axis.framelinewidth
-                    and x < axisbox.x+axisbox.w-self.style.axis.framelinewidth):
+            y2 = y1 - xsty.height
+            if (gridx_sty.color not in [None, 'none']
+                    and x > axisbox.x+sty.edge_width
+                    and x < axisbox.x+axisbox.w-sty.edge_width):
                 canvas.path([x, x], [axisbox.y, axisbox.y+axisbox.h],
-                            color=self.style.axis.gridcolor,
-                            stroke=self.style.axis.gridstroke,
-                            width=self.style.axis.gridlinewidth)
+                            color=gridx_sty.color,
+                            stroke=gridx_sty.stroke,
+                            width=gridx_sty.stroke_width)
 
             if self.showxticks:
-                canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                            width=self.style.tick.width)
+                canvas.path([x, x], [y1, y2], color=xsty.get_color(),
+                            width=xsty.stroke_width)
     
-                canvas.text(x, y2-self.style.tick.textofst, xtickname,
-                            color=self.style.tick.text.color,
-                            font=self.style.tick.text.font,
-                            size=self.style.tick.text.size,
+                canvas.text(x, y2-xsty.margin, xtickname,
+                            color=xsty.get_color(),
+                            font=xsty.font,
+                            size=xsty.font_size,
                             halign='center', valign='top')
 
-        if ticks.xminor:
-            for xminor in ticks.xminor:
-                if xminor in ticks.xticks:
-                    continue  # Don't double-draw
-                x, _ = xform.apply(xminor, 0)
-                y1 = axisbox.y
-                y2 = y1 - self.style.tick.minorlength
-                canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                            width=self.style.tick.minorwidth)
+                if ticks.xminor:
+                    xsty_minor = self.build_style('Axes.TickXMinor')
+                    for xminor in ticks.xminor:
+                        if xminor in ticks.xticks:
+                            continue  # Don't double-draw
+                        x, _ = xform.apply(xminor, 0)
+                        y1 = axisbox.y
+                        y2 = y1 - xsty_minor.height
+                        canvas.path([x, x], [y1, y2], color=xsty.color,
+                                    width=xsty_minor.stroke_width)
 
         for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
             _, y = xform.apply(0, ytick)
             x1 = axisbox.x
-            x2 = axisbox.x - self.style.tick.length
+            x2 = axisbox.x - xsty.height
 
-            if (self.style.axis.ygrid
-                    and y > axisbox.y+self.style.axis.framelinewidth
-                    and y < axisbox.y+axisbox.h-self.style.axis.framelinewidth):
+            if (gridy_sty.color not in [None, 'none']
+                    and y > axisbox.y+sty.edge_width
+                    and y < axisbox.y+axisbox.h-sty.edge_width):
                 canvas.path([axisbox.x, axisbox.x+axisbox.w], [y, y],
-                            color=self.style.axis.gridcolor,
-                            stroke=self.style.axis.gridstroke,
-                            width=self.style.axis.gridlinewidth)
+                            color=gridy_sty.color,
+                            stroke=gridy_sty.stroke,
+                            width=gridy_sty.stroke_width)
 
             if self.showyticks:
-                canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                            width=self.style.tick.width)
-    
-                canvas.text(x2-self.style.tick.textofst, y, ytickname,
-                            color=self.style.tick.text.color,
-                            font=self.style.tick.text.font,
-                            size=self.style.tick.text.size,
+                canvas.path([x1, x2], [y, y], color=ysty.get_color(),
+                            width=ysty.stroke_width)
+
+                canvas.text(x2-ysty.margin, y, ytickname,
+                            color=ysty.get_color(),
+                            font=ysty.font,
+                            size=ysty.font_size,
                             halign='right', valign='center')
     
-        if ticks.yminor:
-            for yminor in ticks.yminor:
-                if yminor in ticks.yticks:
-                    continue  # Don't double-draw
-                _, y = xform.apply(0, yminor)
-                x1 = axisbox.x
-                x2 = axisbox.x - self.style.tick.minorlength
-                canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                            width=self.style.tick.minorwidth)
+                if ticks.yminor:
+                    ysty_minor = self.build_style('Axes.TickYMinor')
+                    for yminor in ticks.yminor:
+                        if yminor in ticks.yticks:
+                            continue  # Don't double-draw
+                        _, y = xform.apply(0, yminor)
+                        x1 = axisbox.x
+                        x2 = axisbox.x - ysty_minor.height
+                        canvas.path([x1, x2], [y, y], color=ysty_minor.get_color(),
+                                    width=ysty_minor.stroke_width)
 
-        if self.xname:
+        if self._xname:
+            sty = self.build_style('Axes.XName')
             centerx = axisbox.x + axisbox.w/2
-            namey = (axisbox.y - self.style.tick.text.size -
-                     self.style.tick.length - self.style.tick.textofst)
-            canvas.text(centerx, namey, self.xname,
-                        color=self.style.axis.xname.color,
-                        font=self.style.axis.xname.font,
-                        size=self.style.axis.xname.size,
+            namey = (axisbox.y - xsty.font_size -
+                     xsty.height - xsty.margin)
+            canvas.text(centerx, namey, self._xname,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
                         halign='center', valign='top')
 
-        if self.yname:
+        if self._yname:
+            sty = self.build_style('Axes.YName')
             centery = axisbox.y + axisbox.h/2
-            namex = (axisbox.x - self.style.tick.length -
-                     ticks.ywidth - self.style.tick.text.size)
-            canvas.text(namex, centery, self.yname,
-                        color=self.style.axis.yname.color,
-                        font=self.style.axis.yname.font,
-                        size=self.style.axis.yname.size,
+            namex = (axisbox.x - ysty.height -
+                     ticks.ywidth - ysty.font_size)
+            canvas.text(namex, centery, self._yname,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
                         halign='center', valign='center',
                         rotate=90)
 
@@ -315,12 +316,13 @@ class AxesPlot(BasePlot):
                 axisbox: ViewBox of axis within the canvas
         '''
         canvas.newgroup()
-        if self.title:
+        if self._title:
+            sty = self.build_style('Axes.Title')
             centerx = axisbox.x + axisbox.w/2
-            canvas.text(centerx, axisbox.y+axisbox.h, self.title,
-                        color=self.style.axis.color,
-                        font=self.style.axis.title.font,
-                        size=self.style.axis.title.size,
+            canvas.text(centerx, axisbox.y+axisbox.h, self._title,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
                         halign='center', valign='bottom')
 
     def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
@@ -332,21 +334,7 @@ class AxesPlot(BasePlot):
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
         canvas.setviewbox(axisbox)
-
-        colorseries = [s for s in self.series if s.__class__.__name__ != 'Text']
-        self.style.colorcycle.steps(len(colorseries))
-
-        for i, s in enumerate(colorseries):
-            if s.style.line.color == 'undefined':
-                s.style.line.color = self.style.colorcycle[i]
-            elif s.style.line.color.startswith('C') and s.style.line.color[1:].isnumeric():
-                # Convert things like 'C1'
-                s.style.line.color = self.style.colorcycle[s.style.line.color]
-
-            if s.style.marker.color == 'undefined':
-                s.style.marker.color = self.style.colorcycle[i]
-            elif s.style.marker.color.startswith('C') and s.style.marker.color[1:].isnumeric():
-                s.style.marker.color = self.style.colorcycle[s.style.marker.color]
+        self.assign_series_colors(self.series)
 
         for s in self.series:
             s._xml(canvas, databox=databox)
@@ -355,10 +343,6 @@ class AxesPlot(BasePlot):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        if self.style.bgcolor not in [None, 'none']:
-            canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
-                        strokecolor=self.style.bgcolor)
-
         ticks = self._maketicks()
         dborders = self._borders()
         if borders is not None:
@@ -403,26 +387,16 @@ class AxesGraph(AxesPlot):
 
         Args:
             centerorigin: Place the (0, 0) origin in the center of the axis
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
 
         Attributes:
             style: Drawing style
     '''
-    def __init__(self, centerorigin: bool = False, title: Optional[str] = None,
-                 xname: str = 'x', yname: str = 'y',
-                 legend: LegendLoc = 'left', style: Optional[Style] = None):
-        super().__init__(title=title, xname=xname, yname=yname,
-                         legend=legend, style=style)
+    def __init__(self, centerorigin: bool = False):
+        super().__init__()
         self.centerorigin = centerorigin
-        self.arrowwidth = self.style.axis.framelinewidth * 3
-        self.style.axis.xtickpad = 0
-        self.style.axis.ytickpad = 0
 
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -439,38 +413,47 @@ class AxesGraph(AxesPlot):
         ticks = self._maketicks()
         legw, _ = self._legendsize()
 
+        xsty = self.build_style('Axes.TickX')
+        ysty = self.build_style('Axes.TickY')
+        lsty = self.build_style('Axes.Legend')
+        sty = self.build_style()
+        arrowwidth = sty.edge_width * 3
+
         if databox.xmin == 0:
-            leftborder = ticks.ywidth + self.style.tick.length + self.style.tick.textofst        
+            leftborder = ticks.ywidth + ysty.height + ysty.margin        
         else:
             leftborder = 1
 
         if databox.ymin == 0:
-            botborder = self.style.tick.length + self.style.tick.text.size + 4
+            botborder = xsty.height + xsty.font_size + 4
         else:
             botborder = 1
 
-        rightborder = self.arrowwidth*2
-        topborder = self.arrowwidth
+        rightborder = arrowwidth*2
+        topborder = arrowwidth
         
-        if self.legend == 'left':
-            leftborder += legw + self.style.axis.framelinewidth
-        elif self.legend == 'right':
-            rightborder += legw + self.style.axis.framelinewidth
+        if self._legend == 'left':
+            leftborder += legw + lsty.edge_width
+        elif self._legend == 'right':
+            rightborder += legw + lsty.edge_width
 
         drange = self.datarange()
         if drange.xmin == 0:
             leftborder += ticks.ywidth
 
-        if self.yname:
-            topborder += self.style.tick.textofst+self.style.axis.yname.size + 2
+        if self._yname:
+            nsty = self.build_style('Axes.YName')
+            topborder += ysty.margin+nsty.font_size + 2
 
-        if self.xname:
+        if self._xname:
+            nsty = self.build_style('Axes.XName')
             rightborder += text.text_size(
-                self.xname, font=self.style.axis.xname.font,
-                fontsize=self.style.axis.xname.size).width
+                self._xname, font=nsty.font,
+                fontsize=nsty.font_size).width
 
-        if self.title:
-            topborder += self.style.axis.title.size
+        if self._title:
+            nsty = self.build_style('Axes.Title')
+            topborder += nsty.font_size
 
         return Borders(leftborder, rightborder, topborder, botborder)
 
@@ -501,10 +484,11 @@ class AxesGraph(AxesPlot):
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
         '''
-        if self.style.axis.bgcolor:
+        sty = self.build_style()
+        if sty.color:
             canvas.newgroup()
             canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
-                        strokecolor='none', fill=self.style.axis.bgcolor)
+                        strokecolor='none', fill=sty.color)
 
     def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
         ''' Calculate legend location
@@ -516,24 +500,27 @@ class AxesGraph(AxesPlot):
                 boxw: Width of legend box
                 boxh: Height of legend box
         '''
-        if self.legend == 'left':
+        sty = self.build_style('Axes.Legend')
+        arrowwidth = sty.edge_width * 3
+
+        if self._legend == 'left':
             ytop = axisbox.y + axisbox.h
-            xright = axisbox.x - self.arrowwidth
-        elif self.legend == 'right':
+            xright = axisbox.x - arrowwidth + sty.edge_width
+        elif self._legend == 'right':
             ytop = axisbox.y + axisbox.h
-            xright = axisbox.x + axisbox.w + boxw + self.arrowwidth
-        elif self.legend == 'topright':
-            ytop = axisbox.y + axisbox.h - self.style.legend.pad
-            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
-        elif self.legend == 'bottomleft':
-            ytop = axisbox.y + boxh + self.style.legend.pad
-            xright = (axisbox.x + boxw + self.style.legend.pad)
-        elif self.legend == 'bottomright':
-            ytop = axisbox.y + boxh + self.style.legend.pad
-            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
-        else: # self.legend == 'topleft':
-            ytop = axisbox.y + axisbox.h - self.style.legend.pad
-            xright = (axisbox.x + boxw + self.style.legend.pad)
+            xright = axisbox.x + axisbox.w + boxw + arrowwidth
+        elif self._legend == 'topright':
+            ytop = axisbox.y + axisbox.h - sty.pad
+            xright = (axisbox.x + axisbox.w - sty.pad)
+        elif self._legend == 'bottomleft':
+            ytop = axisbox.y + boxh + sty.pad
+            xright = (axisbox.x + boxw + sty.pad)
+        elif self._legend == 'bottomright':
+            ytop = axisbox.y + boxh + sty.pad
+            xright = (axisbox.x + axisbox.w - sty.pad)
+        else: # self._legend == 'topleft':
+            ytop = axisbox.y + axisbox.h - sty.pad
+            xright = (axisbox.x + boxw + sty.pad)
 
         return ytop, xright
 
@@ -547,49 +534,57 @@ class AxesGraph(AxesPlot):
                 databox: ViewBox of data to convert from data to
                     svg coordinates
         '''
+        sty = self.build_style()
+        xsty = self.build_style('Axes.TickX')
+        ysty = self.build_style('Axes.TickY')
+        gridx_sty = self.build_style('Axes.GridX')
+        gridy_sty = self.build_style('Axes.GridX')
+
         canvas.newgroup()
         xform = Transform(databox, axisbox)
         xleft = xform.apply(databox.x, 0)
         xrght = xform.apply(databox.x+databox.w, 0)
         ytop = xform.apply(0, databox.y+databox.h)
         ybot = xform.apply(0, databox.y)
+        sty = self.build_style()
+        arrowwidth = sty.edge_width*3
 
-        startmark = canvas.definemarker('larrow', radius=self.arrowwidth,
-                                        color=self.style.axis.color,
-                                        strokecolor=self.style.axis.color,
+        startmark = canvas.definemarker('larrow', radius=arrowwidth,
+                                        color=sty.edge_color,
+                                        strokecolor=sty.edge_color,
                                         orient=True)
-        endmark = canvas.definemarker('arrow', radius=self.arrowwidth,
-                                      strokecolor=self.style.axis.color,
-                                      color=self.style.axis.color, orient=True)
+        endmark = canvas.definemarker('arrow', radius=arrowwidth,
+                                      strokecolor=sty.edge_color,
+                                      color=sty.edge_color, orient=True)
 
         xmarker: Optional[str] = startmark
         ymarker: Optional[str] = endmark
         if databox.x == 0:
             xmarker = None
             xaxis = [xleft[0],
-                     xrght[0]-self.style.tick.width]
+                     xrght[0]-xsty.width]
         else:
-            xaxis = [xleft[0]+self.arrowwidth+self.style.tick.width,
-                     xrght[0]-self.arrowwidth-self.style.tick.width]
+            xaxis = [xleft[0]+arrowwidth+xsty.width,
+                     xrght[0]-arrowwidth-xsty.width]
 
         if databox.y == 0:
             ymarker = None
-            yaxis = [ytop[1]-self.style.tick.width,
+            yaxis = [ytop[1]-ysty.width,
                      ybot[1]]
         else:
-            yaxis = [ytop[1]-self.arrowwidth-self.style.tick.width,
-                     ybot[1]+self.arrowwidth+self.style.tick.width]
+            yaxis = [ytop[1]-arrowwidth-ysty.width,
+                     ybot[1]+arrowwidth+ysty.width]
         
         canvas.path(xaxis,
                     [xleft[1], xrght[1]],
-                    color=self.style.axis.color,
-                    width=self.style.axis.framelinewidth,
+                    color=sty.edge_color,
+                    width=sty.edge_width,
                     startmarker=xmarker,
                     endmarker=endmark)
         canvas.path([ytop[0], ybot[0]],
                     yaxis,
-                    color=self.style.axis.color,
-                    width=self.style.axis.framelinewidth,
+                    color=sty.edge_color,
+                    width=sty.edge_width,
                     startmarker=startmark,
                     endmarker=ymarker)
 
@@ -598,84 +593,88 @@ class AxesGraph(AxesPlot):
                 if xtick == 0:
                     continue
                 x, _ = xform.apply(xtick, 0)
-                y1 = xleft[1] + self.style.tick.length/2
-                y2 = xleft[1] - self.style.tick.length/2
-                if self.style.axis.xgrid:
+                y1 = xleft[1] + xsty.height/2
+                y2 = xleft[1] - xsty.height/2
+                if gridx_sty.color not in [None, 'none']:
                     canvas.path([x, x], [ybot[1], ytop[1]],
-                                color=self.style.axis.gridcolor,
-                                stroke=self.style.axis.gridstroke,
-                                width=self.style.axis.gridlinewidth)
+                                color=gridx_sty.get_color(),
+                                stroke=gridx_sty.stroke,
+                                width=gridx_sty.stroke_width)
                     
                 if xleft[0] < x < xrght[0]:
                     # Don't draw ticks outside the arrows
-                    canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                                width=self.style.tick.width)
+                    canvas.path([x, x], [y1, y2], color=xsty.get_color(),
+                                width=xsty.stroke_width)
 
-                    canvas.text(x, y2-self.style.tick.textofst, xtickname,
-                                color=self.style.tick.text.color,
-                                font=self.style.tick.text.font,
-                                size=self.style.tick.text.size,
+                    canvas.text(x, y2-xsty.margin, xtickname,
+                                color=xsty.get_color(),
+                                font=xsty.font,
+                                size=xsty.font_size,
                                 halign='center', valign='top')
 
             if ticks.xminor:
+                xsty_minor = self.build_style('Axes.TickXMinor')
                 for xminor in ticks.xminor:
                     if xminor in ticks.xticks:
                         continue  # Don't double-draw
                     x, _ = xform.apply(xminor, 0)
-                    y1 = xleft[1] + self.style.tick.minorlength/2
-                    y2 = xleft[1] - self.style.tick.minorlength/2
-                    canvas.path([x, x], [y1, y2], color=self.style.axis.color,
-                                width=self.style.tick.minorwidth)
+                    y1 = xleft[1] + xsty_minor.height/2
+                    y2 = xleft[1] - xsty_minor.height/2
+                    canvas.path([x, x], [y1, y2], color=xsty_minor.get_color(),
+                                width=xsty_minor.stroke_width)
 
         if self.showyticks:
             for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
                 if ytick == 0:
                     continue
                 _, y = xform.apply(0, ytick)
-                x1 = ytop[0] + self.style.tick.length/2
-                x2 = ytop[0] - self.style.tick.length/2
-                if self.style.axis.ygrid:
+                x1 = ytop[0] + ysty.height/2
+                x2 = ytop[0] - ysty.height/2
+                if gridy_sty.stroke not in [None, 'none']:
                     canvas.path([xleft[0], xrght[0]], [y, y],
-                                color=self.style.axis.gridcolor,
-                                stroke=self.style.axis.gridstroke,
-                                width=self.style.axis.gridlinewidth)
+                                color=gridy_sty.get_color(),
+                                stroke=gridy_sty.stroke,
+                                width=gridy_sty.stroke_width)
 
                 if ybot[1] < y < ytop[1]:
                     # Don't draw ticks outside the arrows
-                    canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                                width=self.style.tick.width)
+                    canvas.path([x1, x2], [y, y], color=ysty.get_color(),
+                                width=xsty.stroke_width)
 
-                    canvas.text(x2-self.style.tick.textofst, y, ytickname,
-                                color=self.style.tick.text.color,
-                                font=self.style.tick.text.font,
-                                size=self.style.tick.text.size,
+                    canvas.text(x2-ysty.margin, y, ytickname,
+                            color=ysty.get_color(),
+                            font=ysty.font,
+                            size=ysty.font_size,
                                 halign='right', valign='center')
             if ticks.yminor:
+                ysty_minor = self.build_style('Axes.TickYMinor')
                 for yminor in ticks.yminor:
                     if yminor in ticks.yticks:
                         continue  # Don't double-draw
                     _, y = xform.apply(0, yminor)
-                    x1 = ytop[0] + self.style.tick.minorlength/2
-                    x2 = ytop[0] - self.style.tick.minorlength/2
-                    canvas.path([x1, x2], [y, y], color=self.style.axis.color,
-                                width=self.style.tick.minorwidth)
+                    x1 = ytop[0] + ysty_minor.height/2
+                    x2 = ytop[0] - ysty_minor.height/2
+                    canvas.path([x1, x2], [y, y], color=ysty_minor.get_color(),
+                                width=ysty_minor.stroke_width)
 
-        if self.xname:
-            canvas.text(xrght[0]+self.style.tick.textofst+self.arrowwidth,
+        if self._xname:
+            sty = self.build_style('Axes.XName')
+            canvas.text(xrght[0]+sty.margin+arrowwidth,
                         xrght[1],
-                        self.xname,
-                        color=self.style.axis.color,
-                        font=self.style.axis.xname.font,
-                        size=self.style.axis.xname.size,
+                        self._xname,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
                         halign='left', valign='center')
 
-        if self.yname:
+        if self._yname:
+            sty = self.build_style('Axes.YName')
             canvas.text(ytop[0],
-                        ytop[1]+self.style.tick.textofst+self.arrowwidth,
-                        self.yname,
-                        color=self.style.axis.color,
-                        font=self.style.axis.yname.font,
-                        size=self.style.axis.yname.size,
+                        ytop[1]+sty.margin+arrowwidth,
+                        self._yname,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
                         halign='center', valign='bottom')
 
     def _drawtitle(self, canvas: Canvas, axisbox: ViewBox) -> None:
@@ -685,21 +684,18 @@ class AxesGraph(AxesPlot):
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
         '''
-        canvas.newgroup()
-        if self.title:
-            canvas.text(axisbox.x, axisbox.y+axisbox.h, self.title,
-                        color=self.style.axis.color,
-                        font=self.style.axis.title.font,
-                        size=self.style.axis.title.size,
+        if self._title:
+            canvas.newgroup()
+            sty = self.build_style('Axes.Title')
+            canvas.text(axisbox.x, axisbox.y+axisbox.h, self._title,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
                         halign='left', valign='bottom')
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        if self.style.bgcolor not in [None, 'none']:
-            canvas.rect(*canvas.viewbox, fill=self.style.bgcolor,
-                        strokecolor=self.style.bgcolor)
-
         ticks = self._maketicks()
         dborders = self._borders()
         if borders is not None:
@@ -745,8 +741,8 @@ class AxesBlank(AxesPlot):
             title: Title for top of axes
             style: Axis style
     '''
-    def __init__(self, title: Optional[str] = None, style: Optional[Style] = None):
-        super().__init__(title=title, style=style)
+    def __init__(self):
+        super().__init__()
         self._equal_aspect = True
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,

@@ -2,16 +2,14 @@
 from __future__ import annotations
 from typing import Optional, cast
 from dataclasses import dataclass
-from xml.etree import ElementTree as ET
 import math
 
+from ..util import angle_mean
 from ..canvas import Canvas, Borders, ViewBox
 from ..text import TextPosition, text_align_ofst, Halign, Valign
-from ..series import PointType, Series
-from ..style import MarkerTypes
-from ..axes import AxesPlot
+from ..series import Element
+from ..style import MarkerTypes, PointType
 from .function import Function
-from ..util import angle_mean
 from .. import axis_stack
 
 
@@ -169,9 +167,10 @@ class Line(Function):
                 canvas: Canvas to draw on
                 databox: Databox within the canvas
         '''
+        textstyle = self.build_style('Line.Text')
         for label in self._labels:
             dx, dy, halign, valign = text_align_ofst(
-                label.align, self.style.point.text_ofst)
+                label.align, textstyle.margin)
 
             x = x0[0] + (x0[1] - x0[0]) * label.loc
             y = y0[0] + (y0[1] - y0[0]) * label.loc
@@ -179,11 +178,11 @@ class Line(Function):
             if label.rotate:
                 angle = math.degrees(math.atan(self.slope))
 
-            color = label.color if label.color else self.style.text.color
-            size = label.size if label.size else self.style.text.size
+            color = label.color if label.color else textstyle.get_color()
+            size = label.size if label.size else textstyle.font_size
             canvas.text(x, y, label.label,
                         color=color,
-                        font=self.style.point.text.font,
+                        font=textstyle.font,
                         size=size,
                         halign=halign,
                         valign=valign,
@@ -195,38 +194,39 @@ class Line(Function):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
-        color = self.style.line.color
+        sty = self.build_style()
+        color = sty.get_color()
         x, y = self._endpoints(databox)
         startmark = None
         endmark = None
         if self.startmark:
             startmark = canvas.definemarker(self.startmark,
-                                            self.style.marker.radius,
-                                            self.style.marker.color,
-                                            self.style.marker.strokecolor,
-                                            self.style.marker.strokewidth,
+                                            sty.radius,
+                                            sty.color,
+                                            sty.edge_color,
+                                            sty.edge_width,
                                             orient=True)
         if self.endmark:
             endmark = canvas.definemarker(self.endmark,
-                                          self.style.marker.radius,
-                                          self.style.marker.color,
-                                          self.style.marker.strokecolor,
-                                          self.style.marker.strokewidth,
+                                            sty.radius,
+                                            sty.color,
+                                            sty.edge_color,
+                                            sty.edge_width,
                                           orient=True)
         canvas.path(x, y,
-                    stroke=self.style.line.stroke,
+                    stroke=sty.stroke,
                     color=color,
-                    width=self.style.line.width,
+                    width=sty.stroke_width,
                     startmarker=startmark,
                     endmarker=endmark,
                     dataview=databox)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
-                                          self.style.marker.radius,
-                                          self.style.marker.color,
-                                          self.style.marker.strokecolor,
-                                          self.style.marker.strokewidth,
+                                          sty.radius,
+                                          sty.color,
+                                          sty.edge_color,
+                                          sty.edge_width,
                                           orient=True)
 
             midx, midy = (x[0]+x[1])/2, (y[0]+y[1])/2
@@ -240,12 +240,6 @@ class Line(Function):
                         dataview=databox)
 
         self._place_labels(x, y, canvas, databox)
-
-    def svgxml(self, border: bool = False) -> ET.Element:
-        ''' Generate XML for standalone SVG '''
-        ax = AxesPlot(style=self._axisstyle)
-        ax.add(self)
-        return ax.svgxml(border=border)
 
 
 class HLine(Line):
@@ -278,6 +272,7 @@ class Segment(Line):
 
     @property
     def point2(self) -> PointType:
+        ''' Second point on the segment '''
         return self.p2
 
     def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> Segment:
@@ -326,7 +321,7 @@ class Vector(Segment):
         return cls(x, y)
 
 
-class Angle(Series):
+class Angle(Element):
     ''' Draw angle between two Lines/Segments '''
     def __init__(self, line1: Line, line2: Line, quad: int = 1, arcs: int = 1):
         super().__init__()
@@ -344,19 +339,19 @@ class Angle(Series):
 
     def color(self, color: str) -> 'Angle':
         ''' Sets the color of the angle arc '''
-        self.style.angle.color = color
+        self._style.color = color
         return self
 
     def strokewidth(self, width: float) -> 'Angle':
         ''' Sets the strokewidth of the angle arc '''
-        self.style.angle.strokewidth = width
+        self._style.stroke_width = width
         return self
 
     def radius(self, radius: float, text_radius: Optional[float] = None) -> 'Angle':
         ''' Sets the radius of the angle arc '''
-        self.style.angle.radius = radius
+        self._style.radius = radius
         if text_radius:
-            self.style.angle.text_radius = text_radius
+            self._style.margin = (text_radius, text_radius)
         return self
 
     @classmethod
@@ -404,7 +399,9 @@ class Angle(Series):
 
         # Calculate radius of angle arc in data coordinates
         assert databox is not None
-        r = self.style.angle.radius * databox.w / canvas.viewbox.w
+        sty = self.build_style()
+    
+        r = sty.radius * databox.w / canvas.viewbox.w
         dtheta = abs(theta1 - theta2) % math.pi
         if self.square_right and math.isclose(dtheta, math.pi/2):
             # Right Angle
@@ -416,25 +413,26 @@ class Angle(Series):
                      y + r * math.sin(theta1+math.pi/4),
                      y + r2 * math.sin(theta2)]
             canvas.path(xpath, ypath,
-                        color=self.style.angle.color,
-                        width=self.style.angle.strokewidth,
+                        color=sty.color,
+                        width=sty.stroke_width,
                         dataview=databox
                         )
         else:
-            dradius = self.style.angle.arcgap * databox.w / canvas.viewbox.w
+            dradius = sty.margin * databox.w / canvas.viewbox.w
             for i in range(self.arcs):
                 canvas.arc(x, y, r - i * dradius,
                         math.degrees(theta1),
                         math.degrees(theta2),
-                        strokecolor=self.style.angle.color,
-                        strokewidth=self.style.angle.strokewidth,
+                        strokecolor=sty.color,
+                        strokewidth=sty.stroke_width,
                         dataview=databox
                         )
 
         if self._label:
-            r = self.style.angle.text_radius
-            color = self._label.color if self._label.color else self.style.angle.text.color
-            size = self._label.size if self._label.size else self.style.angle.text.size
+            textstyle = self.build_style('Angle.Text')
+            r = sty.radius + textstyle.margin
+            color = self._label.color if self._label.color else textstyle.get_color()
+            size = self._label.size if self._label.size else textstyle.font_size
             labelangle = angle_mean(theta1, theta2)
             dx = r * math.cos(labelangle)
             dy = r * math.sin(labelangle)
@@ -455,7 +453,7 @@ class Angle(Series):
 
             canvas.text(x, y, self._label.label,
                         color=color,
-                        font=self.style.angle.text.font,
+                        font=textstyle.font,
                         size=size,
                         halign=cast(Halign, halign),
                         valign=cast(Valign, valign),

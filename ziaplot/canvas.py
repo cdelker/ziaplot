@@ -1,22 +1,17 @@
 ''' SVG-drawing functions '''
-
 from __future__ import annotations
-from typing import Sequence, Literal, Optional, Tuple
+from typing import Sequence, Optional, Tuple
 import math
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
 from . import text
 from .config import config
-from .style import MarkerTypes, DashTypes
+from .style import MarkerTypes, DashTypes, PointType
 
-PointType = Tuple[float, float]
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
-Halign = Literal['left', 'center', 'right']
-Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
-
 
 def fmt(f: float) -> str:
     ''' String format, stripping trailing zeros '''
@@ -60,7 +55,7 @@ class Transform:
         return (x*self.xscale + self.xshift,
                 y*self.yscale + self.yshift)
 
-    def apply_list(self, x: Sequence[float], y: Sequence[float]) -> tuple[list[float], list[float]]:
+    def apply_list(self, x: Sequence[float], y: Sequence[float]) -> Tuple[list[float], list[float]]:
         ''' Apply the transofrmation to a list of x, y points '''
         xy = [self.apply(xx, yy) for xx, yy in zip(x, y)]
         x = [z[0] for z in xy if math.isfinite(z[0]) and math.isfinite(z[1])]
@@ -266,7 +261,7 @@ class Canvas:
             path.attrib['marker-start'] = f'url(#{startmarker})'
         if endmarker is not None:
             path.attrib['marker-end'] = f'url(#{endmarker})'
-        if stroke != '-' and stroke not in [None, 'none', '']:
+        if stroke not in ['-', 'solid', None, 'none', '']:
             path.attrib['stroke-dasharray'] = getdash(stroke, width)
         if stroke in [None, 'none', '']:
             path.attrib['stroke'] = 'none'
@@ -345,8 +340,8 @@ class Canvas:
              color: str = 'black',
              font: str = 'sans-serif',
              size: float = 12,
-             halign: Halign = 'left',
-             valign: Valign = 'bottom',
+             halign: text.Halign = 'left',
+             valign: text.Valign = 'bottom',
              rotate: Optional[float] = None,
              pixelofst: Optional[PointType] = None,
              dataview: Optional[ViewBox] = None) -> None:

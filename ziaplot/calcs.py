@@ -1,8 +1,7 @@
-''' Methods for finding intersections, maxima, minima, etc. '''
-
+''' Calculations for finding intersections, maxima, minima, etc. '''
 from .geo.line import Line
 from .geo.function import Function
-from .series import PointType
+from .style import PointType
 from .util import root, maximum, minimum
 
 

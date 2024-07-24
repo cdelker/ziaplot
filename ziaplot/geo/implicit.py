@@ -3,8 +3,7 @@ from typing import Callable
 
 from ..util import linspace
 from ..dataplots import Contour
-from ..series import PointType
-from ..style.colors import ColorCycle
+from ..style import PointType
 
 
 class Implicit(Contour):
@@ -29,8 +28,3 @@ class Implicit(Contour):
         y = linspace(*ylim, n)
         z = [[f(xx, yy) for xx in x] for yy in y] 
         super().__init__(x, y, z, levels=(0,))
-
-    def _get_colors(self):
-        ''' Get colorcycle for the single contour line '''
-        color = self.style.line.color
-        return ColorCycle(color)

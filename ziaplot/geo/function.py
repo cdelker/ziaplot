@@ -1,3 +1,4 @@
+''' Graph mathematical functions '''
 from __future__ import annotations
 from typing import Optional, Callable, Sequence
 from xml.etree import ElementTree as ET
@@ -8,19 +9,24 @@ from ..series import Series
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..axes import AxesPlot
+from ..style.style import Style
 
 
 class Function(Series):
     ''' Plot a function
 
         Args:
-            func: Callable function (e.g. lambda x: x**2)
+            func: Callable function of x, returning y (e.g. lambda x: x**2)
             xmin: Minimum x value
             xmax: Maximum x value
             n: Number of datapoints for discrete representation
     '''
-    def __init__(self, func: Callable[[float], float],
-                 xrange: Optional[tuple[float, float]] = None, n: int = 200):
+    step_color = True
+
+    def __init__(self,
+                 func: Callable[[float], float],
+                 xrange: Optional[tuple[float, float]] = None,
+                 n: int = 200):
         super().__init__()
         self._func = func
         self.func = func
@@ -54,6 +60,7 @@ class Function(Series):
         self._logx = True
 
     def y(self, x: float) -> float:
+        ''' Evaluate f(x) '''
         y = self.func(x)
         if self._logy:
             y = math.log10(y) if y > 0 else math.nan
@@ -81,6 +88,7 @@ class Function(Series):
         return util.minimum(self.func, x1, x2)
 
     def _evaluate(self, x: Sequence[float]) -> tuple[Sequence[float], Sequence[float]]:
+        ''' Evaluate and return (x, y) in logscale if needed '''
         y = [self.func(xx) for xx in x]
         if self._logy:
             y = [math.log10(yy) if yy > 0 else math.nan for yy in y]
@@ -92,42 +100,45 @@ class Function(Series):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
+        sty = self.build_style()
+        color = sty.get_color()
+
         xrange = self.xrange
         if xrange is None:
             xrange = databox.x, databox.x+databox.w
         x, y = self._evaluate(util.linspace(*xrange, self.n))
+
         startmark = None
         endmark = None
         if self.startmark:
             startmark = canvas.definemarker(self.startmark,
-                                            self.style.marker.radius,
-                                            self.style.marker.color,
-                                            self.style.marker.strokecolor,
-                                            self.style.marker.strokewidth,
+                                            sty.radius,
+                                            color,
+                                            sty.edge_color,
+                                            sty.edge_width,
                                             orient=True)
         if self.endmark:
             endmark = canvas.definemarker(self.endmark,
-                                          self.style.marker.radius,
-                                          self.style.marker.color,
-                                          self.style.marker.strokecolor,
-                                          self.style.marker.strokewidth,
+                                          sty.radius,
+                                          color,
+                                          sty.edge_color,
+                                          sty.edge_width,
                                           orient=True)
 
-        color = self.style.line.color
         canvas.path(x, y,
-                    stroke=self.style.line.stroke,
+                    stroke=sty.stroke,
                     color=color,
-                    width=self.style.line.width,
+                    width=sty.stroke_width,
                     startmarker=startmark,
                     endmarker=endmark,
                     dataview=databox)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
-                                          self.style.marker.radius,
-                                          self.style.marker.color,
-                                          self.style.marker.strokecolor,
-                                          self.style.marker.strokewidth,
+                                          sty.radius,
+                                          color,
+                                          sty.edge_color,
+                                          sty.stroke_width,
                                           orient=True)
             midx = (xrange[0]+xrange[1])/2
             midy = self.y(midx)
@@ -143,6 +154,6 @@ class Function(Series):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot(style=self._axisstyle)
+        ax = AxesPlot()
         ax.add(self)
         return ax.svgxml(border=border)

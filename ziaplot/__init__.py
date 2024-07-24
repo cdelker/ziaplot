@@ -52,13 +52,13 @@ from .axes import (
     AxesBlank,
     ticker
 )
-from .charts import Pie, PieSlice, BarChart, BarSingle, BarChartGrouped, BarSeries
+from .charts import Pie, PieSlice, BarChart, Bar, BarChartGrouped, BarSeries, BarChartHoriz, BarChartGroupedHoriz
 from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
 from .shapes import Circle, Ellipse, Rectangle
-from .style import styles
 from .text import settextmode
 from .config import config
 from .util import linspace
-from .find import line_intersection, func_intersection, local_max, local_min, x_intercept, y_intercept
+from .calcs import line_intersection, func_intersection, local_max, local_min, x_intercept, y_intercept
+from .style import theme, CSS_BLACK
 
 __version__ = '0.6a0'

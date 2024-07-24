@@ -1,33 +1,14 @@
+from .themes import zptheme as theme, CSS_BLACK
 from .colors import ColorCycle, ColorFade
-from .smithstyle import SmithGrid, SmithStyle
-
-from .styles import setdefault, settextcolor, setaxiscolor
-from .styles import (
-    Default,
-    Lobo,
-    Taffy,
-    Pastel,
-    Bold,
-    Dark,
-    DarkBold,
-    DarkTaffy,
-    DocStyle
-)
-
-from .styletypes import (
-    MarkerStyle,
+from .style import (
     MarkerTypes,
     DashTypes,
-    LineStyle,
-    BorderStyle,
-    TextStyle,
-    ErrorBarStyle,
-    ColorBarStyle,
-    SeriesStyle,
-    AxisStyle,
-    TickStyle,
-    LegendStyle,
-    PieStyle,
-    PolarStyle,
+    ColorType,
+    TextPosition,
+    Halign,
+    Valign,
+    OffsetType,
+    PointType,
+    SpanType,
     Style
 )

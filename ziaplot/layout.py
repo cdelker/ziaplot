@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from .axes import AxesPlot
 from .series import Series
 from .canvas import Canvas, ViewBox, Borders
+from .container import Container
 from .drawable import Drawable
 from . import axis_stack
 
@@ -59,7 +60,7 @@ def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> li
     return axwidths
 
 
-class LayoutGrid(Drawable):
+class LayoutGrid(Container):
     ''' Lay out axes in a grid. Axes added to the layout
         fill the grid from left to right, adding rows as needed.
 
@@ -89,6 +90,7 @@ class LayoutGrid(Drawable):
                  column_gap: float = 10,
                  row_gap: float = 10,
                  **kwargs):
+        super().__init__()
         self.axes = list(axes)
         self.width = 600.
         self.height = 400.
@@ -149,9 +151,10 @@ class LayoutGrid(Drawable):
         drawaxes: list[Drawable] = []
         for ax in self.axes:
             if isinstance(ax, Series):
+                sty = ax.build_style()
                 a = AxesPlot()
                 a.add(ax)
-                a.colspan, a.rowspan = ax.colspan, ax.rowspan
+                a._style.span = sty.span
                 drawaxes.append(a)
             else:
                 drawaxes.append(ax)
@@ -174,12 +177,13 @@ class LayoutGrid(Drawable):
         cellloc: dict[Drawable, tuple[int, int, int, int]] = {}  # Cell to x, y, x+sp, y+sp
         row, col = (0, 0)
         for ax in drawaxes:
+            sty = ax.build_style()
             while True:
-                axcells = usedcells(row, col, ax.rowspan, ax.colspan)
+                axcells = usedcells(row, col, *sty.span)
                 if cellmap.keys().isdisjoint(axcells):
                     for cell in axcells:
                         cellmap[cell] = ax
-                    cellloc[ax] = row, col, row+ax.rowspan, col+ax.colspan
+                    cellloc[ax] = row, col, row+sty.span[0], col+sty.span[1]
                     break
                 else:
                     row, col = nextcell(row, col)
@@ -215,15 +219,15 @@ class LayoutGrid(Drawable):
             vboxes.append(ViewBox(x, y, width, height))
 
         # Draw a background rectangle over whole grid
-        # TODO: get style from layout, not last axis that was placed
-        if hasattr(ax, 'style') and hasattr(ax.style, 'bgcolor'):  # type: ignore
+        cstyle = self.build_style('Canvas')
+        if cstyle.get_color() not in [None, 'none']:
             canvas.resetviewbox()
             canvas.rect(canvas.viewbox.x,
                         canvas.viewbox.y,
                         canvas.viewbox.w,
                         canvas.viewbox.h,
-                        fill=ax.style.bgcolor,  # type: ignore
-                        strokecolor=ax.style.bgcolor)  # type: ignore
+                        fill=cstyle.color,
+                        strokecolor=cstyle.edge_color)
 
         # Now draw the axes
         for i, ax in enumerate(drawaxes):
@@ -239,13 +243,14 @@ class LayoutGrid(Drawable):
             canvas.resetviewbox()
 
 
-class LayoutEmpty(Drawable):
+class LayoutEmpty(Container):
     ''' Empty placeholder for layout '''
     def __init__(self):
         axis_stack.push_series(self)
         super().__init__()
 
-    def _borders(self, **kwargs):
+    def _borders(self, **kwargs) -> Borders:
+        ''' Calculate borders around axis box to fit the ticks and legend '''
         return Borders(0,0,0,0)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,

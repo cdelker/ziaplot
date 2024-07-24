@@ -1,4 +1,4 @@
-''' BasePlot parent class for Axes '''
+''' Axes parent class for Axes '''
 from __future__ import annotations
 from typing import Sequence, Optional, Literal
 import math
@@ -6,13 +6,11 @@ from functools import lru_cache
 from collections import namedtuple
 import xml.etree.ElementTree as ET
 
-from ..style import styles
-from ..style.styletypes import Style
-from ..series import Series
-from ..style import colors
+from ..style import ColorFade
 from ..canvas import Canvas, ViewBox, DataRange, Borders, PointType
 from .. import text
-from ..drawable import Drawable
+from ..container import Container
+from ..series import Series, Element
 from .. import axis_stack
 
 
@@ -21,27 +19,49 @@ Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
                              'ywidth', 'xrange', 'yrange', 'xminor', 'yminor'])
 
 
-
-class BasePlot(Drawable):
+class Axes(Container):
     ''' Base plotting class
 
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
+        CSS:
+            Axes:
+                color: Background color of axis
+                edge_color: Color for borders
+                edge_width: Width of edges
 
-        Attributes:
-            style: Drawing style
+            Axes.TickX, Axes.TickY:
+                color: Color of tick mark
+                stroke_width: Width of tick mark
+                height: Length of tick mark
+                num_format: String formatter for tick mark
+                pad: Stretch the x/y range by this fraction of a tick 
+                margin: Distance between tick and canvas
+                font: Font
+                font_size: Point size of font
+            Axes.TickXMinor, Axes.TickYMinor:
+                color: Color of minor ticks
+                height: Length of minor ticks
+                stroke_width: Width of minor ticks
+            Axes.GridX, Axes.GridY:
+                color: Color of grid lines ('none' to remove)
+                stroke: Stroke dash type of grid lines
+                stroke_width: Width of grid lines
+            Axes.XName, Axes.YName, Axes.Title:
+                color: Color of axes titles
+                font: Font of axes titles
+                font_size: Font size of axes titles
+                margin: Space around text
+            Axes.Legend:
+                edge_width: Width of legend border
+                font: Font for legend entries
+                font_size: Font size for legend entries
+                pad: distance between legend border and contents
+                radius: Size of bar/pie squares in the legend
     '''
-    def __init__(self, title: Optional[str] = None, xname: Optional[str] = None, yname: Optional[str] = None,
-                 legend: LegendLoc = 'left', style: Optional[Style] = None):
+    def __init__(self):
         super().__init__()
-        self.title = title
-        self.xname = xname
-        self.yname = yname
-        self.style = style if style is not None else styles.Default()
+        self._title: str|None = None
+        self._xname: str|None = None
+        self._yname: str|None = None
         self._xrange: Optional[tuple[float, float]] = None
         self._yrange: Optional[tuple[float, float]] = None
         self._xticknames: Optional[Sequence[str]] = None
@@ -53,12 +73,21 @@ class BasePlot(Drawable):
         self.showxticks = True
         self.showyticks = True
         self.series: list[Series] = []   # List of XY lines/series
-        self.legend = legend
+        self._legend: LegendLoc = 'left'
         self._equal_aspect = False
-        self.width: Optional[float] = None
-        self.height: Optional[float] = None
+        self.linespacing = 1.2
+        self.fullbox = False
+        self.width: float|None = None
+        self.height: float|None = None
+        self._colorfade: ColorFade|None = None
+
         axis_stack.push_series(self)
-    
+
+        self.max_xticks = 9
+        self.max_yticks = 9
+        self.xminordivisions = 0
+        self.yminordivisions = 0
+
     def __enter__(self):
         axis_stack.push_axis(self)
         return self
@@ -74,7 +103,7 @@ class BasePlot(Drawable):
             except NameError:  # Not in Jupyter/IPython
                 pass
 
-    def __contains__(self, series: Drawable):
+    def __contains__(self, series: Series):
         return series in self.series
 
     def __iadd__(self, series: Series):
@@ -83,15 +112,16 @@ class BasePlot(Drawable):
         return self
 
     def _borders(self) -> Borders:
+        ''' Calculate borders around axis box to fit the ticks and legend '''
         return Borders(0, 0, 0, 0)
 
-    def size(self, w: float = 600, h: float = 400) -> BasePlot:
+    def size(self, w: float = 600, h: float = 400) -> Axes:
         ''' Set canvas width and height '''
         self.width = w
         self.height = h
         return self
 
-    def xrange(self, xmin: float, xmax: float) -> BasePlot:
+    def xrange(self, xmin: float, xmax: float) -> Axes:
         ''' Set x-range of data display '''
         self._xrange = xmin, xmax
         self._clearcache()
@@ -103,25 +133,41 @@ class BasePlot(Drawable):
         self._clearcache()
         return self
 
-    def match_y(self, other: BasePlot):
+    def match_y(self, other: Axes):
         ''' Set this axis y range equal to the other axis's y range '''
         r = other.datarange()
         self.yrange(r.ymin, r.ymax)
         return self
 
-    def match_x(self, other: BasePlot):
+    def match_x(self, other: Axes):
         ''' Set this axis x range equal to the other axis's x range '''
         r = other.datarange()
         self.xrange(r.xmin, r.xmax)
         return self
 
-    def equal_aspect(self) -> BasePlot:
+    def equal_aspect(self) -> Axes:
         ''' Set equal aspect ratio on data limits '''
         self._equal_aspect = True
         return self
 
+    def title(self, title: str) -> Axes:
+        ''' Set the title '''
+        self._title = title
+        return self
+
+    def axesnames(self, x: str|None = None, y: str|None = None) -> Axes:
+        ''' Set names for the x and y axes '''
+        self._xname = x
+        self._yname = y
+        return self
+
+    def legend(self, loc: LegendLoc = 'left') -> Axes:
+        ''' Specify legend location '''
+        self._legend = loc
+        return self
+
     def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
-               minor: Optional[Sequence[float]] = None) -> BasePlot:
+               minor: Optional[Sequence[float]] = None) -> Axes:
         ''' Set x axis tick values and names '''
         self._xtickvalues = values
         self._xticknames = names
@@ -130,7 +176,7 @@ class BasePlot(Drawable):
         return self
 
     def yticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
-               minor: Optional[Sequence[float]] = None) -> BasePlot:
+               minor: Optional[Sequence[float]] = None) -> Axes:
         ''' Set y axis tick values and names '''
         self._ytickvalues = values
         self._yticknames = names
@@ -138,13 +184,13 @@ class BasePlot(Drawable):
         self._clearcache()
         return self
 
-    def noxticks(self) -> BasePlot:
+    def noxticks(self) -> Axes:
         ''' Turn off x axis tick marks '''
         self.showxticks = False
         self._clearcache()
         return self
 
-    def noyticks(self) -> BasePlot:
+    def noyticks(self) -> Axes:
         ''' Turn off y axis tick marks '''
         self.showyticks = False
         self._clearcache()
@@ -158,29 +204,52 @@ class BasePlot(Drawable):
                 stops: List of stop positions for each color in the
                     gradient, starting with 0 and ending with 1.
         '''
-        self.style.colorcycle = colors.ColorFade(*clrs, stops=stops)
+        self._colorfade = ColorFade(*clrs, stops=stops)
 
-    def add(self, series: Drawable) -> None:
+    def assign_series_colors(self, series: Sequence[Series]):
+        ''' Assign colors to series that step the colorcycle '''
+        for s in series:
+            s._containerstyle = self._containerstyle
+
+        # Filter ones that don't step colors
+        series = [s for s in series if s.step_color]
+
+        # Apply colorfade if applicable
+        if self._colorfade:
+            colors = self._colorfade.colors(len(series))
+            for s in series:
+                s._style.colorcycle = colors
+
+        # Set the cycle index for each series
+        i = 0
+        for s in series:
+            if s.build_style().color == 'auto':
+                s._style.set_cycle_index(i)
+                i += 1
+
+    def add(self, series: Element) -> None:
         ''' Add a data series to the axis '''
-        assert isinstance(series, Series)
+        assert isinstance(series, Element)
         self.series.append(series)
         self._clearcache()
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
-        width = self.width if self.width else self.style.canvasw
-        height = self.height if self.height else self.style.canvash
-        canvas = Canvas(width, height)
+        sty = self.build_style('Canvas')
+        width = self.width if self.width else sty.width
+        height = self.height if self.height else sty.height
+        canvas = Canvas(width, height, fill=sty.color)
         self._xml(canvas)
         if border:
             attrib = {'x': '0', 'y': '0',
                       'width': '100%', 'height': '100%',
-                      'fill': 'none', 'stroke': 'black'}
+                      'fill': sty.color, 'stroke': sty.edge_color}
             ET.SubElement(canvas.group, 'rect', attrib=attrib)
 
         return canvas.xml()
 
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         self.datarange.cache_clear()
         self._legendsize.cache_clear()
 
@@ -216,23 +285,25 @@ class BasePlot(Drawable):
     def _legendsize(self) -> tuple[float, float]:
         ''' Calculate pixel size of legend '''
         series = [s for s in self.series if s._name]
-        if self.legend is None or len(series) == 0:
+        if self._legend is None or len(series) == 0:
             return 0, 0
+
+        legstyle = self.build_style('Axes.Legend')
         boxh = 0.
         boxw = 0.
-        markw = 40
-        square = 10
-            
+        markw = legstyle.radius
+        square = markw / 4
+
         for s in series:
             width, height = text.text_size(
-                s._name, fontsize=self.style.legend.text.size,
-                font=self.style.legend.text.font)
-            if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz', 'PieSlice']:
+                s._name, fontsize=legstyle.font_size,
+                font=legstyle.font)
+            if s.legend_square:
                 w = square*2
             else:
                 w = markw
-            boxw = max(boxw, w + width + self.style.legend.margin*2)
-        boxh = self.style.legend.margin + len(series)*self.style.legend.text.size*self.style.legend.linespacing
+            boxw = max(boxw, w + width + legstyle.pad*2)
+        boxh = legstyle.pad + len(series)*legstyle.font_size*self.linespacing
         return boxw, boxh
 
     def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
@@ -245,26 +316,30 @@ class BasePlot(Drawable):
                 boxw: Width of legend box
                 boxh: Height of legend box
         '''
+        legsty = self.build_style('Axes.Legend')
+        ytick = self.build_style('Axes.TickX')
+        margin = legsty.margin + legsty.stroke_width
+
         ytop = xright = 0
-        if self.legend == 'left':
+        if self._legend == 'left':
             ytop = axisbox.y + axisbox.h
-            xright = (axisbox.x - self.style.tick.length -
-                      ticks.ywidth - self.style.tick.textofst*2)
-        elif self.legend == 'right':
+            xright = (axisbox.x - ytick.height -
+                      ticks.ywidth - ytick.margin*2 + legsty.stroke_width)
+        elif self._legend == 'right':
             ytop = axisbox.y + axisbox.h
-            xright = axisbox.x + axisbox.w + boxw + self.style.tick.textofst
-        elif self.legend == 'topright':
-            ytop = axisbox.y + axisbox.h - self.style.legend.pad
-            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
-        elif self.legend == 'bottomleft':
-            ytop = axisbox.y + boxh + self.style.legend.pad
-            xright = (axisbox.x + boxw + self.style.legend.pad)
-        elif self.legend == 'bottomright':
-            ytop = axisbox.y + boxh + self.style.legend.pad
-            xright = (axisbox.x + axisbox.w - self.style.legend.pad)
-        else: # self.legend == 'topleft':
-            ytop = axisbox.y + axisbox.h - self.style.legend.pad
-            xright = (axisbox.x + boxw + self.style.legend.pad)
+            xright = axisbox.x + axisbox.w + boxw + margin - legsty.stroke_width*4
+        elif self._legend == 'topright':
+            ytop = axisbox.y + axisbox.h - margin
+            xright = (axisbox.x + axisbox.w - margin)
+        elif self._legend == 'bottomleft':
+            ytop = axisbox.y + boxh + margin
+            xright = (axisbox.x + boxw + margin)
+        elif self._legend == 'bottomright':
+            ytop = axisbox.y + boxh + legsty.margin
+            xright = (axisbox.x + axisbox.w - margin)
+        else: # self._legend == 'topleft':
+            ytop = axisbox.y + axisbox.h - margin
+            xright = (axisbox.x + boxw + margin)
 
         return ytop, xright
 
@@ -278,55 +353,62 @@ class BasePlot(Drawable):
                 ticks: Tick names and positions
         '''
         series = [s for s in self.series if s._name]
-        if self.legend is None or len(series) == 0:
+        if self._legend in [None, 'none'] or len(series) == 0:
             return
 
         boxw, boxh = self._legendsize()
-        markw = 40
-        square = 10
-        margin = self.style.legend.margin
+        legsty = self.build_style('Axes.Legend')
+        legtxt = self.build_style('Axes.LegendText')
+        markw = legsty.radius
+        square = markw / 4
+#        markw = 40
+#        square = 10
+        pad = legsty.pad
 
         ytop, xright = self._legendloc(axisbox, ticks, boxw, boxh)
 
         # Draw the box
         boxl = xright - boxw
-        if self.style.legend.border not in [None, 'none']:
+        if legsty.stroke not in [None, 'none']:
             legbox = ViewBox(boxl, ytop-boxh, boxw, boxh)
             canvas.rect(legbox.x, legbox.y, legbox.w, legbox.h,
-                        strokewidth=1,
-                        strokecolor=self.style.legend.border,
+                        strokewidth=legsty.stroke_width,
+                        strokecolor=legsty.edge_color,
                         rcorner=5,
-                        fill=self.style.legend.fill)
+                        fill=legsty.get_color())
 
         # Draw each line
-        yytext = ytop - self.style.legend.text.size
+        yytext = ytop - legtxt.font_size
         for i, s in enumerate(series):
-            textw, texth = text.text_size(s._name, self.style.legend.text.size)
-            yyline = yytext + self.style.legend.text.size/3
-            if s.__class__.__name__ in ['Histogram', 'Bars', 'BarsHoriz', 'PieSlice']:
-                canvas.text(boxl+square+margin*2, yytext,
+            yyline = yytext + legtxt.font_size/3
+            sstyle = s.build_style()
+            
+            if s.legend_square:
+                canvas.text(boxl+square+pad*2, yytext,
                             s._name,
-                            font=self.style.legend.text.font,
-                            size=self.style.legend.text.size,
-                            color=self.style.legend.text.color,
+                            font=legtxt.font,
+                            size=legtxt.font_size,
+                            color=legtxt.get_color(),
                             halign='left', valign='base')
-                canvas.rect(boxl+margin, yytext, square, square,
-                            fill=s.style.line.color, strokewidth=1)
+                canvas.rect(boxl+pad, yytext, square, square,
+                            fill=sstyle.get_color(),
+                            strokecolor=sstyle.edge_color,
+                            strokewidth=sstyle.edge_width)
 
             else:
                 canvas.text(xright-boxw+markw, yytext,
                             s._name,
-                            color=self.style.axis.color,
-                            font=self.style.legend.text.font,
-                            size=self.style.legend.text.size,
+                            color=legtxt.get_color(),
+                            font=legtxt.font,
+                            size=legsty.font_size,
                             halign='left', valign='base')
-                linebox = ViewBox(boxl+margin, ytop-boxh, markw-margin*2, boxh)
+                linebox = ViewBox(boxl+pad, ytop-boxh, markw-pad*2, boxh)
                 canvas.setviewbox(linebox)  # Clip
-                canvas.path([boxl-margin*2, boxl+markw/2, boxl+markw+margin*2],
+                canvas.path([boxl-pad*2, boxl+markw/2, boxl+markw+pad*2],
                             [yyline, yyline, yyline],
-                            color=s.style.line.color,
-                            width=s.style.line.width,
+                            color=sstyle.get_color(),
+                            width=sstyle.stroke_width,
                             markerid=s._markername,
-                            stroke=s.style.line.stroke)
+                            stroke=sstyle.stroke)
                 canvas.resetviewbox()
-            yytext -= self.style.legend.text.size * self.style.legend.linespacing
+            yytext -= legsty.font_size * self.linespacing
