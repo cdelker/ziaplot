@@ -4,7 +4,7 @@ from typing import Set, Optional
 import xml.etree.ElementTree as ET
 
 from .axes import AxesPlot
-from .series import Series
+from .figure import Figure
 from .canvas import Canvas, ViewBox, Borders
 from .container import Container
 from .drawable import Drawable
@@ -105,13 +105,13 @@ class LayoutGrid(Container):
 
     def __enter__(self):
         ''' Context Manager - put grid on drawing stack '''
-        axis_stack.push_series(self)
+        axis_stack.push_figure(self)
         axis_stack.push_axis(self)
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
         ''' Exit context manager - save to file and display '''
-        axis_stack.push_series(None)
+        axis_stack.push_figure(None)
         axis_stack.pop_axis(self)
         if axis_stack.current_axis() is None:
             # Display if not inside another layout
@@ -147,11 +147,11 @@ class LayoutGrid(Container):
         naxes = len(self.axes)
         ncols = self.columns if self.columns > 0 else naxes
 
-        # Convert Series, etc. to Axes
+        # Convert Figure, etc. to Axes
         drawaxes: list[Drawable] = []
         for ax in self.axes:
-            if isinstance(ax, Series):
-                sty = ax.build_style()
+            if isinstance(ax, Figure):
+                sty = ax._build_style()
                 a = AxesPlot()
                 a.add(ax)
                 a._style.span = sty.span
@@ -177,7 +177,7 @@ class LayoutGrid(Container):
         cellloc: dict[Drawable, tuple[int, int, int, int]] = {}  # Cell to x, y, x+sp, y+sp
         row, col = (0, 0)
         for ax in drawaxes:
-            sty = ax.build_style()
+            sty = ax._build_style()
             while True:
                 axcells = usedcells(row, col, *sty.span)
                 if cellmap.keys().isdisjoint(axcells):
@@ -219,7 +219,7 @@ class LayoutGrid(Container):
             vboxes.append(ViewBox(x, y, width, height))
 
         # Draw a background rectangle over whole grid
-        cstyle = self.build_style('Canvas')
+        cstyle = self._build_style('Canvas')
         if cstyle.get_color() not in [None, 'none']:
             canvas.resetviewbox()
             canvas.rect(canvas.viewbox.x,
@@ -246,7 +246,7 @@ class LayoutGrid(Container):
 class LayoutEmpty(Container):
     ''' Empty placeholder for layout '''
     def __init__(self):
-        axis_stack.push_series(self)
+        axis_stack.push_figure(self)
         super().__init__()
 
     def _borders(self, **kwargs) -> Borders:

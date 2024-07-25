@@ -5,7 +5,7 @@ import math
 
 from ..text import Halign, Valign
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..series import Element
+from ..figure import Element
 
 
 class Text(Element):
@@ -40,18 +40,18 @@ class Text(Element):
         ''' Get x-y datarange '''
         return DataRange(None, None, None, None)
 
-    def logy(self) -> None:
+    def _logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
         self.y = math.log10(self.y)
 
-    def logx(self) -> None:
+    def _logx(self) -> None:
         ''' Convert x values to log(x) '''
         self.x = math.log10(self.x)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         canvas.text(self.x, self.y, self.s,
                     color=sty.get_color(),
                     font=sty.font,

@@ -5,8 +5,8 @@ import math
 from functools import lru_cache
 from collections import namedtuple
 
-from ..series import Series
 from ..canvas import Canvas, Borders, ViewBox
+from ..figure import Figure
 from .polar import AxesPolar
 from .axes import getticks
 from .baseplot import Ticks
@@ -174,7 +174,7 @@ class AxesSmith(AxesPolar):
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
-        xsty = self.build_style('Axes.TickX')
+        xsty = self._build_style('Axes.TickX')
         _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
@@ -202,17 +202,17 @@ class AxesSmith(AxesPolar):
                 canvas: SVG canvas to draw on
                 ticks: Tick names and positions
         '''
-        ysty = self.build_style('Axes.TickY')
-        sty = self.build_style()
+        ysty = self._build_style('Axes.TickY')
+        sty = self._build_style()
         radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - sty.pad*2 - ysty.font_size
         cx = canvas.viewbox.x + canvas.viewbox.w/2
         cy = canvas.viewbox.y + canvas.viewbox.h/2
-        sty = self.build_style()
-        gridsty = self.build_style('Smith.Grid')
-        gridminorsty = self.build_style('Smith.GridMinor')
+        sty = self._build_style()
+        gridsty = self._build_style('Smith.Grid')
+        gridminorsty = self._build_style('Smith.GridMinor')
 
         if self._title:
-            titlesty = self.build_style('Axes.Title')
+            titlesty = self._build_style('Axes.Title')
             radius -= titlesty.font_size/2
             cy -= titlesty.font_size/2
             canvas.text(canvas.viewbox.x + canvas.viewbox.w/2,
@@ -316,9 +316,9 @@ class AxesSmith(AxesPolar):
         canvas.resetviewbox()
         return radius, cx, cy
 
-    def _drawseries(self, canvas: Canvas, radius: float,
+    def _drawfigures(self, canvas: Canvas, radius: float,
                     cx: float, cy: float, ticks: Ticks) -> None:
-        ''' Draw all data series
+        ''' Draw all figures
 
             Args:
                 canvas: SVG canvas to draw on
@@ -326,12 +326,12 @@ class AxesSmith(AxesPolar):
                 cx, cy: canvas center of full circle
                 ticks: Tick definitions
         '''
-        self.assign_series_colors(self.series)
+        self._assign_figure_colors(self.figures)
         databox = ViewBox(-1, -1, 2, 2)
         viewbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         canvas.setviewbox(viewbox)
-        for s in self.series:
-            s._xml(canvas, databox=databox)
+        for f in self.figures:
+            f._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -340,11 +340,11 @@ class AxesSmith(AxesPolar):
         ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
-        self._drawseries(canvas, radius, cx, cy, ticks)
+        self._drawfigures(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)
 
 
-class SmithConstResistance(Series):
+class SmithConstResistance(Figure):
     ''' Smith chart circle of constant Resistance (normalized)
 
         Args:
@@ -355,7 +355,7 @@ class SmithConstResistance(Series):
         Notes:
             Leave xmin and xmax at inf to draw full circle
     '''
-    step_color = True
+    _step_color = True
 
     def __init__(self, resistance: float, xmin: float = -math.inf, xmax: float = math.inf):
         super().__init__()
@@ -366,7 +366,7 @@ class SmithConstResistance(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         arc = const_resist_circle(self.resistance, self.xmin, self.xmax)
         if arc.t1 is not None and arc.t2 is not None:
@@ -381,7 +381,7 @@ class SmithConstResistance(Series):
                           dataview=databox)
 
 
-class SmithConstReactance(Series):
+class SmithConstReactance(Figure):
     ''' Smith chart arcs of constant Reactance (normalized). Draws
         both positive and negative (capacitive and inductive) arcs.
 
@@ -390,7 +390,7 @@ class SmithConstReactance(Series):
             rmax: maximum resistance intersection value
             rmin: minimum resistance intersection value
     '''
-    step_color = True
+    _step_color = True
 
     def __init__(self, reactance: float, rmax: float = math.inf, rmin: float = 0):
         super().__init__()
@@ -401,7 +401,7 @@ class SmithConstReactance(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         arc = const_react_arc(self.reactance, rmax=self.rmax, rmin=self.rmin)
         canvas.arc(arc.x, arc.y, arc.r, theta1=arc.t1, theta2=arc.t2,

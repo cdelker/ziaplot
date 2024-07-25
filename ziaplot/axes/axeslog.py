@@ -81,7 +81,7 @@ class AxesLogY(AxesLog):
         ticks = super()._maketicks()
         yticks, ynames, yminor = logticks(ticks.yticks, divs=self.ylogdivisions)
         yrange = yticks[0], yticks[-1]
-        sty = self.build_style()
+        sty = self._build_style()
 
         ywidth = 0.
         for tick in ynames:
@@ -94,21 +94,21 @@ class AxesLogY(AxesLog):
                       None, yminor)
         return ticks
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all figures to the axis
 
             Args:
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        seriesbackup = self.series
-        self.series = [deepcopy(s) for s in seriesbackup]
-        for s in self.series:
-            s.logy()
+        figurebackup = self.figures
+        self.figures = [deepcopy(f) for f in figurebackup]
+        for f in self.figures:
+            f._logy()
 
-        super()._drawseries(canvas, axisbox, databox)
-        self.series = seriesbackup
+        super()._drawfigures(canvas, axisbox, databox)
+        self.figures = figurebackup
 
 
 class AxesLogX(AxesLog):
@@ -149,21 +149,21 @@ class AxesLogX(AxesLog):
                       ticks.ywidth, xrange, ticks.yrange, xminor, None)
         return ticks
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all figures to the axis
 
             Args:
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        seriesbackup = self.series
-        self.series = [deepcopy(s) for s in seriesbackup]
-        for s in self.series:
-            s.logx()
+        figurebackup = self.figures
+        self.figures = [deepcopy(f) for f in figurebackup]
+        for f in self.figures:
+            f._logx()
 
-        super()._drawseries(canvas, axisbox, databox)
-        self.series = seriesbackup
+        super()._drawfigures(canvas, axisbox, databox)
+        self.figures = figurebackup
 
 
 class AxesLogXY(AxesLog):
@@ -211,7 +211,7 @@ class AxesLogXY(AxesLog):
         xrange = xticks[0], xticks[-1]
         yticks, ynames, yminor = logticks(ticks.yticks, divs=self.ylogdivisions)
         yrange = yticks[0], yticks[-1]
-        sty = self.build_style()
+        sty = self._build_style()
 
         ywidth = 0.
         for tick in ynames:
@@ -223,8 +223,8 @@ class AxesLogXY(AxesLog):
                       xrange, yrange, xminor, yminor)
         return ticks
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all figures in the axis
 
             Args:
                 canvas: SVG canvas to draw on
@@ -232,11 +232,11 @@ class AxesLogXY(AxesLog):
                 databox: ViewBox of data to convert from data to
                     svg coordinates
         '''
-        seriesbackup = self.series
+        figurebackup = self.figures
 
-        self.series = [deepcopy(s) for s in seriesbackup]
-        for s in self.series:
-            s.logx()
-            s.logy()
-        super()._drawseries(canvas, axisbox, databox)
-        self.series = seriesbackup
+        self.figures = [deepcopy(s) for s in figurebackup]
+        for s in self.figures:
+            s._logx()
+            s._logy()
+        super()._drawfigures(canvas, axisbox, databox)
+        self.figures = figurebackup

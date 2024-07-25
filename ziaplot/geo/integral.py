@@ -5,11 +5,11 @@ from typing import Optional
 from .. import util
 from ..calcs import func_intersection
 from ..canvas import Canvas, Borders, ViewBox
-from ..series import Series
+from ..figure import Figure
 from .function import Function
 
 
-class IntegralFill(Series):
+class IntegralFill(Figure):
     ''' Fill between two functions or between a function and the x-axis
 
         Args:
@@ -18,7 +18,7 @@ class IntegralFill(Series):
             x1: Starting x value to fill
             x2: Ending x value to fill
     '''
-    step_color = True
+    _step_color = True
 
     def __init__(self, f: Function, f2: Optional[Function] = None,
                  x1: Optional[float] = None, x2: Optional[float] = None):
@@ -69,7 +69,7 @@ class IntegralFill(Series):
         xy = list(zip(x, y))
         xy = xy + list(reversed(list(zip(x, ymin))))
 
-        sty = self.build_style()
+        sty = self._build_style()
         fill = sty.get_color()
 
         canvas.poly(xy, color=fill,

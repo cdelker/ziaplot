@@ -1,16 +1,13 @@
 ''' Euclidean Lines '''
 from __future__ import annotations
-from typing import Optional, cast
+from typing import Optional
 from dataclasses import dataclass
 import math
 
-from ..util import angle_mean
 from ..canvas import Canvas, Borders, ViewBox
-from ..text import TextPosition, text_align_ofst, Halign, Valign
-from ..series import Element
+from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes, PointType
 from .function import Function
-from .. import axis_stack
 
 
 @dataclass
@@ -120,7 +117,7 @@ class Line(Function):
         return self
 
     def _tangent_slope(self, x: float) -> float:
-        ''' Calculate angle tangent to Series at x '''
+        ''' Calculate angle tangent to line at x '''
         return self.slope
 
     def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
@@ -167,7 +164,7 @@ class Line(Function):
                 canvas: Canvas to draw on
                 databox: Databox within the canvas
         '''
-        textstyle = self.build_style('Line.Text')
+        textstyle = self._build_style('Line.Text')
         for label in self._labels:
             dx, dy, halign, valign = text_align_ofst(
                 label.align, textstyle.margin)
@@ -194,7 +191,7 @@ class Line(Function):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         assert databox is not None
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         x, y = self._endpoints(databox)
         startmark = None
@@ -202,14 +199,14 @@ class Line(Function):
         if self.startmark:
             startmark = canvas.definemarker(self.startmark,
                                             sty.radius,
-                                            sty.color,
+                                            sty.get_color(),
                                             sty.edge_color,
                                             sty.edge_width,
                                             orient=True)
         if self.endmark:
             endmark = canvas.definemarker(self.endmark,
                                             sty.radius,
-                                            sty.color,
+                                            sty.get_color(),
                                             sty.edge_color,
                                             sty.edge_width,
                                           orient=True)
@@ -224,7 +221,7 @@ class Line(Function):
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
                                           sty.radius,
-                                          sty.color,
+                                          sty.get_color(),
                                           sty.edge_color,
                                           sty.edge_width,
                                           orient=True)
@@ -319,143 +316,3 @@ class Vector(Segment):
         x = d * math.cos(theta)
         y = d * math.sin(theta)
         return cls(x, y)
-
-
-class Angle(Element):
-    ''' Draw angle between two Lines/Segments '''
-    def __init__(self, line1: Line, line2: Line, quad: int = 1, arcs: int = 1):
-        super().__init__()
-        self.line1 = line1
-        self.line2 = line2
-        self.quad = quad
-        self.arcs = arcs
-        self._label: Optional[LineLabel] = None
-        self.square_right = True
-
-    def label(self, label: str, color: Optional[str] = None,
-              size: Optional[float] = None) -> 'Angle':
-        self._label = LineLabel(label, color=color, size=size)
-        return self
-
-    def color(self, color: str) -> 'Angle':
-        ''' Sets the color of the angle arc '''
-        self._style.color = color
-        return self
-
-    def strokewidth(self, width: float) -> 'Angle':
-        ''' Sets the strokewidth of the angle arc '''
-        self._style.stroke_width = width
-        return self
-
-    def radius(self, radius: float, text_radius: Optional[float] = None) -> 'Angle':
-        ''' Sets the radius of the angle arc '''
-        self._style.radius = radius
-        if text_radius:
-            self._style.margin = (text_radius, text_radius)
-        return self
-
-    @classmethod
-    def to_zero(cls, line: Line, quad: int = 1):
-        ''' Create angle between line and y=0 '''
-        axis_stack.pause = True
-        line2 = Line((0, 0), 0)
-        axis_stack.pause = False
-        return cls(line, line2, quad=quad)
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        m1, m2 = self.line1.slope, self.line2.slope
-        b1, b2 = self.line1.intercept, self.line2.intercept
-
-        # Point of intersection
-        x = (b2 - b1) / (m1 - m2)
-        y = self.line1.y(x)
-        if not math.isfinite(x):
-            x = self.line1.point[0]
-            y = self.line1.y(x)
-        if not math.isfinite(y):
-            y = self.line2.y(x)
-
-        theta1 = math.atan(m1)
-        theta2 = math.atan(m2)
-
-        if m1 < m2:
-            theta1, theta2 = theta2, theta1
-
-        if self.quad == 2:
-            theta2 += math.pi
-            theta1 += math.pi
-            theta2, theta1 = theta1, theta2
-
-        elif self.quad == 3:
-            theta1 += math.pi
-        elif self.quad == 4:
-            theta2, theta1 = theta1, theta2
-        else:
-            theta2 += math.pi
-
-        theta1 = (theta1 + math.tau) % math.tau
-        theta2 = (theta2 + math.tau) % math.tau
-
-        # Calculate radius of angle arc in data coordinates
-        assert databox is not None
-        sty = self.build_style()
-    
-        r = sty.radius * databox.w / canvas.viewbox.w
-        dtheta = abs(theta1 - theta2) % math.pi
-        if self.square_right and math.isclose(dtheta, math.pi/2):
-            # Right Angle
-            r2 = r / math.sqrt(2)
-            xpath = [x + r2 * math.cos(theta1),
-                     x + r * math.cos(theta1+math.pi/4),
-                     x + r2 * math.cos(theta2)]
-            ypath = [y + r2 * math.sin(theta1),
-                     y + r * math.sin(theta1+math.pi/4),
-                     y + r2 * math.sin(theta2)]
-            canvas.path(xpath, ypath,
-                        color=sty.color,
-                        width=sty.stroke_width,
-                        dataview=databox
-                        )
-        else:
-            dradius = sty.margin * databox.w / canvas.viewbox.w
-            for i in range(self.arcs):
-                canvas.arc(x, y, r - i * dradius,
-                        math.degrees(theta1),
-                        math.degrees(theta2),
-                        strokecolor=sty.color,
-                        strokewidth=sty.stroke_width,
-                        dataview=databox
-                        )
-
-        if self._label:
-            textstyle = self.build_style('Angle.Text')
-            r = sty.radius + textstyle.margin
-            color = self._label.color if self._label.color else textstyle.get_color()
-            size = self._label.size if self._label.size else textstyle.font_size
-            labelangle = angle_mean(theta1, theta2)
-            dx = r * math.cos(labelangle)
-            dy = r * math.sin(labelangle)
-
-            if labelangle < math.tau/8 or labelangle > 7*math.tau/8:
-                halign = 'left'
-            elif 3 * math.tau / 8 < labelangle < 5 * math.tau / 8:
-                halign = 'right'
-            else:
-                halign = 'center'
-
-            if math.tau/8 < labelangle < 3 * math.tau / 8:
-                valign = 'bottom'
-            elif 5 * math.tau / 8 < labelangle < 7 * math.tau / 8:
-                valign = 'top'
-            else:
-                valign = 'center'
-
-            canvas.text(x, y, self._label.label,
-                        color=color,
-                        font=textstyle.font,
-                        size=size,
-                        halign=cast(Halign, halign),
-                        valign=cast(Valign, valign),
-                        pixelofst=(dx, dy),
-                        dataview=databox)

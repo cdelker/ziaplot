@@ -8,10 +8,10 @@ from collections import Counter
 from ..text import Halign
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..axes import AxesPlot
-from ..series import Series
+from ..figure import Figure
 
 
-class Bars(Series):
+class Bars(Figure):
     ''' A series of bars to add to an AxesPlot (quantitative x values)
         For qualitative bar chart, use a BarChart instance.
 
@@ -22,7 +22,7 @@ class Bars(Series):
             width: Width of all bars
             align: Bar position in relation to x value
     '''
-    step_color = True
+    _step_color = True
     legend_square = True
 
     def __init__(self, x: Sequence[float], y: Sequence[float], y2: Optional[Sequence[float]] = None,
@@ -45,11 +45,11 @@ class Bars(Series):
             xmin, xmax = min(self.x)-self.width, max(self.x)
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def logy(self) -> None:
+    def _logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
         self.y = [math.log10(y) for y in self.y]
 
-    def logx(self) -> None:
+    def _logx(self) -> None:
         ''' Convert x values to log(x) '''
         self.x = [math.log10(x) for x in self.x]
         self.width = math.log10(self.x[1] - math.log10(self.x[0]))
@@ -57,7 +57,7 @@ class Bars(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         for x, y, y2 in zip(self.x, self.y, self.y2):
             if self.align == 'center':
@@ -88,7 +88,7 @@ class BarsHoriz(Bars):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         for x, y, y2 in zip(self.x, self.y, self.y2):
             if self.align == 'center':
@@ -105,7 +105,7 @@ class BarsHoriz(Bars):
 
 
 class Histogram(Bars):
-    ''' Histogram data series
+    ''' Histogram data
 
         Args:
             x: Data to show as histogram

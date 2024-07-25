@@ -2,7 +2,7 @@
 from typing import Callable
 
 from ..util import linspace
-from ..dataplots import Contour
+from ..discrete import Contour
 from ..style import PointType
 
 

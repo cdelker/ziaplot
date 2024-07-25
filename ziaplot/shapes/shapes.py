@@ -1,15 +1,13 @@
 ''' Basic shapes '''
-
 from __future__ import annotations
 from typing import Optional
 import math
 
-from ..series import Series
+from ..figure import Figure
 from ..canvas import Canvas, Borders, ViewBox, DataRange, PointType
-from ..style.style import Style
 
 
-class Shape(Series):
+class Shape(Figure):
     ''' Filled shape '''
     def color(self, color: str) -> 'Shape':
         ''' Sets the fill color '''
@@ -83,7 +81,7 @@ class Ellipse(Shape):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         canvas.ellipse(self.x, self.y, self.r1, self.r2,
                        theta=self.theta,
                        color=sty.color,
@@ -111,11 +109,14 @@ class Circle(Ellipse):
 
 
 class Rectangle(Shape):
-    ''' A line series of x-y data
+    ''' Draw a rectangle
 
         Args:
-            x: X-values to plot
-            y: Y-values to plot
+            x: lower left x value
+            y: lower left y value
+            width: width of rectangle
+            height: height of rectangle
+            cornerradius: radius of corners
     '''
     def __init__(self, x: float, y: float,
                  width: float, height: float,
@@ -130,7 +131,7 @@ class Rectangle(Shape):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         canvas.rect(self.x, self.y, self.width, self.height,
                     fill=sty.color,
                     strokecolor=sty.edge_color,

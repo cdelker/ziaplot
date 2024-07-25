@@ -5,23 +5,23 @@ import math
 
 from ..calcs import line_intersection, func_intersection, local_min, local_max
 from ..text import TextPosition, text_align_ofst
-from ..style import MarkerTypes, DashTypes, PointType
+from ..style import MarkerTypes, PointType
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..series import Series
+from ..figure import Figure
 from ..shapes import Circle
 from .function import Function
 from .line import Line
 from .bezier import BezierQuad
 
 
-class Point(Series):
+class Point(Figure):
     ''' Point with optional text label
 
         Args:
             x: X-value
             y: Y-value
     '''
-    step_color = False
+    _step_color = False
 
     def __init__(self, x: float, y: float):
         super().__init__()
@@ -39,7 +39,7 @@ class Point(Series):
 
     def marker(self, marker: MarkerTypes, radius: Optional[float] = None,
                orient: bool = False) -> 'Point':
-        ''' Sets the series marker '''
+        ''' Sets the point marker shape and size '''
         self._style.shape = marker
         if radius:
             self._style.radius = radius
@@ -76,11 +76,11 @@ class Point(Series):
         return DataRange(self.x - dx, self.x + dx,
                          self.y - dy, self.y + dy)
 
-    def logx(self) -> None:
+    def _logx(self) -> None:
         ''' Convert x coordinates to log(x) '''
         self.x = math.log10(self.x)
 
-    def logy(self) -> None:
+    def _logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
         self.y = math.log10(self.y)
 
@@ -88,21 +88,21 @@ class Point(Series):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         if self._guidex is not None:
-            style = self.build_style('Point.GuideX')
+            style = self._build_style('Point.GuideX')
             canvas.path([self.x, self.x], [self._guidex, self.y],
                         color=style.get_color(),
                         stroke=style.stroke,
                         width=style.stroke_width,
                         dataview=databox)
         if self._guidey is not None:
-            style = self.build_style('Point.GuideY')
+            style = self._build_style('Point.GuideY')
             canvas.path([self._guidey, self.x], [self.y, self.y],
                         color=style.get_color(),
                         stroke=style.stroke,
                         width=style.stroke_width,
                         dataview=databox)
 
-        sty = self.build_style()
+        sty = self._build_style()
         markname = canvas.definemarker(sty.shape,
                                        sty.radius,
                                        sty.get_color(),
@@ -114,7 +114,7 @@ class Point(Series):
                     dataview=databox)
 
         if self._text:
-            style = self.build_style('Point.Text')
+            style = self._build_style('Point.Text')
             dx, dy, halign, valign = text_align_ofst(
                 self._text_pos, style.margin)
 

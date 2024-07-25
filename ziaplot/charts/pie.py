@@ -1,10 +1,11 @@
+''' Pie Charts '''
 from __future__ import annotations
 from typing import Optional, Literal
 import math
 
 from ..text import Halign, Valign
 from ..axes import Axes, Ticks
-from ..series import Series
+from ..figure import Figure
 from ..canvas import Canvas, Borders, ViewBox
 from .. import axis_stack
 
@@ -12,7 +13,7 @@ from .. import axis_stack
 PieLabelMode = Literal['name', 'percent', 'value']
 
 
-class PieSlice(Series):
+class PieSlice(Figure):
     ''' One slice of a pie.
 
         Args:
@@ -20,7 +21,7 @@ class PieSlice(Series):
                 will be calculated using total value of all
                 the slices.
     '''
-    step_color = True
+    _step_color = True
     legend_square = True
 
     def __init__(self, value: float = 1):
@@ -33,12 +34,13 @@ class PieSlice(Series):
         self._extrude = extrude
         return self
 
-    def edgecolor(self, color: str) -> 'Series':
-        ''' Sets the series stroke/linestyle '''
+    def edgecolor(self, color: str) -> 'PieSlice':
+        ''' Sets the slice stroke/linestyle '''
         self._style.edge_color = color
         return self
 
-    def edgewidth(self, width: float) -> 'Series':
+    def edgewidth(self, width: float) -> 'PieSlice':
+        ''' Set the slice edge width '''
         self._style.stroke_width = width
         return self
 
@@ -116,13 +118,13 @@ class Pie(Axes):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        slices = [s for s in self.series if isinstance(s, PieSlice)]
-        self.assign_series_colors(slices)
+        slices = [f for f in self.figures if isinstance(f, PieSlice)]
+        self._assign_figure_colors(slices)
 
         values = [w.value for w in slices]
         total = sum(values)
         thetas = [v/total*math.pi*2 for v in values]
-        sty = self.build_style()
+        sty = self._build_style()
         cx = canvas.viewbox.x + canvas.viewbox.w/2
         cy = canvas.viewbox.y + canvas.viewbox.h/2
         radius = (min(canvas.viewbox.w, canvas.viewbox.h) / 2 -
@@ -132,7 +134,7 @@ class Pie(Axes):
             radius -= max(w._extrude for w in slices)
 
         if self._title:
-            tsty = self.build_style('Axes.Title')
+            tsty = self._build_style('Axes.Title')
             radius -= tsty.font_size/2
             cy -= tsty.font_size/2
             canvas.text(cx, canvas.viewbox.y+canvas.viewbox.h,
@@ -143,7 +145,7 @@ class Pie(Axes):
 
         if len(slices) == 1:
             slice = slices[0]
-            slicestyle = slice.build_style()
+            slicestyle = slice._build_style()
             canvas.circle(cx, cy, radius,
                           color=slicestyle.get_color(),
                           strokecolor=slicestyle.edge_color,
@@ -158,7 +160,7 @@ class Pie(Axes):
             else:
                 labeltext = ''
             if labeltext:
-                tsty = self.build_style('PieSlice.Text')
+                tsty = self._build_style('PieSlice.Text')
                 canvas.text(cx + radius * math.cos(math.pi/4),
                             cy + radius * math.sin(math.pi/4),
                             labeltext,
@@ -170,7 +172,7 @@ class Pie(Axes):
             theta = -math.pi/2  # Current angle, start at top
             for i, slice in enumerate(slices):
                 thetahalf = theta + thetas[i]/2
-                slicestyle = slice.build_style()
+                slicestyle = slice._build_style()
 
                 if slice._extrude:
                     cxx = cx + slice._extrude * math.cos(thetahalf)
@@ -184,7 +186,7 @@ class Pie(Axes):
                              strokecolor=slicestyle.edge_color,
                              strokewidth=slicestyle.stroke_width)
 
-                tstyle = self.build_style('PieSlice.Text')
+                tstyle = self._build_style('PieSlice.Text')
                 labelx = cxx + (radius+tstyle.margin) * math.cos(thetahalf)
                 labely = cyy - (radius+tstyle.margin) * math.sin(thetahalf)
                 halign: Halign = 'left' if labelx > cx else 'right'

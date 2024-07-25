@@ -51,7 +51,7 @@ class Style:
         if isinstance(self.colorcycle, str):
             self.colorcycle = [self.colorcycle]
 
-    def set_cycle_index(self, i: int) -> None:
+    def _set_cycle_index(self, i: int) -> None:
         self._cycleindex = i
 
     def values(self):

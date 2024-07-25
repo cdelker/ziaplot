@@ -10,7 +10,7 @@ from ..style import ColorFade
 from ..canvas import Canvas, ViewBox, DataRange, Borders, PointType
 from .. import text
 from ..container import Container
-from ..series import Series, Element
+from ..figure import Figure, Element
 from .. import axis_stack
 
 
@@ -72,7 +72,7 @@ class Axes(Container):
         self._ytickminor: Optional[Sequence[float]] = None
         self.showxticks = True
         self.showyticks = True
-        self.series: list[Series] = []   # List of XY lines/series
+        self.figures: list[Figure] = []   # List of geometric figures in the axis
         self._legend: LegendLoc = 'left'
         self._equal_aspect = False
         self.linespacing = 1.2
@@ -81,7 +81,7 @@ class Axes(Container):
         self.height: float|None = None
         self._colorfade: ColorFade|None = None
 
-        axis_stack.push_series(self)
+        axis_stack.push_figure(self)
 
         self.max_xticks = 9
         self.max_yticks = 9
@@ -94,7 +94,7 @@ class Axes(Container):
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         ''' Exit context manager - save to file and display '''
-        axis_stack.push_series(None)
+        axis_stack.push_figure(None)
         axis_stack.pop_axis(self)
         if axis_stack.current_axis() is None:
             # Display if not inside another layout
@@ -103,12 +103,12 @@ class Axes(Container):
             except NameError:  # Not in Jupyter/IPython
                 pass
 
-    def __contains__(self, series: Series):
-        return series in self.series
+    def __contains__(self, figure: Figure):
+        return figure in self.figures
 
-    def __iadd__(self, series: Series):
-        ''' Allow += notation for adding series '''
-        self.add(series)
+    def __iadd__(self, figure: Figure):
+        ''' Allow += notation for adding figures '''
+        self.add(figure)
         return self
 
     def _borders(self) -> Borders:
@@ -196,7 +196,7 @@ class Axes(Container):
         self._clearcache()
         return self
     
-    def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> None:
+    def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> Axes:
         ''' Define the color cycle evenly fading between multiple colors.
 
             Args:
@@ -205,37 +205,38 @@ class Axes(Container):
                     gradient, starting with 0 and ending with 1.
         '''
         self._colorfade = ColorFade(*clrs, stops=stops)
+        return self
 
-    def assign_series_colors(self, series: Sequence[Series]):
-        ''' Assign colors to series that step the colorcycle '''
-        for s in series:
-            s._containerstyle = self._containerstyle
+    def _assign_figure_colors(self, figures: Sequence[Figure]):
+        ''' Assign colors to figure that step the colorcycle '''
+        for f in figures:
+            f._containerstyle = self._containerstyle
 
         # Filter ones that don't step colors
-        series = [s for s in series if s.step_color]
+        figures = [f for f in figures if f._step_color]
 
         # Apply colorfade if applicable
         if self._colorfade:
-            colors = self._colorfade.colors(len(series))
-            for s in series:
+            colors = self._colorfade.colors(len(figures))
+            for s in figures:
                 s._style.colorcycle = colors
 
-        # Set the cycle index for each series
+        # Set the cycle index for each figure
         i = 0
-        for s in series:
-            if s.build_style().color == 'auto':
-                s._style.set_cycle_index(i)
+        for f in figures:
+            if f._build_style().color == 'auto':
+                f._style._set_cycle_index(i)
                 i += 1
 
-    def add(self, series: Element) -> None:
-        ''' Add a data series to the axis '''
-        assert isinstance(series, Element)
-        self.series.append(series)
+    def add(self, figure: Element) -> None:
+        ''' Add a figure to the axis '''
+        assert isinstance(figure, Element)
+        self.figures.append(figure)
         self._clearcache()
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
-        sty = self.build_style('Canvas')
+        sty = self._build_style('Canvas')
         width = self.width if self.width else sty.width
         height = self.height if self.height else sty.height
         canvas = Canvas(width, height, fill=sty.color)
@@ -258,8 +259,8 @@ class Axes(Container):
         ''' Get range of data only '''
         xmin = ymin = math.inf
         xmax = ymax = -math.inf
-        for s in self.series:
-            drange = s.datarange()
+        for f in self.figures:
+            drange = f.datarange()
             if drange.xmin is not None and drange.xmax is not None:
                 xmin = min(drange.xmin, xmin)
                 xmax = max(drange.xmax, xmax)
@@ -284,26 +285,26 @@ class Axes(Container):
     @lru_cache
     def _legendsize(self) -> tuple[float, float]:
         ''' Calculate pixel size of legend '''
-        series = [s for s in self.series if s._name]
-        if self._legend is None or len(series) == 0:
+        figures = [f for f in self.figures if f._name]
+        if self._legend is None or len(figures) == 0:
             return 0, 0
 
-        legstyle = self.build_style('Axes.Legend')
+        legstyle = self._build_style('Axes.Legend')
         boxh = 0.
         boxw = 0.
         markw = legstyle.radius
         square = markw / 4
 
-        for s in series:
-            width, height = text.text_size(
-                s._name, fontsize=legstyle.font_size,
+        for f in figures:
+            width, _ = text.text_size(
+                f._name, fontsize=legstyle.font_size,
                 font=legstyle.font)
-            if s.legend_square:
+            if f.legend_square:
                 w = square*2
             else:
                 w = markw
             boxw = max(boxw, w + width + legstyle.pad*2)
-        boxh = legstyle.pad + len(series)*legstyle.font_size*self.linespacing
+        boxh = legstyle.pad + len(figures)*legstyle.font_size*self.linespacing
         return boxw, boxh
 
     def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
@@ -316,8 +317,8 @@ class Axes(Container):
                 boxw: Width of legend box
                 boxh: Height of legend box
         '''
-        legsty = self.build_style('Axes.Legend')
-        ytick = self.build_style('Axes.TickX')
+        legsty = self._build_style('Axes.Legend')
+        ytick = self._build_style('Axes.TickX')
         margin = legsty.margin + legsty.stroke_width
 
         ytop = xright = 0
@@ -352,17 +353,15 @@ class Axes(Container):
                     placed outside axis.
                 ticks: Tick names and positions
         '''
-        series = [s for s in self.series if s._name]
-        if self._legend in [None, 'none'] or len(series) == 0:
+        figures = [f for f in self.figures if f._name]
+        if self._legend in [None, 'none'] or len(figures) == 0:
             return
 
         boxw, boxh = self._legendsize()
-        legsty = self.build_style('Axes.Legend')
-        legtxt = self.build_style('Axes.LegendText')
+        legsty = self._build_style('Axes.Legend')
+        legtxt = self._build_style('Axes.LegendText')
         markw = legsty.radius
         square = markw / 4
-#        markw = 40
-#        square = 10
         pad = legsty.pad
 
         ytop, xright = self._legendloc(axisbox, ticks, boxw, boxh)
@@ -379,9 +378,9 @@ class Axes(Container):
 
         # Draw each line
         yytext = ytop - legtxt.font_size
-        for i, s in enumerate(series):
+        for i, s in enumerate(figures):
             yyline = yytext + legtxt.font_size/3
-            sstyle = s.build_style()
+            sstyle = s._build_style()
             
             if s.legend_square:
                 canvas.text(boxl+square+pad*2, yytext,

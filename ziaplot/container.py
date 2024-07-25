@@ -2,13 +2,11 @@
 from .drawable import Drawable
 from .style.style import Style
 from .style.css import CssStyle, parse_css, merge_css
-from .style import theme
+from .style.themes import zptheme
 
 
 class Container(Drawable):
     ''' Drawing container base class (either Axes or Layouts) '''
-    style_default = Style()
-
     def __init__(self):
         super().__init__()
         self._containerstyle = CssStyle()
@@ -25,15 +23,16 @@ class Container(Drawable):
         self._containerstyle = parse_css(css)
         return self
 
-    def build_style(self, name: str|None = None) -> Style:
+    def _build_style(self, name: str|None = None) -> Style:
         ''' Build the Style '''
         if name is None:
             classes = [p.__qualname__ for p in self.__class__.mro()]
         else:
             classes = [name, '*']
 
-        return theme.style(*classes,
-                           cssid=self._cssid,
-                           cssclass=self._csscls,
-                           container=self._containerstyle,
-                           instance=self._style)
+        return zptheme.style(
+            *classes,
+            cssid=self._cssid,
+            cssclass=self._csscls,
+            container=self._containerstyle,
+            instance=self._style)

@@ -7,13 +7,13 @@ from ..util import zrange
 from ..style import ColorFade
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..axes import AxesPlot
-from ..series import Series
+from ..figure import Figure
 
 
 ColorBarPos = Literal['top', 'right', 'bottom', 'left']
 
 
-class Contour(Series):
+class Contour(Figure):
     ''' Contour Plot
 
         Args:
@@ -48,7 +48,7 @@ class Contour(Series):
 
     def get_color_steps(self) -> list[str]:
         ''' Get colors for each level '''
-        sty = self.build_style()
+        sty = self._build_style()
         if len(sty.colorcycle) > 2:
             return sty.colorcycle
         return ColorFade(*sty.colorcycle).colors(self.nlevels)
@@ -75,7 +75,7 @@ class Contour(Series):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         segments = self._build_contours()
-        sty = self.build_style()
+        sty = self._build_style()
         colors = self.get_color_steps()
         for (xsegs, ysegs), color in zip(segments, colors):
             if len(xsegs) > 0:
@@ -179,7 +179,7 @@ class Contour(Series):
         ''' Draw colorbar on axis '''
         nlevels = self.nlevels
         colorfade = self.get_color_steps()
-        cstyle = self.build_style('Contour.ColorBar')
+        cstyle = self._build_style('Contour.ColorBar')
         width = cstyle.width
 
         if self.colorbar in ['top', 'bottom']:

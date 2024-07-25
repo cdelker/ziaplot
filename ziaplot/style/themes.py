@@ -154,7 +154,7 @@ THEME_BASE = ''' * {
         font_size: 14;
         margin: 4;    
     }
-    Series {
+    Figure {
         color: auto;
         stroke_width: 2;
         colorcycle: #ba0c2f, #ffc600, #007a86, #ed8b00,
@@ -240,7 +240,7 @@ THEME_BASE = ''' * {
 
 THEME_LOBO = THEME_BASE
 THEME_TAFFY = '''
-    Series {
+    Figure {
         colorcycle: #00a4bd, #ff7a59, #00bda5,
                     #f2547d, #6a78d1, #f5C26b,
                     #516f90, #99acc2, #cc3399,
@@ -260,6 +260,24 @@ THEME_DARK = '''
         color: black;
         edge_color: #cccccc;
     }
+    Axes.GridX {
+        color: #555555;
+    }
+    Axes.GridY {
+        color: #555555;
+    }
+    BarChart.GridX {
+        color: #555555;
+    }
+    BarChart.GridY {
+        color: #555555;
+    }
+    BarChartHoriz.GridX {
+        color: #555555;
+    }
+    BarChartHoriz.GridY {
+        color: #555555;
+    }
 '''
 
 
@@ -268,7 +286,7 @@ THEME_PASTEL = '''
          color: #444444;
          edge_color: #555555;
     }
-    Series {
+    Figure {
         colorcycle: #c6579A, #ffbe9f, #f1e6b2,
                     #b6cfae, #a7e6d7, #9AdBe8,
                     #decde7, #ffa1cb, #9a98b5,
@@ -284,7 +302,7 @@ THEME_PASTEL = '''
 
 
 THEME_BOLD = '''
-    Series {
+    Figure {
         colorcycle: red, orange, yellow, #338833,
                     #00bb00, blue, #00eeee,
                     violet, purple, silver;
@@ -297,6 +315,28 @@ THEME_BOLD = '''
 
 THEME_DARKTAFFY = THEME_DARK + THEME_TAFFY
 THEME_DARKBOLD = THEME_DARK + THEME_BOLD
+
+CSS_BLACKWHITE = '''
+    Axes {
+        color: none;
+    }
+    Figure {
+        colorcycle: black;
+    }
+    Point {
+        color: black;
+    }
+    '''
+
+CSS_NOGRID = '''
+    Axes.GridX {
+        color: none;
+    }
+    Axes.GridY {
+        color: none;
+    }
+'''
+
 
 
 class Theme:
@@ -348,7 +388,7 @@ class Theme:
                 cssid: The id of the drawable, located with # in css
                 cssclass: The classid of the drawable, located with . in css
                 container: Styles applied to the container (Axes)
-                instance: Styles applied to the instance (Series)
+                instance: Styles applied to the instance Figure
         '''
         # Start with base theme to fill everything in
         style = self.theme.extract('*')
@@ -381,4 +421,19 @@ class Theme:
 
 zptheme = Theme()
 
-CSS_BLACK = 'Series{colorcycle: black;}'
+
+
+def css(css: str) -> None:
+    ''' Set global CSS styling '''
+    zptheme.css(css)
+
+
+def theme(name: str) -> None:
+    ''' Activate a theme by name. Use `list_themes` to see list of available
+        theme names.
+    '''
+    zptheme.use(name)
+
+def theme_list() -> list[str]:
+    ''' Get a list of available themes '''
+    return list(zptheme.THEMES.keys())

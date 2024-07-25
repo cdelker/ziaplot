@@ -6,18 +6,18 @@ import math
 
 from .. import util
 from ..canvas import Canvas, Borders, ViewBox
-from ..series import Series
+from ..figure import Figure
 from ..style import MarkerTypes, PointType
 from ..axes import AxesPlot
 
 
-class BezierQuad(Series):
+class BezierQuad(Figure):
     ''' Quadratic Bezier Curve
 
         Args:
             p1, p2, p3: Control points for curve
     '''
-    step_color = True
+    _step_color = True
 
     def __init__(self, p1: PointType, p2: PointType, p3: PointType):
         super().__init__()
@@ -58,7 +58,7 @@ class BezierQuad(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         startmark = None
         endmark = None

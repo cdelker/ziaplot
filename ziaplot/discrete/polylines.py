@@ -1,5 +1,4 @@
-''' Data Series Lines '''
-
+''' Discrete Data Figures '''
 from __future__ import annotations
 from typing import Optional, Sequence
 import xml.etree.ElementTree as ET
@@ -7,14 +6,13 @@ import math
 
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..text import TextPosition, text_align_ofst
 from ..axes import AxesPlot
-from ..series import Series
+from ..figure import Figure
 
 
-class XySeries(Series):
-    ''' Base class for XY-based series '''
-    step_color = True
+class Discrete(Figure):
+    ''' Base class for figures defined by X, Y pairs '''
+    _step_color = True
 
     def __init__(self, x: Sequence[float], y: Sequence[float]):
         super().__init__()
@@ -26,16 +24,16 @@ class XySeries(Series):
         ''' Get range of data '''
         return DataRange(min(self.x), max(self.x), min(self.y), max(self.y))
 
-    def logy(self) -> None:
+    def _logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
         self.y = [math.log10(y) for y in self.y]
 
-    def logx(self) -> None:
+    def _logx(self) -> None:
         ''' Convert x values to log(x) '''
         self.x = [math.log10(x) for x in self.x]
 
-    def marker(self, marker: MarkerTypes, radius: Optional[float] = None, orient: bool = False) -> 'Series':
-        ''' Sets the series marker '''
+    def marker(self, marker: MarkerTypes, radius: Optional[float] = None, orient: bool = False) -> Figure:
+        ''' Sets the figure marker '''
         self._style.shape = marker
         self._style.radius = radius
         self._marker_orient = orient
@@ -48,8 +46,8 @@ class XySeries(Series):
         return ax.svgxml(border=border)
 
 
-class PolyLine(XySeries):
-    ''' A polyline series of x-y data, points connected by line segments
+class PolyLine(Discrete):
+    ''' A polyline of x-y data, points connected by line segments
 
         Args:
             x: X-values to plot
@@ -58,7 +56,7 @@ class PolyLine(XySeries):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         markname = None
         if sty.shape not in [None, 'none']:
             markname = canvas.definemarker(sty.shape,
@@ -66,7 +64,7 @@ class PolyLine(XySeries):
                                            sty.get_color(),
                                            sty.edge_color,
                                            sty.edge_width,
-                                           orient=False)
+                                           orient=self._marker_orient)
             self._markername = markname  # For legend
 
         canvas.path(self.x, self.y,
@@ -77,24 +75,24 @@ class PolyLine(XySeries):
                     dataview=databox)
 
 
-class Scatter(XySeries):
-    ''' An X-Y Scatter series of data
+class Scatter(Discrete):
+    ''' An X-Y Scatter data
 
         Args:
             x: X-values to plot
             y: Y-values to plot
     '''
-    step_color = True
+    _step_color = True
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         markname = canvas.definemarker(sty.shape,
                                        sty.radius,
                                        sty.get_color(),
                                        sty.edge_color,
                                        sty.edge_width,
-                                       orient=False)
+                                       orient=self._marker_orient)
         self._markername = markname  # For legend
 
         canvas.path(self.x, self.y,
@@ -141,10 +139,10 @@ class ErrorBar(PolyLine):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         color = sty.get_color()
         if self.yerr is not None:
-            ymarkstyle = self.build_style('ErrorBar.MarkerYError')
+            ymarkstyle = self._build_style('ErrorBar.MarkerYError')
             ycolor = color if ymarkstyle.color == 'auto' else ymarkstyle.get_color()
             yerrmark = canvas.definemarker(ymarkstyle.shape,
                                            ymarkstyle.radius,
@@ -161,7 +159,7 @@ class ErrorBar(PolyLine):
                             endmarker=yerrmark,
                             dataview=databox)
         if self.xerr is not None:
-            xmarkstyle = self.build_style('ErrorBar.MarkerXError')
+            xmarkstyle = self._build_style('ErrorBar.MarkerXError')
             xcolor = color if xmarkstyle.color == 'auto' else xmarkstyle.get_color()
             xerrmark = canvas.definemarker(xmarkstyle.shape,
                                            xmarkstyle.radius,
@@ -181,7 +179,7 @@ class ErrorBar(PolyLine):
         super()._xml(canvas, databox, borders)
 
 
-class LineFill(XySeries):
+class LineFill(Discrete):
     ''' A filled line/region
 
         Args:
@@ -205,7 +203,7 @@ class LineFill(XySeries):
                          max(max(self.ymax), max(self.ymin)))
 
     def color(self, color: str) -> 'LineFill':
-        ''' Sets the series color '''
+        ''' Sets the edge color '''
         self._style.edge_color = color
         return self
 
@@ -231,7 +229,7 @@ class LineFill(XySeries):
         xy = list(zip(self.x, self.ymax))
         xy = xy + list(reversed(list(zip(self.x, self.ymin))))
 
-        sty = self.build_style()
+        sty = self._build_style()
         canvas.poly(xy, color=sty.get_color(),
                     alpha=sty.opacity,
                     strokecolor='none',
@@ -247,93 +245,6 @@ class LineFill(XySeries):
                     color=sty.edge_color,
                     width=sty.stroke_width,
                     dataview=databox)
-
-
-class Arrow(XySeries):
-    ''' An arrow pointing to an XY location, with optional
-        text annotation
-
-        Args:
-            xy: XY position to point at
-            xytail: XY-position of arrow tail
-            s: String to draw at tail of arrow
-            strofst: XY offset between text and arrow tail
-            marker: Arrowhead marker shape
-            tailmarker: Arrowhead tail marker
-    '''
-    step_color = False
-
-    def __init__(self, xy: Sequence[float], xytail: Sequence[float],
-                 marker: MarkerTypes = 'arrow',
-                 tailmarker: Optional[MarkerTypes] = None):
-        self.xy = xy
-        self.xytail = xytail
-        self._text: Optional[str] = None
-        self._text_pos: Optional[TextPosition] = None
-
-        super().__init__([self.xytail[0], self.xy[0]], [self.xytail[1], self.xy[1]])
-        self._tailmarker = tailmarker
-        self._endmarker = marker
-
-    def label(self, text: str,
-              pos: TextPosition = 'NE') -> 'Arrow':
-        ''' Add a text label to the point
-
-            Args:
-                text: Label
-                text_pos: Position for label with repsect
-                    to the point (N, E, S, W, NE, NW, SE, SW)
-        '''
-        self._text = text
-        self._text_pos = pos
-        return self
-
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        sty = self.build_style()
-        color = sty.get_color()
-        edgecolor = color
-        if sty.edge_color not in [None, 'auto']:
-            edgecolor = sty.edge_color
-
-        tailmark = None
-        endmark = None
-        if self._tailmarker:
-            tailmark = canvas.definemarker(self._tailmarker,
-                                           sty.radius,
-                                           color,
-                                           edgecolor,
-                                           sty.edge_width,
-                                           orient=True)
-        if self._endmarker:
-            endmark = canvas.definemarker(self._endmarker,
-                                          sty.radius,
-                                          color,
-                                          edgecolor,
-                                          sty.edge_width,
-                                          orient=True)
-        canvas.path(self.x, self.y,
-                    stroke=sty.stroke,
-                    color=color,
-                    width=sty.stroke_width,
-                    startmarker=tailmark,
-                    endmarker=endmark,
-                    dataview=databox)
-
-        if self._text:
-            dx, dy, halign, valign = text_align_ofst(
-                self._text_pos, sty.margin)
-
-            tsty = self.build_style('Point.Text')
-            canvas.text(self.xytail[0], self.xytail[1], self._text,
-                        color=sty.get_color(),
-                        font=tsty.font,
-                        size=tsty.font_size,
-                        halign=halign,
-                        valign=valign,
-                        pixelofst=(dx, dy),
-                        dataview=databox)
 
 
 Plot = PolyLine

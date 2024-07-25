@@ -2,30 +2,29 @@
 from __future__ import annotations
 from typing import Optional, Sequence, Union
 
-from ..drawable import Drawable
-from ..series import Series
-from ..dataplots import Bars, BarsHoriz
+from ..figure import Figure, Element
+from ..discrete import Bars, BarsHoriz
 from ..axes import AxesPlot
 from ..style import Style
 from ..canvas import Canvas, Borders, ViewBox
 from .. import axis_stack
 
 
-class Bar(Series):
+class Bar(Figure):
     ''' A single bar in a BarChart
 
         Args:
             value: value assigned to this bar.
     '''
-    step_color = True
+    _step_color = True
 
     def __init__(self, value: float = 1):
-        super().__init__()
         self.value = value
+        super().__init__()
 
 
 class BarChart(AxesPlot):
-    ''' A vertical bar chart with a single data series.
+    ''' A vertical bar chart with a single bar series.
         Independent variable is qualitative.
 
         Note:
@@ -37,9 +36,8 @@ class BarChart(AxesPlot):
         self._horiz = False
         self._barwidth = 1.  # Let each bar have data-width = 1
         self._legend = None
-        axis_stack.push_series(None)
     
-    def add(self, bar: Drawable) -> None:
+    def add(self, bar: Element) -> None:
         ''' Add a single bar '''
         assert isinstance(bar, Bar)
         axis_stack.pause = True
@@ -54,7 +52,7 @@ class BarChart(AxesPlot):
         super().add(newbar)
         axis_stack.pause = False
 
-    def build_style(self, name: str | None = None) -> Style:
+    def _build_style(self, name: str | None = None) -> Style:
         ''' Build the Style '''
         if self._horiz:
             if name == 'Axes.TickX':
@@ -70,7 +68,7 @@ class BarChart(AxesPlot):
                 name = 'BarChart.GridX'
             elif name == 'Axes.GridY':
                 name = 'BarChart.GridY'
-        return super().build_style(name)
+        return super()._build_style(name)
 
     @classmethod
     def fromdict(cls, bars: dict[str, float]) -> 'BarChart':
@@ -85,13 +83,13 @@ class BarChart(AxesPlot):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         names = [bar._name for bar in self.barlist]
         if self._horiz:
-            series = self.series[::-1]
+            figures = self.figures[::-1]
             names = names[::-1]
         else:
-            series = self.series
+            figures = self.figures
 
         N = len(names)
         tickpos = [i * (self._barwidth + sty.margin) for i in range(N)]
@@ -103,7 +101,7 @@ class BarChart(AxesPlot):
             self.xticks(tickpos, names)
 
         # Set bar x positions
-        for tick, bar in zip(tickpos, self.series):
+        for tick, bar in zip(tickpos, figures):
             assert isinstance(bar, (Bars, BarsHoriz))
             bar.x = (tick,)
         super()._xml(canvas, databox, borders)
@@ -121,13 +119,13 @@ class BarChartHoriz(BarChart):
         self._horiz = True
 
 
-class BarSeries(Series):
+class BarSeries(Figure):
     ''' A series of bars across all groups
 
         Args:
             values: values assigned to this bar series.
     '''
-    step_color = True
+    _step_color = True
 
     def __init__(self, *values: float):
         self.values = values
@@ -149,9 +147,8 @@ class BarChartGrouped(AxesPlot):
         self.groups = groups
         self._horiz = False
         self._barwidth = 1.  # Let each bar have data-width = 1
-        axis_stack.push_series(self)
 
-    def add(self, barseries: Drawable) -> None:
+    def add(self, barseries: Element) -> None:
         ''' Add a series of bars to the chart '''
         assert isinstance(barseries, BarSeries)
         axis_stack.pause = True
@@ -168,7 +165,7 @@ class BarChartGrouped(AxesPlot):
         super().add(bar)
         axis_stack.pause = False
 
-    def build_style(self, name: str | None = None) -> Style:
+    def _build_style(self, name: str | None = None) -> Style:
         ''' Build the Style '''
         if self._horiz:
             if name == 'Axes.TickX':
@@ -184,7 +181,7 @@ class BarChartGrouped(AxesPlot):
                 name = 'BarChart.GridX'
             elif name == 'Axes.GridY':
                 name = 'BarChart.GridY'
-        return super().build_style(name)
+        return super()._build_style(name)
 
     @classmethod
     def fromdict(cls, bars: dict[str, Sequence[float]],
@@ -200,7 +197,7 @@ class BarChartGrouped(AxesPlot):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        sty = self.build_style()
+        sty = self._build_style()
         num_series = len(self.barlist)
         num_groups = len(self.groups)
         bargap = sty.margin
@@ -212,7 +209,7 @@ class BarChartGrouped(AxesPlot):
             self.yticks(yticks, self.groups[::-1])
             self.yrange(0, totwidth)
             # Set bar x positions
-            for i, bar in enumerate(self.series[::-1]):
+            for i, bar in enumerate(self.figures[::-1]):
                 assert isinstance(bar, (Bars, BarsHoriz))            
                 x = [bargap + self._barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x
@@ -222,7 +219,7 @@ class BarChartGrouped(AxesPlot):
             self.xrange(0, totwidth)
 
             # Set bar x positions
-            for i, bar in enumerate(self.series):
+            for i, bar in enumerate(self.figures):
                 assert isinstance(bar, (Bars, BarsHoriz))            
                 x = [bargap + self._barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x

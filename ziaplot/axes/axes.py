@@ -1,4 +1,4 @@
-''' Axes for plotting one or more data series '''
+''' Axes for plotting one or more geometric figures '''
 
 from __future__ import annotations
 from typing import Sequence, Optional
@@ -64,8 +64,8 @@ class AxesPlot(Axes):
             Returns:
                 ticks: Tick names and positions
         '''
-        xsty = self.build_style('Axes.TickX')
-        ysty = self.build_style('Axes.TickY')
+        xsty = self._build_style('Axes.TickX')
+        ysty = self._build_style('Axes.TickY')
 
         xmin, xmax, ymin, ymax = self.datarange()
         if self._xtickvalues:
@@ -121,12 +121,16 @@ class AxesPlot(Axes):
             yminor = None
 
         # Add a bit of padding to data range
-        dx = xticks[1]-xticks[0]
-        dy = yticks[1]-yticks[0]
+        dx = xsty.pad * (xmax - xmin)
+        dy = ysty.pad * (ymax - ymin)
+        if len(xticks) > 1:
+            dx = xticks[1]-xticks[0]
+        if len(yticks) > 1:
+            dy = yticks[1]-yticks[0]
         xrange = (xmin - dx*xsty.pad,
-                  xmax + dx*xsty.pad)
+                xmax + dx*xsty.pad)
         yrange = (ymin - dy*ysty.pad,
-                  ymax + dy*ysty.pad)
+                ymax + dy*ysty.pad)
 
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)
@@ -135,9 +139,9 @@ class AxesPlot(Axes):
     @lru_cache
     def _borders(self) -> Borders:
         ''' Calculate borders around axis box to fit the ticks and legend '''
-        xsty = self.build_style('Axes.TickX')
-        ysty = self.build_style('Axes.TickY')
-        lsty = self.build_style('Axes.Legend')
+        xsty = self._build_style('Axes.TickX')
+        ysty = self._build_style('Axes.TickY')
+        lsty = self._build_style('Axes.Legend')
 
         ticks = self._maketicks()
         legw, _ = self._legendsize()
@@ -146,7 +150,7 @@ class AxesPlot(Axes):
         else:
             leftborder = 0
         if self._yname:
-            nsty = self.build_style('Axes.YName')
+            nsty = self._build_style('Axes.YName')
             _, h = text.text_size(self._yname, fontsize=nsty.font_size,
                                   font=nsty.font)
             leftborder += h + ysty.margin
@@ -158,14 +162,14 @@ class AxesPlot(Axes):
         else:
             botborder = 0
         if self._xname:
-            nsty = self.build_style('Axes.XName')
+            nsty = self._build_style('Axes.XName')
             botborder += text.text_size(
                 self._xname, fontsize=nsty.font_size,
                 font=nsty.font).height + 2
 
         topborder = lsty.edge_width + ysty.font_size / 2
         if self._title:
-            nsty = self.build_style('Axes.Title')
+            nsty = self._build_style('Axes.Title')
             topborder += text.text_size(
                 self._title, fontsize=nsty.font_size,
                 font=nsty.font).height
@@ -184,7 +188,7 @@ class AxesPlot(Axes):
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
         '''
-        sty = self.build_style()
+        sty = self._build_style()
         canvas.newgroup()
         bgcolor = sty.get_color()
         if bgcolor:
@@ -210,11 +214,11 @@ class AxesPlot(Axes):
                 axisbox: ViewBox of axis within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        sty = self.build_style()
-        xsty = self.build_style('Axes.TickX')
-        ysty = self.build_style('Axes.TickY')
-        gridx_sty = self.build_style('Axes.GridX')
-        gridy_sty = self.build_style('Axes.GridY')
+        sty = self._build_style()
+        xsty = self._build_style('Axes.TickX')
+        ysty = self._build_style('Axes.TickY')
+        gridx_sty = self._build_style('Axes.GridX')
+        gridy_sty = self._build_style('Axes.GridY')
 
         canvas.newgroup()
         xform = Transform(databox, axisbox)
@@ -241,7 +245,7 @@ class AxesPlot(Axes):
                             halign='center', valign='top')
 
                 if ticks.xminor:
-                    xsty_minor = self.build_style('Axes.TickXMinor')
+                    xsty_minor = self._build_style('Axes.TickXMinor')
                     for xminor in ticks.xminor:
                         if xminor in ticks.xticks:
                             continue  # Don't double-draw
@@ -275,7 +279,7 @@ class AxesPlot(Axes):
                             halign='right', valign='center')
     
                 if ticks.yminor:
-                    ysty_minor = self.build_style('Axes.TickYMinor')
+                    ysty_minor = self._build_style('Axes.TickYMinor')
                     for yminor in ticks.yminor:
                         if yminor in ticks.yticks:
                             continue  # Don't double-draw
@@ -286,7 +290,7 @@ class AxesPlot(Axes):
                                     width=ysty_minor.stroke_width)
 
         if self._xname:
-            sty = self.build_style('Axes.XName')
+            sty = self._build_style('Axes.XName')
             centerx = axisbox.x + axisbox.w/2
             namey = (axisbox.y - xsty.font_size -
                      xsty.height - xsty.margin)
@@ -297,7 +301,7 @@ class AxesPlot(Axes):
                         halign='center', valign='top')
 
         if self._yname:
-            sty = self.build_style('Axes.YName')
+            sty = self._build_style('Axes.YName')
             centery = axisbox.y + axisbox.h/2
             namex = (axisbox.x - ysty.height -
                      ticks.ywidth - ysty.font_size)
@@ -317,7 +321,7 @@ class AxesPlot(Axes):
         '''
         canvas.newgroup()
         if self._title:
-            sty = self.build_style('Axes.Title')
+            sty = self._build_style('Axes.Title')
             centerx = axisbox.x + axisbox.w/2
             canvas.text(centerx, axisbox.y+axisbox.h, self._title,
                         color=sty.get_color(),
@@ -325,8 +329,8 @@ class AxesPlot(Axes):
                         size=sty.font_size,
                         halign='center', valign='bottom')
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all figures to the axis
 
             Args:
                 canvas: SVG canvas to draw on
@@ -334,10 +338,10 @@ class AxesPlot(Axes):
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
         canvas.setviewbox(axisbox)
-        self.assign_series_colors(self.series)
+        self._assign_figure_colors(self.figures)
 
-        for s in self.series:
-            s._xml(canvas, databox=databox)
+        for f in self.figures:
+            f._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -376,7 +380,7 @@ class AxesPlot(Axes):
         self._drawframe(canvas, axisbox)
         self._drawticks(canvas, ticks, axisbox, databox)
         self._drawtitle(canvas, axisbox)
-        self._drawseries(canvas, axisbox, databox)
+        self._drawfigures(canvas, axisbox, databox)
         self._drawlegend(canvas, axisbox, ticks)
 
 
@@ -413,10 +417,10 @@ class AxesGraph(AxesPlot):
         ticks = self._maketicks()
         legw, _ = self._legendsize()
 
-        xsty = self.build_style('Axes.TickX')
-        ysty = self.build_style('Axes.TickY')
-        lsty = self.build_style('Axes.Legend')
-        sty = self.build_style()
+        xsty = self._build_style('Axes.TickX')
+        ysty = self._build_style('Axes.TickY')
+        lsty = self._build_style('Axes.Legend')
+        sty = self._build_style()
         arrowwidth = sty.edge_width * 3
 
         if databox.xmin == 0:
@@ -442,17 +446,17 @@ class AxesGraph(AxesPlot):
             leftborder += ticks.ywidth
 
         if self._yname:
-            nsty = self.build_style('Axes.YName')
+            nsty = self._build_style('Axes.YName')
             topborder += ysty.margin+nsty.font_size + 2
 
         if self._xname:
-            nsty = self.build_style('Axes.XName')
+            nsty = self._build_style('Axes.XName')
             rightborder += text.text_size(
                 self._xname, font=nsty.font,
                 fontsize=nsty.font_size).width
 
         if self._title:
-            nsty = self.build_style('Axes.Title')
+            nsty = self._build_style('Axes.Title')
             topborder += nsty.font_size
 
         return Borders(leftborder, rightborder, topborder, botborder)
@@ -484,7 +488,7 @@ class AxesGraph(AxesPlot):
                 canvas: SVG canvas to draw on
                 axisbox: ViewBox of axis within the canvas
         '''
-        sty = self.build_style()
+        sty = self._build_style()
         if sty.color:
             canvas.newgroup()
             canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
@@ -500,7 +504,7 @@ class AxesGraph(AxesPlot):
                 boxw: Width of legend box
                 boxh: Height of legend box
         '''
-        sty = self.build_style('Axes.Legend')
+        sty = self._build_style('Axes.Legend')
         arrowwidth = sty.edge_width * 3
 
         if self._legend == 'left':
@@ -534,11 +538,11 @@ class AxesGraph(AxesPlot):
                 databox: ViewBox of data to convert from data to
                     svg coordinates
         '''
-        sty = self.build_style()
-        xsty = self.build_style('Axes.TickX')
-        ysty = self.build_style('Axes.TickY')
-        gridx_sty = self.build_style('Axes.GridX')
-        gridy_sty = self.build_style('Axes.GridX')
+        sty = self._build_style()
+        xsty = self._build_style('Axes.TickX')
+        ysty = self._build_style('Axes.TickY')
+        gridx_sty = self._build_style('Axes.GridX')
+        gridy_sty = self._build_style('Axes.GridX')
 
         canvas.newgroup()
         xform = Transform(databox, axisbox)
@@ -546,7 +550,7 @@ class AxesGraph(AxesPlot):
         xrght = xform.apply(databox.x+databox.w, 0)
         ytop = xform.apply(0, databox.y+databox.h)
         ybot = xform.apply(0, databox.y)
-        sty = self.build_style()
+        sty = self._build_style()
         arrowwidth = sty.edge_width*3
 
         startmark = canvas.definemarker('larrow', radius=arrowwidth,
@@ -613,7 +617,7 @@ class AxesGraph(AxesPlot):
                                 halign='center', valign='top')
 
             if ticks.xminor:
-                xsty_minor = self.build_style('Axes.TickXMinor')
+                xsty_minor = self._build_style('Axes.TickXMinor')
                 for xminor in ticks.xminor:
                     if xminor in ticks.xticks:
                         continue  # Don't double-draw
@@ -647,7 +651,7 @@ class AxesGraph(AxesPlot):
                             size=ysty.font_size,
                                 halign='right', valign='center')
             if ticks.yminor:
-                ysty_minor = self.build_style('Axes.TickYMinor')
+                ysty_minor = self._build_style('Axes.TickYMinor')
                 for yminor in ticks.yminor:
                     if yminor in ticks.yticks:
                         continue  # Don't double-draw
@@ -658,7 +662,7 @@ class AxesGraph(AxesPlot):
                                 width=ysty_minor.stroke_width)
 
         if self._xname:
-            sty = self.build_style('Axes.XName')
+            sty = self._build_style('Axes.XName')
             canvas.text(xrght[0]+sty.margin+arrowwidth,
                         xrght[1],
                         self._xname,
@@ -668,7 +672,7 @@ class AxesGraph(AxesPlot):
                         halign='left', valign='center')
 
         if self._yname:
-            sty = self.build_style('Axes.YName')
+            sty = self._build_style('Axes.YName')
             canvas.text(ytop[0],
                         ytop[1]+sty.margin+arrowwidth,
                         self._yname,
@@ -686,7 +690,7 @@ class AxesGraph(AxesPlot):
         '''
         if self._title:
             canvas.newgroup()
-            sty = self.build_style('Axes.Title')
+            sty = self._build_style('Axes.Title')
             canvas.text(axisbox.x, axisbox.y+axisbox.h, self._title,
                         color=sty.get_color(),
                         font=sty.font,
@@ -729,12 +733,12 @@ class AxesGraph(AxesPlot):
         self._drawframe(canvas, axisbox)
         self._drawticks(canvas, ticks, axisbox, databox)
         self._drawtitle(canvas, axisbox)
-        self._drawseries(canvas, axisbox, databox)
+        self._drawfigures(canvas, axisbox, databox)
         self._drawlegend(canvas, axisbox, ticks)
 
 
 class AxesBlank(AxesPlot):
-    ''' Blank Axes - draw Series with no frame or ticks, and equal
+    ''' Blank Axes - draw Axes with no frame or ticks, and equal
         aspect ratio.
 
         Args:
@@ -779,5 +783,5 @@ class AxesBlank(AxesPlot):
             )
 
         self._drawtitle(canvas, axisbox)
-        self._drawseries(canvas, axisbox, databox)
+        self._drawfigures(canvas, axisbox, databox)
         self._drawlegend(canvas, axisbox, ticks)

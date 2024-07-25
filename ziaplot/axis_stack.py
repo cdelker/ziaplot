@@ -18,12 +18,12 @@ def pop_axis(axis: Drawable) -> None:
     ''' Remove the drawing from the stack '''
     axis_stack.pop(axis)
 
-def push_series(series: Optional[Drawable]) -> None:
+def push_figure(figure: Optional[Drawable]) -> None:
     if not pause and len(axis_stack) > 0:
-        axis, prev_series = list(axis_stack.items())[-1]
-        if prev_series is not None and prev_series not in axis:
-            axis.add(prev_series)
-        axis_stack[axis] = series
+        axis, prev_figure = list(axis_stack.items())[-1]
+        if prev_figure is not None and prev_figure not in axis:
+            axis.add(prev_figure)
+        axis_stack[axis] = figure
 
 def current_axis() -> Optional[Drawable]:
     try:

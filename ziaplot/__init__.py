@@ -1,9 +1,8 @@
-from .dataplots import (
+from .discrete import (
     PolyLine,
     Plot,
     Xy,
     Scatter,
-    Text,
     LinePolar,
     Bars,
     BarsHoriz,
@@ -11,7 +10,6 @@ from .dataplots import (
     HistogramHoriz,
     ErrorBar,
     LineFill,
-    Arrow,
     Contour
 )
 from .geo import (
@@ -36,7 +34,6 @@ from .geo import (
     Secant,
     Chord,
     Sagitta,
-    Angle,
     Implicit
 )
 from .axes import (
@@ -52,13 +49,22 @@ from .axes import (
     AxesBlank,
     ticker
 )
+from .annotations import Text, Angle, Arrow
 from .charts import Pie, PieSlice, BarChart, Bar, BarChartGrouped, BarSeries, BarChartHoriz, BarChartGroupedHoriz
 from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
 from .shapes import Circle, Ellipse, Rectangle
 from .text import settextmode
 from .config import config
 from .util import linspace
-from .calcs import line_intersection, func_intersection, local_max, local_min, x_intercept, y_intercept
-from .style import theme, CSS_BLACK
+from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID
+from .calcs import (
+    line_intersection,
+    angle_of_intersection,
+    func_intersection,
+    local_max,
+    local_min,
+    x_intercept,
+    y_intercept,
+)
 
 __version__ = '0.6a0'
