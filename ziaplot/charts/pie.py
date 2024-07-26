@@ -4,16 +4,16 @@ from typing import Optional, Literal
 import math
 
 from ..text import Halign, Valign
-from ..axes import Axes, Ticks
-from ..figure import Figure
+from ..diagrams import Diagram, Ticks
+from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox
-from .. import axis_stack
+from .. import diagram_stack
 
 
 PieLabelMode = Literal['name', 'percent', 'value']
 
 
-class PieSlice(Figure):
+class PieSlice(Element):
     ''' One slice of a pie.
 
         Args:
@@ -45,7 +45,7 @@ class PieSlice(Figure):
         return self
 
 
-class Pie(Axes):
+class Pie(Diagram):
     ''' Pie Chart. Total of all wedge values will be normalized to 100%.
 
         Args:
@@ -70,9 +70,9 @@ class Pie(Axes):
         '''
         pie = cls(labelmode=labelmode)
         for name, value in slices.items():
-            axis_stack.pause = True
+            diagram_stack.pause = True
             pie.add(PieSlice(value).name(name))
-        axis_stack.pause = False
+        diagram_stack.pause = False
         return pie
 
     @classmethod
@@ -87,39 +87,39 @@ class Pie(Axes):
         '''
         pie = cls(labelmode=labelmode)
         for value in slices:
-            axis_stack.pause = True
+            diagram_stack.pause = True
             pie.add(PieSlice(value))
-        axis_stack.pause = False
+        diagram_stack.pause = False
         return pie
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
+    def _legendloc(self, diagbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
         ''' Calculate legend location
 
             Args:
-                axisbox: ViewBox of the axis
+                diagbox: ViewBox of the diagram
                 ticks: Tick names and positions
                 boxw: Width of legend box
                 boxh: Height of legend box
         '''
         xright = 0
-        ytop = axisbox.y + axisbox.h - 1
+        ytop = diagbox.y + diagbox.h - 1
         if self._legend in ['left', 'topleft']:
-            xright = axisbox.x + boxw + 1
+            xright = diagbox.x + boxw + 1
         elif self._legend in ['right', 'topright']:
-            xright = axisbox.x + axisbox.w - 1
+            xright = diagbox.x + diagbox.w - 1
         elif self._legend == 'bottomleft':
-            ytop = axisbox.y + boxh + 1
-            xright = axisbox.x + boxw + 1
+            ytop = diagbox.y + boxh + 1
+            xright = diagbox.x + boxw + 1
         else: ##if self._legend == 'bottomright':
-            ytop = axisbox.y + boxh + 1
-            xright = axisbox.x + axisbox.w - 1
+            ytop = diagbox.y + boxh + 1
+            xright = diagbox.x + diagbox.w - 1
         return ytop, xright
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        slices = [f for f in self.figures if isinstance(f, PieSlice)]
-        self._assign_figure_colors(slices)
+        slices = [c for c in self.components if isinstance(c, PieSlice)]
+        self._assign_component_colors(slices)
 
         values = [w.value for w in slices]
         total = sum(values)
@@ -134,7 +134,7 @@ class Pie(Axes):
             radius -= max(w._extrude for w in slices)
 
         if self._title:
-            tsty = self._build_style('Axes.Title')
+            tsty = self._build_style('Graph.Title')
             radius -= tsty.font_size/2
             cy -= tsty.font_size/2
             canvas.text(cx, canvas.viewbox.y+canvas.viewbox.h,

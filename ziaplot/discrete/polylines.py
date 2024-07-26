@@ -1,4 +1,4 @@
-''' Discrete Data Figures '''
+''' Discrete Data Elements '''
 from __future__ import annotations
 from typing import Optional, Sequence
 import xml.etree.ElementTree as ET
@@ -6,12 +6,12 @@ import math
 
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..axes import AxesPlot
-from ..figure import Figure
+from ..diagrams import Graph
+from ..element import Element
 
 
-class Discrete(Figure):
-    ''' Base class for figures defined by X, Y pairs '''
+class Discrete(Element):
+    ''' Base class for elements defined by X, Y coordinate pairs '''
     _step_color = True
 
     def __init__(self, x: Sequence[float], y: Sequence[float]):
@@ -32,8 +32,8 @@ class Discrete(Figure):
         ''' Convert x values to log(x) '''
         self.x = [math.log10(x) for x in self.x]
 
-    def marker(self, marker: MarkerTypes, radius: Optional[float] = None, orient: bool = False) -> Figure:
-        ''' Sets the figure marker '''
+    def marker(self, marker: MarkerTypes, radius: Optional[float] = None, orient: bool = False) -> Discrete:
+        ''' Sets the element marker '''
         self._style.shape = marker
         self._style.radius = radius
         self._marker_orient = orient
@@ -41,9 +41,9 @@ class Discrete(Figure):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot()
-        ax.add(self)
-        return ax.svgxml(border=border)
+        g = Graph()
+        g.add(self)
+        return g.svgxml(border=border)
 
 
 class PolyLine(Discrete):

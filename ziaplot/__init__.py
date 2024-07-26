@@ -36,17 +36,18 @@ from .geo import (
     Sagitta,
     Implicit
 )
-from .axes import (
-    AxesPlot,
-    AxesGraph,
-    AxesLogY,
-    AxesLogX,
-    AxesLogXY,
-    AxesPolar,
-    AxesSmith,
+from .diagrams import (
+    Diagram,
+    Graph,
+    GraphQuad,
+    GraphQuadCentered,
+    GraphLogY,
+    GraphLogX,
+    GraphLogXY,
+    GraphPolar,
+    GraphSmith,
     SmithConstResistance,
     SmithConstReactance,
-    AxesBlank,
     ticker
 )
 from .annotations import Text, Angle, Arrow
@@ -56,7 +57,7 @@ from .shapes import Circle, Ellipse, Rectangle
 from .text import settextmode
 from .config import config
 from .util import linspace
-from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID
+from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND
 from .calcs import (
     line_intersection,
     angle_of_intersection,
@@ -66,5 +67,7 @@ from .calcs import (
     x_intercept,
     y_intercept,
 )
+from .container import save
+
 
 __version__ = '0.6a0'

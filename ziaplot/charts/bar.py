@@ -2,15 +2,15 @@
 from __future__ import annotations
 from typing import Optional, Sequence, Union
 
-from ..figure import Figure, Element
+from ..element import Element, Component
 from ..discrete import Bars, BarsHoriz
-from ..axes import AxesPlot
+from ..diagrams import Graph
 from ..style import Style
 from ..canvas import Canvas, Borders, ViewBox
-from .. import axis_stack
+from .. import diagram_stack
 
 
-class Bar(Figure):
+class Bar(Element):
     ''' A single bar in a BarChart
 
         Args:
@@ -23,12 +23,12 @@ class Bar(Figure):
         super().__init__()
 
 
-class BarChart(AxesPlot):
+class BarChart(Graph):
     ''' A vertical bar chart with a single bar series.
         Independent variable is qualitative.
 
         Note:
-            For a bar graph with quantitative x values, use AxesPlot and add Bars instances.
+            For a bar graph with quantitative x values, use Graph and add Bars instances.
     '''
     def __init__(self):
         super().__init__()
@@ -37,10 +37,10 @@ class BarChart(AxesPlot):
         self._barwidth = 1.  # Let each bar have data-width = 1
         self._legend = None
     
-    def add(self, bar: Element) -> None:
+    def add(self, bar: Component) -> None:
         ''' Add a single bar '''
         assert isinstance(bar, Bar)
-        axis_stack.pause = True
+        diagram_stack.pause = True
         self.barlist.append(bar)
         newbar: Union[Bars, BarsHoriz]
         if self._horiz:
@@ -50,23 +50,23 @@ class BarChart(AxesPlot):
             newbar = Bars((0,), (bar.value,), width=self._barwidth, align='center')
             newbar.color(bar._style.color).name(bar._name)
         super().add(newbar)
-        axis_stack.pause = False
+        diagram_stack.pause = False
 
     def _build_style(self, name: str | None = None) -> Style:
         ''' Build the Style '''
         if self._horiz:
-            if name == 'Axes.TickX':
+            if name == 'Graph.TickX':
                 name = 'BarChartHoriz.TickY'
-            elif name == 'Axes.GridY':
+            elif name == 'Graph.GridY':
                 name = 'BarChartHoriz.GridY'
-            elif name == 'Axes.GridY':
+            elif name == 'Graph.GridY':
                 name = 'BarChartHoriz.GridY'
         else:
-            if name == 'Axes.TickY':
+            if name == 'Graph.TickY':
                 name = 'BarChart.TickX'
-            elif name == 'Axes.GridX':
+            elif name == 'Graph.GridX':
                 name = 'BarChart.GridX'
-            elif name == 'Axes.GridY':
+            elif name == 'Graph.GridY':
                 name = 'BarChart.GridY'
         return super()._build_style(name)
 
@@ -75,9 +75,9 @@ class BarChart(AxesPlot):
         ''' Create a barchart from dictionary of name: value pairs '''
         chart = cls()
         for name, value in bars.items():
-            axis_stack.pause = True
+            diagram_stack.pause = True
             chart.add(Bar(value).name(name))
-        axis_stack.pause = False
+        diagram_stack.pause = False
         return chart
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -86,10 +86,10 @@ class BarChart(AxesPlot):
         sty = self._build_style()
         names = [bar._name for bar in self.barlist]
         if self._horiz:
-            figures = self.figures[::-1]
+            elements = self.components[::-1]
             names = names[::-1]
         else:
-            figures = self.figures
+            elements = self.components
 
         N = len(names)
         tickpos = [i * (self._barwidth + sty.margin) for i in range(N)]
@@ -101,7 +101,7 @@ class BarChart(AxesPlot):
             self.xticks(tickpos, names)
 
         # Set bar x positions
-        for tick, bar in zip(tickpos, figures):
+        for tick, bar in zip(tickpos, elements):
             assert isinstance(bar, (Bars, BarsHoriz))
             bar.x = (tick,)
         super()._xml(canvas, databox, borders)
@@ -112,14 +112,14 @@ class BarChartHoriz(BarChart):
         Independent variable is qualitative.
 
         Note:
-            For a bar graph with quantitative x values, use AxesPlot and add Bars instances.
+            For a bar graph with quantitative x values, use Graph and add Bars instances.
     '''
     def __init__(self):
         super().__init__()
         self._horiz = True
 
 
-class BarSeries(Figure):
+class BarSeries(Element):
     ''' A series of bars across all groups
 
         Args:
@@ -132,14 +132,14 @@ class BarSeries(Figure):
         super().__init__()
 
 
-class BarChartGrouped(AxesPlot):
+class BarChartGrouped(Graph):
     ''' A grouped bar chart, where independent variable is qualitative.
 
         Args:
             groups: list of x value strings
 
         Note:
-            For a bar graph with quantitative x values, use AxesPlot and add Bars instances.
+            For a bar graph with quantitative x values, use Graph and add Bars instances.
     '''
     def __init__(self, groups: Sequence[str]):
         super().__init__()
@@ -148,10 +148,10 @@ class BarChartGrouped(AxesPlot):
         self._horiz = False
         self._barwidth = 1.  # Let each bar have data-width = 1
 
-    def add(self, barseries: Element) -> None:
+    def add(self, barseries: Component) -> None:
         ''' Add a series of bars to the chart '''
         assert isinstance(barseries, BarSeries)
-        axis_stack.pause = True
+        diagram_stack.pause = True
         self.barlist.append(barseries)
         # Use dummy x-values for now since we don't know how many series there will be
         x = list(range(len(barseries.values)))
@@ -163,23 +163,23 @@ class BarChartGrouped(AxesPlot):
             bar = Bars(x, barseries.values, width=self._barwidth, align='left')
         bar.color(barseries._style.color).name(barseries._name)
         super().add(bar)
-        axis_stack.pause = False
+        diagram_stack.pause = False
 
     def _build_style(self, name: str | None = None) -> Style:
         ''' Build the Style '''
         if self._horiz:
-            if name == 'Axes.TickX':
+            if name == 'Graph.TickX':
                 name = 'BarChartHoriz.TickY'
-            elif name == 'Axes.GridY':
+            elif name == 'Graph.GridY':
                 name = 'BarChartHoriz.GridY'
-            elif name == 'Axes.GridY':
+            elif name == 'Graph.GridY':
                 name = 'BarChartHoriz.GridY'
         else:
-            if name == 'Axes.TickY':
+            if name == 'Graph.TickY':
                 name = 'BarChart.TickX'  # OK
-            elif name == 'Axes.GridX':
+            elif name == 'Graph.GridX':
                 name = 'BarChart.GridX'
-            elif name == 'Axes.GridY':
+            elif name == 'Graph.GridY':
                 name = 'BarChart.GridY'
         return super()._build_style(name)
 
@@ -189,9 +189,9 @@ class BarChartGrouped(AxesPlot):
         ''' Create Bar Chart from dictionary of name: values list '''
         chart = cls(groups)
         for name, values in bars.items():
-            axis_stack.pause = True
+            diagram_stack.pause = True
             chart.add(BarSeries(*values).name(name))
-        axis_stack.pause = False
+        diagram_stack.pause = False
         return chart
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -209,7 +209,7 @@ class BarChartGrouped(AxesPlot):
             self.yticks(yticks, self.groups[::-1])
             self.yrange(0, totwidth)
             # Set bar x positions
-            for i, bar in enumerate(self.figures[::-1]):
+            for i, bar in enumerate(self.components[::-1]):
                 assert isinstance(bar, (Bars, BarsHoriz))            
                 x = [bargap + self._barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x
@@ -219,7 +219,7 @@ class BarChartGrouped(AxesPlot):
             self.xrange(0, totwidth)
 
             # Set bar x positions
-            for i, bar in enumerate(self.figures):
+            for i, bar in enumerate(self.components):
                 assert isinstance(bar, (Bars, BarsHoriz))            
                 x = [bargap + self._barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x

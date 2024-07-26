@@ -1,4 +1,4 @@
-''' Logscale axes '''
+''' Logscale Graphs '''
 from __future__ import annotations
 from typing import Sequence
 from functools import lru_cache
@@ -7,7 +7,7 @@ import math
 
 from ..canvas import Canvas, ViewBox, DataRange
 from .. import text
-from .axes import AxesPlot, Ticks
+from .graph import Graph, Ticks
 
 
 def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], list[float]]:
@@ -40,15 +40,15 @@ def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], l
     return values, names, minor
 
 
-class AxesLog(AxesPlot):
-    ''' Base Class for log-scale axes '''
+class GraphLog(Graph):
+    ''' Base Class for log-scale graph '''
     def __init__(self):
         super().__init__()
         self.xlogdivisions = 10
         self.ylogdivisions = 10
 
 
-class AxesLogY(AxesLog):
+class GraphLogY(GraphLog):
     ''' Plot with Y on a log10 scale '''
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
@@ -94,24 +94,24 @@ class AxesLogY(AxesLog):
                       None, yminor)
         return ticks
 
-    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all figures to the axis
+    def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all components to the graph
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        figurebackup = self.figures
-        self.figures = [deepcopy(f) for f in figurebackup]
-        for f in self.figures:
-            f._logy()
+        compbackup = self.components
+        self.components = [deepcopy(c) for c in compbackup]
+        for c in self.components:
+            c._logy()
 
-        super()._drawfigures(canvas, axisbox, databox)
-        self.figures = figurebackup
+        super()._drawcomponents(canvas, diagbox, databox)
+        self.components = compbackup
 
 
-class AxesLogX(AxesLog):
+class GraphLogX(GraphLog):
     ''' Plot with Y on a log10 scale '''
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
@@ -149,24 +149,24 @@ class AxesLogX(AxesLog):
                       ticks.ywidth, xrange, ticks.yrange, xminor, None)
         return ticks
 
-    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all figures to the axis
+    def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all components to the graph
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        figurebackup = self.figures
-        self.figures = [deepcopy(f) for f in figurebackup]
-        for f in self.figures:
-            f._logx()
+        compbackup = self.components
+        self.components = [deepcopy(c) for c in compbackup]
+        for c in self.components:
+            c._logx()
 
-        super()._drawfigures(canvas, axisbox, databox)
-        self.figures = figurebackup
+        super()._drawcomponents(canvas, diagbox, databox)
+        self.components = compbackup
 
 
-class AxesLogXY(AxesLog):
+class GraphLogXY(GraphLog):
     ''' Plot with X and Y on a log10 scale '''
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
@@ -223,20 +223,20 @@ class AxesLogXY(AxesLog):
                       xrange, yrange, xminor, yminor)
         return ticks
 
-    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all figures in the axis
+    def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all components in the graph
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to
                     svg coordinates
         '''
-        figurebackup = self.figures
+        compbackup = self.components
+        self.components = [deepcopy(c) for c in compbackup]
+        for c in self.components:
+            c._logx()
+            c._logy()
 
-        self.figures = [deepcopy(s) for s in figurebackup]
-        for s in self.figures:
-            s._logx()
-            s._logy()
-        super()._drawfigures(canvas, axisbox, databox)
-        self.figures = figurebackup
+        super()._drawcomponents(canvas, diagbox, databox)
+        self.components = compbackup

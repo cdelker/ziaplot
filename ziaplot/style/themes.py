@@ -28,42 +28,42 @@ THEME_BASE = ''' * {
         width: 600;
         height: 400;
     }
-    Axes {
+    Graph {
         color: #F6F6F6;
         edge_width: 2;
         font_size: 16;
     }
-    Axes.GridX {
+    Graph.GridX {
         color: lightgray;
         stroke: dashed;
         stroke_width: 1;
     }
-    Axes.GridY {
+    Graph.GridY {
         color: lightgray;
         stroke: dashed;
         stroke_width: 1;
     }
-    Axes.Title {
+    Graph.Title {
         font_size: 18;
     }
-    Axes.XName {
+    Graph.XName {
         font_size: 14;
     }
-    Axes.YName {
+    Graph.YName {
         font_size: 14;
     }
-    Axes.Legend {
+    Graph.Legend {
         color: none;
         stroke_width: 1;
         radius: 40;
         margin: 8;     /* Between legend and axis */
         pad: 4;        /* Between legend frame and contents */
     }
-    Axes.LegendText {
+    Graph.LegendText {
         font_size: 14;
         margin: 4;
     }
-    Axes.TickX {
+    Graph.TickX {
         font_size: 13;
         height: 9;
         stroke_width: 2;
@@ -71,11 +71,11 @@ THEME_BASE = ''' * {
         pad: .2;        /* Stretch the x range by this fraction of a tick */
         num_format: g;
     }
-    Axes.TickXMinor {
+    Graph.TickXMinor {
         height: 5;
         stroke_width: 1;
     }
-    Axes.TickY {
+    Graph.TickY {
         font_size: 13;
         height: 9;
         stroke_width: 2;
@@ -83,13 +83,14 @@ THEME_BASE = ''' * {
         pad: .2;        /* Stretch the y range by this fraction of a tick */
         num_format: g;
     }
-    Axes.TickYMinor {
+    Graph.TickYMinor {
         height: 5;
         stroke_width: 1;
     }
     Text {
     }
-    Polar {
+    GraphPolar {
+        color: #F6F6F6;
         pad: 10;      /* frame to canvas border */
         margin: 4;   /* theta labels to frame */
     }
@@ -154,7 +155,7 @@ THEME_BASE = ''' * {
         font_size: 14;
         margin: 4;    
     }
-    Figure {
+    Element {
         color: auto;
         stroke_width: 2;
         colorcycle: #ba0c2f, #ffc600, #007a86, #ed8b00,
@@ -223,7 +224,7 @@ THEME_BASE = ''' * {
     }
     Angle {
         stroke_width: 1.5;
-        radius: 20;
+        radius: 15;
         margin: 4;  /* between successive arcs */
     }
     Angle.Text {
@@ -240,7 +241,7 @@ THEME_BASE = ''' * {
 
 THEME_LOBO = THEME_BASE
 THEME_TAFFY = '''
-    Figure {
+    Element {
         colorcycle: #00a4bd, #ff7a59, #00bda5,
                     #f2547d, #6a78d1, #f5C26b,
                     #516f90, #99acc2, #cc3399,
@@ -256,14 +257,14 @@ THEME_DARK = '''
     Canvas {
         color: black;
     }
-    Axes {
+    Graph {
         color: black;
         edge_color: #cccccc;
     }
-    Axes.GridX {
+    Graph.GridX {
         color: #555555;
     }
-    Axes.GridY {
+    Graph.GridY {
         color: #555555;
     }
     BarChart.GridX {
@@ -286,13 +287,13 @@ THEME_PASTEL = '''
          color: #444444;
          edge_color: #555555;
     }
-    Figure {
+    Element {
         colorcycle: #c6579A, #ffbe9f, #f1e6b2,
                     #b6cfae, #a7e6d7, #9AdBe8,
                     #decde7, #ffa1cb, #9a98b5,
                     #7589bf;
     }
-    Axes {
+    Graph {
         color: #fafafa;
     }            
     Point {
@@ -302,7 +303,7 @@ THEME_PASTEL = '''
 
 
 THEME_BOLD = '''
-    Figure {
+    Element {
         colorcycle: red, orange, yellow, #338833,
                     #00bb00, blue, #00eeee,
                     violet, purple, silver;
@@ -317,10 +318,10 @@ THEME_DARKTAFFY = THEME_DARK + THEME_TAFFY
 THEME_DARKBOLD = THEME_DARK + THEME_BOLD
 
 CSS_BLACKWHITE = '''
-    Axes {
+    Graph {
         color: none;
     }
-    Figure {
+    Element {
         colorcycle: black;
     }
     Point {
@@ -328,15 +329,15 @@ CSS_BLACKWHITE = '''
     }
     '''
 
+CSS_NOBACKGROUND = 'Graph { color: none; }'
 CSS_NOGRID = '''
-    Axes.GridX {
+    Graph.GridX {
         color: none;
     }
-    Axes.GridY {
+    Graph.GridY {
         color: none;
     }
 '''
-
 
 
 class Theme:
@@ -387,8 +388,8 @@ class Theme:
                     to lowest preference
                 cssid: The id of the drawable, located with # in css
                 cssclass: The classid of the drawable, located with . in css
-                container: Styles applied to the container (Axes)
-                instance: Styles applied to the instance Figure
+                container: Styles applied to the container (Diagram)
+                instance: Styles applied to the instance Element
         '''
         # Start with base theme to fill everything in
         style = self.theme.extract('*')

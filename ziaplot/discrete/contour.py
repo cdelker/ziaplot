@@ -6,14 +6,14 @@ import xml.etree.ElementTree as ET
 from ..util import zrange
 from ..style import ColorFade
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..axes import AxesPlot
-from ..figure import Figure
+from ..diagrams import Graph
+from ..element import Element
 
 
 ColorBarPos = Literal['top', 'right', 'bottom', 'left']
 
 
-class Contour(Figure):
+class Contour(Element):
     ''' Contour Plot
 
         Args:
@@ -176,7 +176,7 @@ class Contour(Figure):
         return segments
 
     def _draw_colorbar(self, canvas: Canvas):
-        ''' Draw colorbar on axis '''
+        ''' Draw colorbar on Diagram '''
         nlevels = self.nlevels
         colorfade = self.get_color_steps()
         cstyle = self._build_style('Contour.ColorBar')
@@ -239,6 +239,6 @@ class Contour(Figure):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot()
-        ax.add(self)
-        return ax.svgxml(border=border)
+        g = Graph()
+        g.add(self)
+        return g.svgxml(border=border)

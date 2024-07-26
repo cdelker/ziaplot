@@ -1,7 +1,11 @@
-''' Geometric Figure base class '''
+''' Geometric Element base classes
+
+    Component: Anything that can be added to a Diagram
+    Element: Geometric element made of points, lines, planes
+ '''
 from __future__ import annotations
 
-from . import axis_stack
+from . import diagram_stack
 from .drawable import Drawable
 from .canvas import DataRange
 from .style.style import Style, DashTypes
@@ -9,8 +13,8 @@ from .style.css import merge_css, CssStyle
 from .style.themes import zptheme
 
 
-class Element(Drawable):
-    ''' Base class for things added to an axes '''
+class Component(Drawable):
+    ''' Base class for things added to a Diagram '''
     _step_color = False
 
     def __init__(self):
@@ -18,9 +22,9 @@ class Element(Drawable):
         self._style = Style()
         self._containerstyle: CssStyle | None = None
         self._name = None
-        axis_stack.push_figure(self)
+        diagram_stack.push_component(self)
 
-    def style(self, style: str) -> 'Figure':
+    def style(self, style: str) -> 'Element':
         ''' Add CSS key-name pairs to the style '''
         self._style = merge_css(self._style, style)
         return self
@@ -39,18 +43,18 @@ class Element(Drawable):
             container=self._containerstyle,
             instance=self._style)
 
-    def color(self, color: str) -> 'Figure':
-        ''' Sets the figure color '''
+    def color(self, color: str) -> 'Component':
+        ''' Sets the component's color '''
         self._style.color = color
         return self
 
-    def stroke(self, stroke: DashTypes) -> 'Figure':
-        ''' Sets the figure stroke/linestyle '''
+    def stroke(self, stroke: DashTypes) -> 'Component':
+        ''' Sets the component's stroke/linestyle '''
         self._style.stroke = stroke
         return self
 
-    def strokewidth(self, width: float) -> 'Figure':
-        ''' Sets the figure strokewidth '''
+    def strokewidth(self, width: float) -> 'Component':
+        ''' Sets the component's strokewidth '''
         self._style.stroke_width = width
         return self
 
@@ -59,8 +63,8 @@ class Element(Drawable):
         return DataRange(None, None, None, None)
 
 
-class Figure(Element):
-    ''' Base class for figures, defining a single object in a plot '''
+class Element(Component):
+    ''' Base class for elements, defining a single object in a plot '''
     _step_color = False  # Whether to increment the color cycle
     legend_square = False  # Draw legend item as a square
 
@@ -72,11 +76,11 @@ class Figure(Element):
         self._markername = None  # SVG ID of marker for legend
 
     def _set_cycle_index(self, index: int = 0):
-        ''' Set the index of this figure within the colorcycle '''
+        ''' Set the index of this element within the colorcycle '''
         self._style._set_cycle_index(index)
 
-    def name(self, name: str) -> 'Figure':
-        ''' Sets the figure name to include in the legend '''
+    def name(self, name: str) -> 'Element':
+        ''' Sets the element name to include in the legend '''
         self._name = name
         return self
 
@@ -87,5 +91,5 @@ class Figure(Element):
         ''' Convert x values to log(x) '''
 
     def _tangent_slope(self, x: float) -> float:
-        ''' Calculate angle tangent to Figure at x '''
+        ''' Calculate angle tangent to Element at x '''
         raise NotImplementedError

@@ -7,12 +7,12 @@ from collections import Counter
 
 from ..text import Halign
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..axes import AxesPlot
-from ..figure import Figure
+from ..diagrams import Graph
+from ..element import Element
 
 
-class Bars(Figure):
-    ''' A series of bars to add to an AxesPlot (quantitative x values)
+class Bars(Element):
+    ''' A series of bars to add to an Graph (quantitative x values)
         For qualitative bar chart, use a BarChart instance.
 
         Args:
@@ -73,9 +73,9 @@ class Bars(Figure):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot()
-        ax.add(self)
-        return ax.svgxml(border=border)
+        graph = Graph()
+        graph.add(self)
+        return graph.svgxml(border=border)
 
 
 class BarsHoriz(Bars):

@@ -5,13 +5,13 @@ from xml.etree import ElementTree as ET
 import math
 
 from .. import util
-from ..figure import Figure
+from ..element import Element
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..axes import AxesPlot
+from ..diagrams import Graph
 
 
-class Function(Figure):
+class Function(Element):
     ''' Plot a function
 
         Args:
@@ -153,6 +153,6 @@ class Function(Figure):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot()
-        ax.add(self)
-        return ax.svgxml(border=border)
+        graph = Graph()
+        graph.add(self)
+        return graph.svgxml(border=border)

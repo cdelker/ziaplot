@@ -5,10 +5,10 @@ import math
 
 from ..text import Halign, Valign
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..figure import Element
+from ..element import Component
 
 
-class Text(Element):
+class Text(Component):
     ''' A text element to draw at a specific x-y location
 
         Args:

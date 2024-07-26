@@ -7,14 +7,14 @@ from ..calcs import line_intersection, func_intersection, local_min, local_max
 from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes, PointType
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..figure import Figure
+from ..element import Element
 from ..shapes import Circle
 from .function import Function
 from .line import Line
 from .bezier import BezierQuad
 
 
-class Point(Figure):
+class Point(Element):
     ''' Point with optional text label
 
         Args:
@@ -159,11 +159,14 @@ class Point(Figure):
 
     @classmethod
     def at_intersection(cls, f1: Function, f2: Function,
-                        x1: float, x2: float) -> 'Point':
+                        x1: float|None = None,
+                        x2: float|None = None) -> 'Point':
         ''' Draw a Point at the intersection of two functions '''
         if isinstance(f1, Line) and isinstance(f2, Line):
             x, y= line_intersection(f1, f2)
         else:
+            if x1 is None or x2 is None:
+                raise ValueError('x1 and x2 are required for intersection of non-line functions.')
             x, y = func_intersection(f1, f2, x1, x2)
         return cls(x, y)
 

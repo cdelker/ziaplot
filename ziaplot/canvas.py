@@ -109,7 +109,7 @@ class Canvas:
             self.defs = ET.Element('defs')
             self.root.insert(0, self.defs)
 
-        name = 'axesclip{}'.format(len(self._clipnames)+1)
+        name = 'diagclip{}'.format(len(self._clipnames)+1)
         self._clipnames.append(name)
         clip = ET.SubElement(self.defs, 'clipPath', attrib={'id': name})
         y = self.flipy(self.viewbox.y) - self.viewbox.h

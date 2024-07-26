@@ -1,4 +1,4 @@
-''' Axes for plotting one or more geometric figures '''
+''' Graphs for plotting data with x- and y- axes '''
 
 from __future__ import annotations
 from typing import Sequence, Optional
@@ -8,7 +8,7 @@ import math
 from .. import text
 from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders, PointType
 from ..util import zrange, linspace
-from .baseplot import Axes, Ticks
+from .diagram import Diagram, Ticks
 
 
 def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> list[float]:
@@ -49,8 +49,12 @@ def getticks(vmin: float, vmax: float, maxticks: int = 9, fmt: str = 'g') -> lis
     return ticks
 
 
-class AxesPlot(Axes):
-    ''' Plot of x-y data with axes lines at arbitrary values '''
+class Graph(Diagram):
+    ''' Plot of x-y data '''
+    def __init__(self):
+        super().__init__()
+        self._equal_aspect = False
+
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
@@ -64,8 +68,8 @@ class AxesPlot(Axes):
             Returns:
                 ticks: Tick names and positions
         '''
-        xsty = self._build_style('Axes.TickX')
-        ysty = self._build_style('Axes.TickY')
+        xsty = self._build_style('Graph.TickX')
+        ysty = self._build_style('Graph.TickY')
 
         xmin, xmax, ymin, ymax = self.datarange()
         if self._xtickvalues:
@@ -94,7 +98,7 @@ class AxesPlot(Axes):
         if ynames is None:
             ynames = [format(yt, ysty.num_format) for yt in yticks]
 
-        # Calculate width of y names for padding left side of figure
+        # Calculate width of y names for padding left side of diagram
         ywidth = 0.
         for tick in ynames:
             ywidth = max(ywidth, text.text_size(tick,
@@ -138,10 +142,10 @@ class AxesPlot(Axes):
 
     @lru_cache
     def _borders(self) -> Borders:
-        ''' Calculate borders around axis box to fit the ticks and legend '''
-        xsty = self._build_style('Axes.TickX')
-        ysty = self._build_style('Axes.TickY')
-        lsty = self._build_style('Axes.Legend')
+        ''' Calculate borders around diagram box to fit the ticks and legend '''
+        xsty = self._build_style('Graph.TickX')
+        ysty = self._build_style('Graph.TickY')
+        lsty = self._build_style('Graph.Legend')
 
         ticks = self._maketicks()
         legw, _ = self._legendsize()
@@ -150,7 +154,7 @@ class AxesPlot(Axes):
         else:
             leftborder = 0
         if self._yname:
-            nsty = self._build_style('Axes.YName')
+            nsty = self._build_style('Graph.YName')
             _, h = text.text_size(self._yname, fontsize=nsty.font_size,
                                   font=nsty.font)
             leftborder += h + ysty.margin
@@ -162,14 +166,14 @@ class AxesPlot(Axes):
         else:
             botborder = 0
         if self._xname:
-            nsty = self._build_style('Axes.XName')
+            nsty = self._build_style('Graph.XName')
             botborder += text.text_size(
                 self._xname, fontsize=nsty.font_size,
                 font=nsty.font).height + 2
 
         topborder = lsty.edge_width + ysty.font_size / 2
         if self._title:
-            nsty = self._build_style('Axes.Title')
+            nsty = self._build_style('Graph.Title')
             topborder += text.text_size(
                 self._title, fontsize=nsty.font_size,
                 font=nsty.font).height
@@ -181,55 +185,55 @@ class AxesPlot(Axes):
         borders = Borders(leftborder, rightborder, topborder, botborder)
         return borders
 
-    def _drawframe(self, canvas: Canvas, axisbox: ViewBox) -> None:
-        ''' Draw axis frame
+    def _drawframe(self, canvas: Canvas, diagbox: ViewBox) -> None:
+        ''' Draw frame
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
         '''
         sty = self._build_style()
         canvas.newgroup()
         bgcolor = sty.get_color()
         if bgcolor:
-            canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
+            canvas.rect(diagbox.x, diagbox.y, diagbox.w, diagbox.h,
                         strokecolor='none', fill=sty.color)
 
         if self.fullbox:
-            canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
+            canvas.rect(diagbox.x, diagbox.y, diagbox.w, diagbox.h,
                         strokecolor=sty.edge_color,
                         strokewidth=sty.edge_width)
         else:
-            canvas.path([axisbox.x, axisbox.x, axisbox.x+axisbox.w],
-                        [axisbox.y+axisbox.h, axisbox.y, axisbox.y],
+            canvas.path([diagbox.x, diagbox.x, diagbox.x+diagbox.w],
+                        [diagbox.y+diagbox.h, diagbox.y, diagbox.y],
                         color=sty.edge_color,
                         width=sty.edge_width)
 
-    def _drawticks(self, canvas: Canvas, ticks: Ticks, axisbox: ViewBox, databox: ViewBox) -> None:
+    def _drawticks(self, canvas: Canvas, ticks: Ticks, diagbox: ViewBox, databox: ViewBox) -> None:
         ''' Draw tick marks and labels
 
             Args:
                 canvas: SVG canvas to draw on
                 ticks: Tick names and locations
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
         sty = self._build_style()
-        xsty = self._build_style('Axes.TickX')
-        ysty = self._build_style('Axes.TickY')
-        gridx_sty = self._build_style('Axes.GridX')
-        gridy_sty = self._build_style('Axes.GridY')
+        xsty = self._build_style('Graph.TickX')
+        ysty = self._build_style('Graph.TickY')
+        gridx_sty = self._build_style('Graph.GridX')
+        gridy_sty = self._build_style('Graph.GridY')
 
         canvas.newgroup()
-        xform = Transform(databox, axisbox)
+        xform = Transform(databox, diagbox)
         for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
             x, _ = xform.apply(xtick, 0)
-            y1 = axisbox.y
+            y1 = diagbox.y
             y2 = y1 - xsty.height
             if (gridx_sty.color not in [None, 'none']
-                    and x > axisbox.x+sty.edge_width
-                    and x < axisbox.x+axisbox.w-sty.edge_width):
-                canvas.path([x, x], [axisbox.y, axisbox.y+axisbox.h],
+                    and x > diagbox.x+sty.edge_width
+                    and x < diagbox.x+diagbox.w-sty.edge_width):
+                canvas.path([x, x], [diagbox.y, diagbox.y+diagbox.h],
                             color=gridx_sty.color,
                             stroke=gridx_sty.stroke,
                             width=gridx_sty.stroke_width)
@@ -245,25 +249,25 @@ class AxesPlot(Axes):
                             halign='center', valign='top')
 
                 if ticks.xminor:
-                    xsty_minor = self._build_style('Axes.TickXMinor')
+                    xsty_minor = self._build_style('Graph.TickXMinor')
                     for xminor in ticks.xminor:
                         if xminor in ticks.xticks:
                             continue  # Don't double-draw
                         x, _ = xform.apply(xminor, 0)
-                        y1 = axisbox.y
+                        y1 = diagbox.y
                         y2 = y1 - xsty_minor.height
                         canvas.path([x, x], [y1, y2], color=xsty.color,
                                     width=xsty_minor.stroke_width)
 
         for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
             _, y = xform.apply(0, ytick)
-            x1 = axisbox.x
-            x2 = axisbox.x - xsty.height
+            x1 = diagbox.x
+            x2 = diagbox.x - xsty.height
 
             if (gridy_sty.color not in [None, 'none']
-                    and y > axisbox.y+sty.edge_width
-                    and y < axisbox.y+axisbox.h-sty.edge_width):
-                canvas.path([axisbox.x, axisbox.x+axisbox.w], [y, y],
+                    and y > diagbox.y+sty.edge_width
+                    and y < diagbox.y+diagbox.h-sty.edge_width):
+                canvas.path([diagbox.x, diagbox.x+diagbox.w], [y, y],
                             color=gridy_sty.color,
                             stroke=gridy_sty.stroke,
                             width=gridy_sty.stroke_width)
@@ -279,20 +283,20 @@ class AxesPlot(Axes):
                             halign='right', valign='center')
     
                 if ticks.yminor:
-                    ysty_minor = self._build_style('Axes.TickYMinor')
+                    ysty_minor = self._build_style('Graph.TickYMinor')
                     for yminor in ticks.yminor:
                         if yminor in ticks.yticks:
                             continue  # Don't double-draw
                         _, y = xform.apply(0, yminor)
-                        x1 = axisbox.x
-                        x2 = axisbox.x - ysty_minor.height
+                        x1 = diagbox.x
+                        x2 = diagbox.x - ysty_minor.height
                         canvas.path([x1, x2], [y, y], color=ysty_minor.get_color(),
                                     width=ysty_minor.stroke_width)
 
         if self._xname:
-            sty = self._build_style('Axes.XName')
-            centerx = axisbox.x + axisbox.w/2
-            namey = (axisbox.y - xsty.font_size -
+            sty = self._build_style('Graph.XName')
+            centerx = diagbox.x + diagbox.w/2
+            namey = (diagbox.y - xsty.font_size -
                      xsty.height - xsty.margin)
             canvas.text(centerx, namey, self._xname,
                         color=sty.get_color(),
@@ -301,9 +305,9 @@ class AxesPlot(Axes):
                         halign='center', valign='top')
 
         if self._yname:
-            sty = self._build_style('Axes.YName')
-            centery = axisbox.y + axisbox.h/2
-            namex = (axisbox.x - ysty.height -
+            sty = self._build_style('Graph.YName')
+            centery = diagbox.y + diagbox.h/2
+            namex = (diagbox.x - ysty.height -
                      ticks.ywidth - ysty.font_size)
             canvas.text(namex, centery, self._yname,
                         color=sty.get_color(),
@@ -311,38 +315,6 @@ class AxesPlot(Axes):
                         size=sty.font_size,
                         halign='center', valign='center',
                         rotate=90)
-
-    def _drawtitle(self, canvas: Canvas, axisbox: ViewBox) -> None:
-        ''' Draw plot title
-
-            Args:
-                canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
-        '''
-        canvas.newgroup()
-        if self._title:
-            sty = self._build_style('Axes.Title')
-            centerx = axisbox.x + axisbox.w/2
-            canvas.text(centerx, axisbox.y+axisbox.h, self._title,
-                        color=sty.get_color(),
-                        font=sty.font,
-                        size=sty.font_size,
-                        halign='center', valign='bottom')
-
-    def _drawfigures(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all figures to the axis
-
-            Args:
-                canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
-                databox: ViewBox of data to convert from data to svg coordinates
-        '''
-        canvas.setviewbox(axisbox)
-        self._assign_figure_colors(self.figures)
-
-        for f in self.figures:
-            f._xml(canvas, databox=databox)
-        canvas.resetviewbox()
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -356,7 +328,7 @@ class AxesPlot(Axes):
                 dborders.top if borders.top is None else borders.top,
                 dborders.bottom if borders.bottom is None else borders.bottom)
 
-        axisbox = ViewBox(
+        diagbox = ViewBox(
             canvas.viewbox.x + dborders.left,
             canvas.viewbox.y + dborders.bottom,
             canvas.viewbox.w - (dborders.left + dborders.right),
@@ -368,36 +340,29 @@ class AxesPlot(Axes):
 
         if self._equal_aspect:
             daspect = databox.w / databox.h
-            axisaspect = axisbox.w / axisbox.h
-            ratio = daspect / axisaspect
-            axisbox = ViewBox(
-                axisbox.x,
-                axisbox.y,
-                axisbox.w if ratio >= 1 else axisbox.w * ratio,
-                axisbox.h if ratio <= 1 else axisbox.h / ratio
+            diagaspect = diagbox.w / diagbox.h
+            ratio = daspect / diagaspect
+            diagbox = ViewBox(
+                diagbox.x,
+                diagbox.y,
+                diagbox.w if ratio >= 1 else diagbox.w * ratio,
+                diagbox.h if ratio <= 1 else diagbox.h / ratio
             )
 
-        self._drawframe(canvas, axisbox)
-        self._drawticks(canvas, ticks, axisbox, databox)
-        self._drawtitle(canvas, axisbox)
-        self._drawfigures(canvas, axisbox, databox)
-        self._drawlegend(canvas, axisbox, ticks)
+        self._drawframe(canvas, diagbox)
+        self._drawticks(canvas, ticks, diagbox, databox)
+        self._drawtitle(canvas, diagbox)
+        self._drawcomponents(canvas, diagbox, databox)
+        self._drawlegend(canvas, diagbox, ticks)
 
 
-class AxesGraph(AxesPlot):
-    ''' X-Y Graph. Axes are drawn as arrows pointing to infinity with
-        xname and yname labels at the ends of the arrows. Often used
-        to visualize functions (e.g. y = x**2) rather than empirical data.
-
-        Args:
-            centerorigin: Place the (0, 0) origin in the center of the axis
-
-        Attributes:
-            style: Drawing style
+class GraphQuad(Graph):
+    ''' Graph showing all 4 quadrants of the coordinate plane.
+        Axes are drawn as arrows pointing to infinity with
+        xname and yname labels at the ends of the arrows.
     '''
-    def __init__(self, centerorigin: bool = False):
+    def __init__(self):
         super().__init__()
-        self.centerorigin = centerorigin
 
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
@@ -407,19 +372,19 @@ class AxesGraph(AxesPlot):
 
     @lru_cache
     def _borders(self) -> Borders:
-        ''' Calculate bounding box of where to place axis within frame,
+        ''' Calculate bounding box of where to place diagram within frame,
             shifting left/up to account for labels
 
             Returns:
-                ViewBox of axis within the full frame
+                ViewBox of diagram within the full frame
         '''
         databox = self.datarange()
         ticks = self._maketicks()
         legw, _ = self._legendsize()
 
-        xsty = self._build_style('Axes.TickX')
-        ysty = self._build_style('Axes.TickY')
-        lsty = self._build_style('Axes.Legend')
+        xsty = self._build_style('Graph.TickX')
+        ysty = self._build_style('Graph.TickY')
+        lsty = self._build_style('Graph.Legend')
         sty = self._build_style()
         arrowwidth = sty.edge_width * 3
 
@@ -446,106 +411,118 @@ class AxesGraph(AxesPlot):
             leftborder += ticks.ywidth
 
         if self._yname:
-            nsty = self._build_style('Axes.YName')
+            nsty = self._build_style('Graph.YName')
             topborder += ysty.margin+nsty.font_size + 2
 
         if self._xname:
-            nsty = self._build_style('Axes.XName')
+            nsty = self._build_style('Graph.XName')
             rightborder += text.text_size(
                 self._xname, font=nsty.font,
                 fontsize=nsty.font_size).width
 
         if self._title:
-            nsty = self._build_style('Axes.Title')
+            nsty = self._build_style('Graph.Title')
             topborder += nsty.font_size
 
         return Borders(leftborder, rightborder, topborder, botborder)
 
     @lru_cache
     def datarange(self) -> DataRange:
-        ''' Get range of x-y data. AxesGraph datarange must include x=0 and y=0 '''
+        ''' Get range of x-y data. GraphQuad datarange must include x=0 and y=0 '''
         drange = super().datarange()
         xmin = min(0, drange.xmin)
         xmax = max(0, drange.xmax)
         ymin = min(0, drange.ymin)
         ymax = max(0, drange.ymax)
 
-        if self.centerorigin:
-            x = max(abs(xmax), abs(xmin))
-            y = max(abs(ymax), abs(ymin))
-            xmin, xmax = -x, x
-            ymin, ymax = -y, y
-
         if xmin == xmax == ymin == ymax == 0:
             ymin = xmin = -1
             ymax = xmax = 1
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def _drawframe(self, canvas: Canvas, axisbox: ViewBox) -> None:
-        ''' Draw axis frame
+    def _drawtitle(self, canvas: Canvas, diagbox: ViewBox) -> None:
+        ''' Draw plot title
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
+        '''
+        # Quad draws the title on the left so the centered y axis
+        # doesn't hit it
+        if self._title:
+            canvas.newgroup()
+            sty = self._build_style('Graph.Title')
+            canvas.text(diagbox.x, diagbox.y+diagbox.h, self._title,
+                        color=sty.get_color(),
+                        font=sty.font,
+                        size=sty.font_size,
+                        halign='left', valign='bottom')
+
+    def _drawframe(self, canvas: Canvas, diagbox: ViewBox) -> None:
+        ''' Draw frame
+
+            Args:
+                canvas: SVG canvas to draw on
+                diagbox: ViewBox of diagram within the canvas
         '''
         sty = self._build_style()
         if sty.color:
             canvas.newgroup()
-            canvas.rect(axisbox.x, axisbox.y, axisbox.w, axisbox.h,
+            canvas.rect(diagbox.x, diagbox.y, diagbox.w, diagbox.h,
                         strokecolor='none', fill=sty.color)
 
-    def _legendloc(self, axisbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
+    def _legendloc(self, diagbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
         ''' Calculate legend location
 
             Args:
-                axisbox: ViewBox of the axis rectangle. Legend to
-                    be placed outside axis.
+                diagbox: ViewBox of the diagram rectangle. Legend to
+                    be placed outside data area.
                 ticks: Tick names and positions
                 boxw: Width of legend box
                 boxh: Height of legend box
         '''
-        sty = self._build_style('Axes.Legend')
+        sty = self._build_style('Graph.Legend')
         arrowwidth = sty.edge_width * 3
 
         if self._legend == 'left':
-            ytop = axisbox.y + axisbox.h
-            xright = axisbox.x - arrowwidth + sty.edge_width
+            ytop = diagbox.y + diagbox.h
+            xright = diagbox.x - arrowwidth + sty.edge_width
         elif self._legend == 'right':
-            ytop = axisbox.y + axisbox.h
-            xright = axisbox.x + axisbox.w + boxw + arrowwidth
+            ytop = diagbox.y + diagbox.h
+            xright = diagbox.x + diagbox.w + boxw + arrowwidth
         elif self._legend == 'topright':
-            ytop = axisbox.y + axisbox.h - sty.pad
-            xright = (axisbox.x + axisbox.w - sty.pad)
+            ytop = diagbox.y + diagbox.h - sty.pad
+            xright = (diagbox.x + diagbox.w - sty.pad)
         elif self._legend == 'bottomleft':
-            ytop = axisbox.y + boxh + sty.pad
-            xright = (axisbox.x + boxw + sty.pad)
+            ytop = diagbox.y + boxh + sty.pad
+            xright = (diagbox.x + boxw + sty.pad)
         elif self._legend == 'bottomright':
-            ytop = axisbox.y + boxh + sty.pad
-            xright = (axisbox.x + axisbox.w - sty.pad)
+            ytop = diagbox.y + boxh + sty.pad
+            xright = (diagbox.x + diagbox.w - sty.pad)
         else: # self._legend == 'topleft':
-            ytop = axisbox.y + axisbox.h - sty.pad
-            xright = (axisbox.x + boxw + sty.pad)
+            ytop = diagbox.y + diagbox.h - sty.pad
+            xright = (diagbox.x + boxw + sty.pad)
 
         return ytop, xright
 
-    def _drawticks(self, canvas: Canvas, ticks: Ticks, axisbox: ViewBox, databox: ViewBox):
+    def _drawticks(self, canvas: Canvas, ticks: Ticks, diagbox: ViewBox, databox: ViewBox):
         ''' Draw tick marks and labels
 
             Args:
                 canvas: SVG canvas to draw on
                 ticks: Tick names and locations
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to
                     svg coordinates
         '''
         sty = self._build_style()
-        xsty = self._build_style('Axes.TickX')
-        ysty = self._build_style('Axes.TickY')
-        gridx_sty = self._build_style('Axes.GridX')
-        gridy_sty = self._build_style('Axes.GridX')
+        xsty = self._build_style('Graph.TickX')
+        ysty = self._build_style('Graph.TickY')
+        gridx_sty = self._build_style('Graph.GridX')
+        gridy_sty = self._build_style('Graph.GridX')
 
         canvas.newgroup()
-        xform = Transform(databox, axisbox)
+        xform = Transform(databox, diagbox)
         xleft = xform.apply(databox.x, 0)
         xrght = xform.apply(databox.x+databox.w, 0)
         ytop = xform.apply(0, databox.y+databox.h)
@@ -617,7 +594,7 @@ class AxesGraph(AxesPlot):
                                 halign='center', valign='top')
 
             if ticks.xminor:
-                xsty_minor = self._build_style('Axes.TickXMinor')
+                xsty_minor = self._build_style('Graph.TickXMinor')
                 for xminor in ticks.xminor:
                     if xminor in ticks.xticks:
                         continue  # Don't double-draw
@@ -651,7 +628,7 @@ class AxesGraph(AxesPlot):
                             size=ysty.font_size,
                                 halign='right', valign='center')
             if ticks.yminor:
-                ysty_minor = self._build_style('Axes.TickYMinor')
+                ysty_minor = self._build_style('Graph.TickYMinor')
                 for yminor in ticks.yminor:
                     if yminor in ticks.yticks:
                         continue  # Don't double-draw
@@ -662,7 +639,7 @@ class AxesGraph(AxesPlot):
                                 width=ysty_minor.stroke_width)
 
         if self._xname:
-            sty = self._build_style('Axes.XName')
+            sty = self._build_style('Graph.XName')
             canvas.text(xrght[0]+sty.margin+arrowwidth,
                         xrght[1],
                         self._xname,
@@ -672,7 +649,7 @@ class AxesGraph(AxesPlot):
                         halign='left', valign='center')
 
         if self._yname:
-            sty = self._build_style('Axes.YName')
+            sty = self._build_style('Graph.YName')
             canvas.text(ytop[0],
                         ytop[1]+sty.margin+arrowwidth,
                         self._yname,
@@ -681,22 +658,6 @@ class AxesGraph(AxesPlot):
                         size=sty.font_size,
                         halign='center', valign='bottom')
 
-    def _drawtitle(self, canvas: Canvas, axisbox: ViewBox) -> None:
-        ''' Draw plot title
-
-            Args:
-                canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
-        '''
-        if self._title:
-            canvas.newgroup()
-            sty = self._build_style('Axes.Title')
-            canvas.text(axisbox.x, axisbox.y+axisbox.h, self._title,
-                        color=sty.get_color(),
-                        font=sty.font,
-                        size=sty.font_size,
-                        halign='left', valign='bottom')
-
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
@@ -709,7 +670,7 @@ class AxesGraph(AxesPlot):
                 dborders.top if borders.top is None else borders.top,
                 dborders.bottom if borders.bottom is None else borders.bottom)
 
-        axisbox = ViewBox(
+        diagbox = ViewBox(
             canvas.viewbox.x + dborders.left,
             canvas.viewbox.y + dborders.bottom,
             canvas.viewbox.w - (dborders.left + dborders.right),
@@ -721,67 +682,41 @@ class AxesGraph(AxesPlot):
 
         if self._equal_aspect:
             daspect = databox.w / databox.h
-            axisaspect = axisbox.w / axisbox.h
-            ratio = daspect / axisaspect
-            axisbox = ViewBox(
-                axisbox.x,
-                axisbox.y,
-                axisbox.w if ratio >= 1 else axisbox.w * ratio,
-                axisbox.h if ratio <= 1 else axisbox.h / ratio
+            diagaspect = diagbox.w / diagbox.h
+            ratio = daspect / diagaspect
+            diagbox = ViewBox(
+                diagbox.x,
+                diagbox.y,
+                diagbox.w if ratio >= 1 else diagbox.w * ratio,
+                diagbox.h if ratio <= 1 else diagbox.h / ratio
             )
 
-        self._drawframe(canvas, axisbox)
-        self._drawticks(canvas, ticks, axisbox, databox)
-        self._drawtitle(canvas, axisbox)
-        self._drawfigures(canvas, axisbox, databox)
-        self._drawlegend(canvas, axisbox, ticks)
+        self._drawframe(canvas, diagbox)
+        self._drawticks(canvas, ticks, diagbox, databox)
+        self._drawtitle(canvas, diagbox)
+        self._drawcomponents(canvas, diagbox, databox)
+        self._drawlegend(canvas, diagbox, ticks)
 
 
-class AxesBlank(AxesPlot):
-    ''' Blank Axes - draw Axes with no frame or ticks, and equal
-        aspect ratio.
+class GraphQuadCentered(GraphQuad):
+    ''' GraphQuad with the origin always centered '''
 
-        Args:
-            title: Title for top of axes
-            style: Axis style
-    '''
-    def __init__(self):
-        super().__init__()
-        self._equal_aspect = True
+    @lru_cache
+    def datarange(self) -> DataRange:
+        ''' Get range of x-y data. GraphQuad datarange must include x=0 and y=0 '''
+        drange = super().datarange()
+        xmin = min(0, drange.xmin)
+        xmax = max(0, drange.xmax)
+        ymin = min(0, drange.ymin)
+        ymax = max(0, drange.ymax)
 
-    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
-             borders: Optional[Borders] = None) -> None:
-        ''' Add XML elements to the canvas '''
-        ticks = self._maketicks()
-        dborders = self._borders()
-        if borders is not None:
-            dborders = Borders(
-                dborders.left if borders.left is None else borders.left,
-                dborders.right if borders.right is None else borders.right,
-                dborders.top if borders.top is None else borders.top,
-                dborders.bottom if borders.bottom is None else borders.bottom)
+        # Keep the origin centered
+        x = max(abs(xmax), abs(xmin))
+        y = max(abs(ymax), abs(ymin))
+        xmin, xmax = -x, x
+        ymin, ymax = -y, y
 
-        axisbox = ViewBox(
-            canvas.viewbox.x + dborders.left,
-            canvas.viewbox.y + dborders.bottom,
-            canvas.viewbox.w - (dborders.left + dborders.right),
-            canvas.viewbox.h - (dborders.top + dborders.bottom))
-
-        databox = ViewBox(ticks.xrange[0], ticks.yrange[0],
-                          ticks.xrange[1]-ticks.xrange[0],
-                          ticks.yrange[1]-ticks.yrange[0])
-
-        if self._equal_aspect:
-            daspect = databox.w / databox.h
-            axisaspect = axisbox.w / axisbox.h
-            ratio = daspect / axisaspect
-            axisbox = ViewBox(
-                axisbox.x,
-                axisbox.y,
-                axisbox.w if ratio >= 1 else axisbox.w * ratio,
-                axisbox.h if ratio <= 1 else axisbox.h / ratio
-            )
-
-        self._drawtitle(canvas, axisbox)
-        self._drawfigures(canvas, axisbox, databox)
-        self._drawlegend(canvas, axisbox, ticks)
+        if xmin == xmax == ymin == ymax == 0:
+            ymin = xmin = -1
+            ymax = xmax = 1
+        return DataRange(xmin, xmax, ymin, ymax)

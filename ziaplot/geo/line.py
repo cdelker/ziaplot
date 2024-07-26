@@ -4,7 +4,7 @@ from typing import Optional
 from dataclasses import dataclass
 import math
 
-from ..canvas import Canvas, Borders, ViewBox
+from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes, PointType
 from .function import Function
@@ -271,6 +271,14 @@ class Segment(Line):
     def point2(self) -> PointType:
         ''' Second point on the segment '''
         return self.p2
+
+    def datarange(self) -> DataRange:
+        ''' Get range of data '''
+        xmin = min(self.p1[0], self.p2[0])
+        xmax = max(self.p1[0], self.p2[0])
+        ymin = min(self.p1[1], self.p2[1])
+        ymax = max(self.p1[1], self.p2[1])
+        return DataRange(xmin, xmax, ymin, ymax)
 
     def trim(self, x1: Optional[float] = None, x2: Optional[float] = None) -> Segment:
         ''' Move endpoints of segment, keeping slope and intercept '''

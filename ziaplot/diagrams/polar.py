@@ -1,32 +1,27 @@
-''' Polar plotting axis '''
+''' Polar plotting '''
 from __future__ import annotations
 from typing import Optional
 from functools import lru_cache
 import math
 
 from ..text import Halign, Valign
-from .baseplot import Axes, Ticks
-from .axes import getticks
+from .diagram import Diagram, Ticks
+from .graph import getticks
 from ..canvas import Canvas, Borders, ViewBox
 
 
-class AxesPolar(Axes):
+class GraphPolar(Diagram):
     ''' Polar Plot. Use with LinePolar to define lines in (radius, angle)
         format.
 
         Args:
             labeldeg: Draw theta labels in degrees vs. radians
-            title: Title to draw above axes
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
+            labeltheta: Angle for drawing R labels
     '''
-    def __init__(self, labeldeg: bool = True):
+    def __init__(self, labeldeg: bool = True, labeltheta: float = 0):
         super().__init__()
         self.labeldegrees = labeldeg
-        self.rlabeltheta: float = 0
+        self.labeltheta: float = labeltheta
 
     def rrange(self, rmax: float) -> None:
         ''' Sets maximum radius to display '''
@@ -47,7 +42,7 @@ class AxesPolar(Axes):
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
-        xsty = self._build_style('Axes.TickX')
+        xsty = self._build_style('Graph.TickX')
         _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
@@ -69,21 +64,21 @@ class AxesPolar(Axes):
         return ticks
 
     def _drawframe(self, canvas: Canvas, ticks: Ticks) -> tuple[float, float, float]:
-        ''' Draw the axis frame, ticks, and grid
+        ''' Draw the graph frame, ticks, and grid
 
             Args:
                 canvas: SVG canvas to draw on
                 ticks: Tick names and positions
         '''
         sty = self._build_style()
-        gridsty = self._build_style('Axes.GridX')
-        ticksty = self._build_style('Axes.TickX')
+        gridsty = self._build_style('Graph.GridX')
+        ticksty = self._build_style('Graph.TickX')
         radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - sty.pad*2 - sty.font_size*2
         cx = canvas.viewbox.x + canvas.viewbox.w/2
         cy = canvas.viewbox.y + canvas.viewbox.h/2
 
         if self._title:
-            tsty = self._build_style('Axes.Title')
+            tsty = self._build_style('Graph.Title')
             radius -= tsty.font_size/2
             cy -= tsty.font_size/2
             canvas.text(canvas.viewbox.w/2, canvas.viewbox.h,
@@ -104,8 +99,8 @@ class AxesPolar(Axes):
                           strokewidth=gridsty.stroke_width,
                           color='none', stroke=gridsty.stroke)
 
-            textx = cx + r * math.cos(math.radians(self.rlabeltheta))
-            texty = cy + r * math.sin(math.radians(self.rlabeltheta))
+            textx = cx + r * math.cos(math.radians(self.labeltheta))
+            texty = cy + r * math.sin(math.radians(self.labeltheta))
             canvas.text(textx, texty, rname, halign='center',
                         color=ticksty.get_color())
 
@@ -139,9 +134,9 @@ class AxesPolar(Axes):
                         color=ticksty.get_color())
         return radius, cx, cy
 
-    def _drawfigures(self, canvas: Canvas, radius: float,
+    def _drawcomponents(self, canvas: Canvas, radius: float,
                     cx: float, cy: float, ticks: Ticks) -> None:
-        ''' Draw all data figures
+        ''' Draw all components
 
             Args:
                 canvas: SVG canvas to draw on
@@ -149,13 +144,13 @@ class AxesPolar(Axes):
                 cx, cy: canvas center of full circle
                 ticks: Tick definitions
         '''
-        self._assign_figure_colors(self.figures)
+        self._assign_component_colors(self.components)
 
         dradius = ticks.xticks[-1]
         databox = ViewBox(-dradius, -dradius, dradius*2, dradius*2)
         viewbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         canvas.setviewbox(viewbox)
-        for f in self.figures:
+        for f in self.components:
             f._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
@@ -165,5 +160,5 @@ class AxesPolar(Axes):
         ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
-        self._drawfigures(canvas, radius, cx, cy, ticks)
+        self._drawcomponents(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)

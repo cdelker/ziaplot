@@ -5,11 +5,11 @@ from typing import Optional
 from .. import util
 from ..calcs import func_intersection
 from ..canvas import Canvas, Borders, ViewBox
-from ..figure import Figure
+from ..element import Element
 from .function import Function
 
 
-class IntegralFill(Figure):
+class IntegralFill(Element):
     ''' Fill between two functions or between a function and the x-axis
 
         Args:

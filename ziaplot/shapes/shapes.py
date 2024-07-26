@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Optional
 import math
 
-from ..figure import Figure
+from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox, DataRange, PointType
 
 
-class Shape(Figure):
+class Shape(Element):
     ''' Filled shape '''
     def color(self, color: str) -> 'Shape':
         ''' Sets the fill color '''

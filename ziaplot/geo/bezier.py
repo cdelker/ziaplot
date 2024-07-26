@@ -6,12 +6,12 @@ import math
 
 from .. import util
 from ..canvas import Canvas, Borders, ViewBox
-from ..figure import Figure
+from ..element import Element
 from ..style import MarkerTypes, PointType
-from ..axes import AxesPlot
+from ..diagrams import Graph
 
 
-class BezierQuad(Figure):
+class BezierQuad(Element):
     ''' Quadratic Bezier Curve
 
         Args:
@@ -105,9 +105,9 @@ class BezierQuad(Figure):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot()
-        ax.add(self)
-        return ax.svgxml(border=border)
+        graph = Graph()
+        graph.add(self)
+        return graph.svgxml(border=border)
 
 
 class BezierCubic(BezierQuad):

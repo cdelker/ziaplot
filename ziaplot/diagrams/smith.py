@@ -1,4 +1,4 @@
-''' Smith chart axis '''
+''' Smith chart '''
 from __future__ import annotations
 from typing import Optional
 import math
@@ -6,10 +6,10 @@ from functools import lru_cache
 from collections import namedtuple
 
 from ..canvas import Canvas, Borders, ViewBox
-from ..figure import Figure
-from .polar import AxesPolar
-from .axes import getticks
-from .baseplot import Ticks
+from ..element import Element
+from .polar import GraphPolar
+from .graph import getticks
+from .diagram import Ticks
 from .smithgrid import smithgrids, SmithGridLevels
 
 ArcType = namedtuple('ArcType', ['x', 'y', 'r', 't1', 't2'])
@@ -150,8 +150,8 @@ def const_react_arc(x: float, rmin: float = 0,
     return ArcType(centerx, centery, radius, theta1, theta2)
 
 
-class AxesSmith(AxesPolar):
-    ''' Smith Chart Axis
+class GraphSmith(GraphPolar):
+    ''' Smith Chart
 
         Args:
             grid: Smith grid spacing
@@ -174,7 +174,7 @@ class AxesSmith(AxesPolar):
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
-        xsty = self._build_style('Axes.TickX')
+        xsty = self._build_style('Graph.TickX')
         _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
@@ -196,13 +196,13 @@ class AxesSmith(AxesPolar):
         return ticks
 
     def _drawframe(self, canvas: Canvas, ticks: Ticks) -> tuple[float, float, float]:
-        ''' Draw the axis frame, ticks, and grid
+        ''' Draw the graph frame, ticks, and grid
 
             Args:
                 canvas: SVG canvas to draw on
                 ticks: Tick names and positions
         '''
-        ysty = self._build_style('Axes.TickY')
+        ysty = self._build_style('Graph.TickY')
         sty = self._build_style()
         radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - sty.pad*2 - ysty.font_size
         cx = canvas.viewbox.x + canvas.viewbox.w/2
@@ -212,7 +212,7 @@ class AxesSmith(AxesPolar):
         gridminorsty = self._build_style('Smith.GridMinor')
 
         if self._title:
-            titlesty = self._build_style('Axes.Title')
+            titlesty = self._build_style('Graph.Title')
             radius -= titlesty.font_size/2
             cy -= titlesty.font_size/2
             canvas.text(canvas.viewbox.x + canvas.viewbox.w/2,
@@ -316,9 +316,9 @@ class AxesSmith(AxesPolar):
         canvas.resetviewbox()
         return radius, cx, cy
 
-    def _drawfigures(self, canvas: Canvas, radius: float,
+    def _drawcomponents(self, canvas: Canvas, radius: float,
                     cx: float, cy: float, ticks: Ticks) -> None:
-        ''' Draw all figures
+        ''' Draw all copmonents
 
             Args:
                 canvas: SVG canvas to draw on
@@ -326,11 +326,11 @@ class AxesSmith(AxesPolar):
                 cx, cy: canvas center of full circle
                 ticks: Tick definitions
         '''
-        self._assign_figure_colors(self.figures)
+        self._assign_component_colors(self.components)
         databox = ViewBox(-1, -1, 2, 2)
         viewbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         canvas.setviewbox(viewbox)
-        for f in self.figures:
+        for f in self.components:
             f._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
@@ -340,11 +340,11 @@ class AxesSmith(AxesPolar):
         ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
-        self._drawfigures(canvas, radius, cx, cy, ticks)
+        self._drawcomponents(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)
 
 
-class SmithConstResistance(Figure):
+class SmithConstResistance(Element):
     ''' Smith chart circle of constant Resistance (normalized)
 
         Args:
@@ -381,7 +381,7 @@ class SmithConstResistance(Figure):
                           dataview=databox)
 
 
-class SmithConstReactance(Figure):
+class SmithConstReactance(Element):
     ''' Smith chart arcs of constant Reactance (normalized). Draws
         both positive and negative (capacitive and inductive) arcs.
 

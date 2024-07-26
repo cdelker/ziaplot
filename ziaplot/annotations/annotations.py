@@ -2,16 +2,16 @@
 from typing import Optional, Sequence, cast
 import math
 
-from .. import axis_stack
+from .. import diagram_stack
 from ..util import angle_mean
 from ..style import MarkerTypes
 from ..text import TextPosition, Halign, Valign, text_align_ofst
 from ..canvas import Canvas, Borders, ViewBox
-from ..figure import Element
+from ..element import Component
 from ..geo.line import Line, LineLabel
 
 
-class Annotation(Element):
+class Annotation(Component):
     ''' Base class for annotations such as Arrows, Angles. Use to apply styling. '''
 
 
@@ -140,9 +140,9 @@ class Angle(Annotation):
     @classmethod
     def to_zero(cls, line: Line, quad: int = 1):
         ''' Create angle between line and y=0 '''
-        axis_stack.pause = True
+        diagram_stack.pause = True
         line2 = Line((0, 0), 0)
-        axis_stack.pause = False
+        diagram_stack.pause = False
         return cls(line, line2, quad=quad)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
