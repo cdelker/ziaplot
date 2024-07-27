@@ -207,16 +207,13 @@ class LineFill(Discrete):
         self._style.edge_color = color
         return self
 
-    def fill(self, color: str, alpha: Optional[float] = None) -> 'LineFill':
+    def fill(self, color: str) -> 'LineFill':
         ''' Set the region fill color and transparency
 
             Args:
                 color: Fill color
-                alpha: Transparency (0-1, with 1 being opaque)
         '''
         self._style.color = color
-        if alpha:
-            self._style.opacity = alpha
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -231,7 +228,6 @@ class LineFill(Discrete):
 
         sty = self._build_style()
         canvas.poly(xy, color=sty.get_color(),
-                    alpha=sty.opacity,
                     strokecolor='none',
                     dataview=databox)
 

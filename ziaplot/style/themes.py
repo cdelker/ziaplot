@@ -9,7 +9,6 @@ THEME_BASE = ''' * {
         edge_color: black;
         stroke: solid;
         stroke_width: 2;
-        opacity: 1;
         shape: none;
         radius: 8;          /* Marker size */
         edge_width: 1;      /* Border around markers, bars, etc. */
@@ -20,7 +19,6 @@ THEME_BASE = ''' * {
         width: 0;
         margin: 0;
         pad: 0;
-        span: 1, 1;
         colorcycle: black;
     }
     Canvas {
@@ -178,8 +176,7 @@ THEME_BASE = ''' * {
         radius: 7;
     }
     LineFill {
-        color: auto;
-        opacity: 0.5;
+        color: blue 30%;
     }
     Arrow {
         radius: 6;
@@ -215,8 +212,7 @@ THEME_BASE = ''' * {
         stroke_width: 1.5;
     }
     IntegralFill {
-        color: auto;
-        opacity: 0.3;
+        color: blue 30%;
     }
     Line.Text {
         font_size: 12;
@@ -224,11 +220,11 @@ THEME_BASE = ''' * {
     }
     Angle {
         stroke_width: 1.5;
-        radius: 15;
+        radius: 20;
         margin: 4;  /* between successive arcs */
     }
     Angle.Text {
-        font_size: 12;
+        font_size: 14;
         margin: 5;
     }
     Shape {

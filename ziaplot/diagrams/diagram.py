@@ -22,43 +22,7 @@ Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
 
 
 class Diagram(Container):
-    ''' Base plotting class
-
-        CSS:
-            Graph:
-                color: Background color of axis
-                edge_color: Color for borders
-                edge_width: Width of edges
-
-            Graph.TickX, Graph.TickY:
-                color: Color of tick mark
-                stroke_width: Width of tick mark
-                height: Length of tick mark
-                num_format: String formatter for tick mark
-                pad: Stretch the x/y range by this fraction of a tick 
-                margin: Distance between tick and canvas
-                font: Font
-                font_size: Point size of font
-            Graph.TickXMinor, Graph.TickYMinor:
-                color: Color of minor ticks
-                height: Length of minor ticks
-                stroke_width: Width of minor ticks
-            Graph.GridX, Graph.GridY:
-                color: Color of grid lines ('none' to remove)
-                stroke: Stroke dash type of grid lines
-                stroke_width: Width of grid lines
-            Graph.XName, Graph.YName, Graph.Title:
-                color: Color of axes titles
-                font: Font of axes titles
-                font_size: Font size of axes titles
-                margin: Space around text
-            Graph.Legend:
-                edge_width: Width of legend border
-                font: Font for legend entries
-                font_size: Font size for legend entries
-                pad: distance between legend border and contents
-                radius: Size of bar/pie squares in the legend
-    '''
+    ''' Base plotting class '''
     def __init__(self):
         super().__init__()
         self._title: str|None = None
@@ -80,13 +44,12 @@ class Diagram(Container):
         self.linespacing = 1.2
         self.fullbox = False
         self._colorfade: ColorFade|None = None
-
-        diagram_stack.push_component(self)
-
         self.max_xticks = 9
         self.max_yticks = 9
         self.xminordivisions = 0
         self.yminordivisions = 0
+        self._pad_datarange = False
+        diagram_stack.push_component(self)
 
     def __enter__(self):
         diagram_stack.push_diagram(self)
@@ -160,45 +123,9 @@ class Diagram(Container):
         self._title = title
         return self
 
-    def axesnames(self, x: str|None = None, y: str|None = None) -> Diagram:
-        ''' Set names for the x and y axes '''
-        self._xname = x
-        self._yname = y
-        return self
-
     def legend(self, loc: LegendLoc = 'left') -> Diagram:
         ''' Specify legend location '''
         self._legend = loc
-        return self
-
-    def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
-               minor: Optional[Sequence[float]] = None) -> Diagram:
-        ''' Set x axis tick values and names '''
-        self._xtickvalues = values
-        self._xticknames = names
-        self._xtickminor = minor
-        self._clearcache()
-        return self
-
-    def yticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
-               minor: Optional[Sequence[float]] = None) -> Diagram:
-        ''' Set y axis tick values and names '''
-        self._ytickvalues = values
-        self._yticknames = names
-        self._ytickminor = minor
-        self._clearcache()
-        return self
-
-    def noxticks(self) -> Diagram:
-        ''' Turn off x axis tick marks '''
-        self.showxticks = False
-        self._clearcache()
-        return self
-
-    def noyticks(self) -> Diagram:
-        ''' Turn off y axis tick marks '''
-        self.showyticks = False
-        self._clearcache()
         return self
     
     def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> Diagram:

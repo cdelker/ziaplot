@@ -13,8 +13,8 @@ class IntegralFill(Element):
     ''' Fill between two functions or between a function and the x-axis
 
         Args:
-            f: Callable function of x, returning y
-            f2: The other callable function of x, returning y
+            f: Function or Line instance
+            f2: Another Function instance
             x1: Starting x value to fill
             x2: Ending x value to fill
     '''
@@ -27,15 +27,6 @@ class IntegralFill(Element):
         self.func2 = f2
         self.x1 = x1
         self.x2 = x2
-
-    def alpha(self, alpha: float) -> 'IntegralFill':
-        ''' Set the transparency
-
-            Args:
-                alpha: Transparency (0-1, with 1 being opaque)
-        '''
-        self._style.opacity = alpha
-        return self
 
     def _xlimits(self, databox: ViewBox) -> tuple[float, float]:
         ''' Get x-limits to draw over '''
@@ -73,7 +64,6 @@ class IntegralFill(Element):
         fill = sty.get_color()
 
         canvas.poly(xy, color=fill,
-                    alpha=sty.opacity,
                     strokecolor='none',
                     dataview=databox)
 

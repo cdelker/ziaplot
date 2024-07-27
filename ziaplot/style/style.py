@@ -15,7 +15,6 @@ Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
 
 OffsetType = Tuple[float, float]
 PointType = Tuple[float, float]
-SpanType = Tuple[int, int]
 
 
 @dataclass
@@ -28,7 +27,6 @@ class Style:
     edge_color: ColorType | None = None
     stroke: DashTypes | None = None
     stroke_width: float | None = None
-    opacity: float | None = None
 
     shape: MarkerTypes | None = None
     radius: float | None = None
@@ -42,7 +40,6 @@ class Style:
     width: float | None = None
     margin: OffsetType | None = None
     pad: OffsetType | None = None
-    span: SpanType | None = None
 
     colorcycle: Sequence[ColorType] | None = None
     _cycleindex: int = 0

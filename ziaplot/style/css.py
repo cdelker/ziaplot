@@ -41,11 +41,12 @@ class CssStyle:
         return style
 
 
-def splitter(cssvalue: str) -> Any:
-    ''' Split the comma-separated CSS values '''
-    if ',' in cssvalue:
-        return [caster(c.strip()) for c in cssvalue.split(',')]
-    return caster(cssvalue)
+def splitcolors(cssvalue: str) -> Any:
+    ''' Split the comma-separated color values '''
+    # Split on comma but not if comma is within ()
+    # eg. red, blue is split at comma
+    # rgb(1,2,3) is not
+    return re.split(r',\s*(?![^()]*\))', cssvalue)
 
 
 def caster(cssvalue: str) -> int | float | str:
@@ -72,7 +73,10 @@ def parse_style(style: str | None) -> dict[str, Any]:
         item = item.strip()
         if item:
             key,val = item.split(':', maxsplit=1)
-            items[key.strip()] = splitter(val.strip())
+            if key.strip() == 'colorcycle':
+                items[key.strip()] = splitcolors(val.strip())
+            else:
+                items[key.strip()] = caster(val.strip())
     return items
 
 
@@ -92,9 +96,9 @@ def parse_css(css: str) -> CssStyle:
     for selector, value in cssitems:
         style = Style(**parse_style(value))
         if selector.startswith('#'):
-            update(cssstyle.cssids, selector, style)
+            update(cssstyle.cssids, selector[1:], style)
         elif selector.startswith('.'):
-            update(cssstyle.cssclasses, selector, style)
+            update(cssstyle.cssclasses, selector[1:], style)
         else:
             update(cssstyle.drawables, selector, style)
     return cssstyle

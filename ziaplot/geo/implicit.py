@@ -26,5 +26,5 @@ class Implicit(Contour):
         self.n = n
         x = linspace(*xlim, n)
         y = linspace(*ylim, n)
-        z = [[f(xx, yy) for xx in x] for yy in y] 
+        z = [[f(xx, yy) for xx in x] for yy in y]
         super().__init__(x, y, z, levels=(0,))

@@ -31,6 +31,26 @@ def getdash(dash: DashTypes = ':', linewidth: float = 2) -> str:
     return dash
 
 
+def set_color(color: str, elm: ET.Element, tag: str = 'stroke') -> None:
+    ''' Add a color (with possible transparency) to the element '''
+    assert tag in ['stroke', 'fill']
+    if color.strip().endswith('%'):
+        name, alpha = color.split(maxsplit=1)
+        elm.set(tag, name)
+        elm.set(f'{tag}-opacity', alpha)
+    elif color in [None, '', 'none']:
+        elm.set(tag, 'none')
+    else:
+        elm.set(tag, color)
+
+
+def set_clip(elm: ET.Element, clip: str) -> None:
+    ''' Set clip-path on element if defined '''
+    if clip:
+        elm.set('clip-path', f'url(#{clip})')
+
+
+
 class Transform:
     ''' Transformation from source to destination viewbox
 
@@ -75,14 +95,16 @@ class Canvas:
         self.canvaswidth = width
         self.canvasheight = height
         self.viewbox = ViewBox(0, 0, width, height)
-        attrib = {'xmlns': 'http://www.w3.org/2000/svg',
-                  'height': str(height),
-                  'width': str(width),
-                  'viewBox': f'0 0 {fmt(width)} {fmt(height)}'}
-        self.root = ET.Element('svg', attrib=attrib)
+        self.root = ET.Element(
+            'svg',
+            attrib={'xmlns': 'http://www.w3.org/2000/svg',
+                   'height': str(height),
+                   'width': str(width),
+                   'viewBox': f'0 0 {fmt(width)} {fmt(height)}'})
         if fill:
-            attrib = {'width': '100%', 'height': '100%', 'fill': fill}
-            ET.SubElement(self.root, 'rect', attrib=attrib)
+            rect = ET.SubElement(self.root, 'rect',
+                                 attrib={'width': '100%', 'height': '100%'})
+            set_color(fill, rect, 'fill')
         self.defs: Optional[ET.Element] = None
         self.clip: Optional[str] = None
         self._clipnames: list[str] = []
@@ -114,10 +136,12 @@ class Canvas:
         clip = ET.SubElement(self.defs, 'clipPath', attrib={'id': name})
         y = self.flipy(self.viewbox.y) - self.viewbox.h
 
-        attrib = {'x': fmt(self.viewbox.x-clippad), 'y': str(y-clippad),
-                  'width': fmt(self.viewbox.w+2*clippad),
-                  'height': fmt(self.viewbox.h+2*clippad)}
-        ET.SubElement(clip, 'rect', attrib=attrib)
+        ET.SubElement(
+            clip, 'rect',
+            attrib={'x': fmt(self.viewbox.x-clippad),
+                    'y': str(y-clippad),
+                    'width': fmt(self.viewbox.w+2*clippad),
+                    'height': fmt(self.viewbox.h+2*clippad)})
         self.clip = name
 
     def newgroup(self) -> ET.Element:
@@ -147,73 +171,71 @@ class Canvas:
         mark = ET.SubElement(self.defs, 'marker')
         diam = radius*2
         rstroke = radius + strokewidth
-        mark.attrib['id'] = name
-        mark.attrib['viewBox'] = f'{-strokewidth} {-strokewidth} {rstroke*2} {rstroke*2}'
-        mark.attrib['refX'] = f'{radius}'
-        mark.attrib['refY'] = f'{radius}'
-        mark.attrib['markerWidth'] = f'{diam}'
-        mark.attrib['markerHeight'] = f'{diam}'
-        mark.attrib['markerUnits'] = 'userSpaceOnUse'
+        mark.set('id', name)
+        mark.set('viewBox', f'{-strokewidth} {-strokewidth} {rstroke*2} {rstroke*2}')
+        mark.set('refX', f'{radius}')
+        mark.set('refY', f'{radius}')
+        mark.set('markerWidth', f'{diam}')
+        mark.set('markerHeight', f'{diam}')
+        mark.set('markerUnits', 'userSpaceOnUse')
 
         if shape in ['round', 'o']:
             sh = ET.SubElement(mark, 'circle')
-            sh.attrib['cx'] = f'{radius}'
-            sh.attrib['cy'] = f'{radius}'
-            sh.attrib['r'] = f'{radius}'
+            sh.set('cx', f'{radius}')
+            sh.set('cy', f'{radius}')
+            sh.set('r', f'{radius}')
         elif shape in ['square', 's']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.attrib['points'] = f'0,0 0,{diam}, {diam},{diam}, {diam},0'
+            sh.set('points', f'0,0 0,{diam}, {diam},{diam}, {diam},0')
         elif shape in ['triangle', '^']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.attrib['points'] = f'0,{diam} {diam},{diam} {radius},0'
+            sh.set('points', f'0,{diam} {diam},{diam} {radius},0')
         elif shape in ['triangled', 'v']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.attrib['points'] = f'{diam},0 0,0 {radius},{diam}'
+            sh.set('points', f'{diam},0 0,0 {radius},{diam}')
         elif shape in ['larrow', '<']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.attrib['points'] = f'0,{radius} {diam},0 {diam},{diam}'
+            sh.set('points', f'0,{radius} {diam},0 {diam},{diam}')
         elif shape in ['arrow', '>']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.attrib['points'] = f'0,0 0,{diam} {diam},{radius}'
+            sh.set('points', f'0,0 0,{diam} {diam},{radius}')
         elif shape == '-':
             sh = ET.SubElement(mark, 'path')
-            sh.attrib['d'] = f'M 0,{radius} L {diam},{radius}'
-            sh.attrib['stroke'] = color
+            sh.set('d', f'M 0,{radius} L {diam},{radius}')
         elif shape == '|':
             sh = ET.SubElement(mark, 'path')
-            sh.attrib['d'] = f'M {radius},{diam} L {radius},0'
-            sh.attrib['stroke-width'] = str(radius/4)
-            sh.attrib['stroke'] = color
+            sh.set('d', f'M {radius},{diam} L {radius},0')
+            sh.set('stroke-width', str(radius/4))
         elif shape == '||':
             sh = ET.SubElement(mark, 'path')
-            sh.attrib['d'] = f'M {radius/2},{diam} L {radius/2},0 M {3*radius/2},{diam} L {3*radius/2},0'
-            sh.attrib['stroke-width'] = str(radius/4)
-            sh.attrib['stroke'] = color
+            sh.set('d', f'M {radius/2},{diam} L {radius/2},0 M {3*radius/2},{diam} L {3*radius/2},0')
+            sh.set('stroke-width', str(radius/4))
         elif shape == '|||':
             sh = ET.SubElement(mark, 'path')
-            sh.attrib['d'] = f'M 0,{diam} L 0,0 M {radius},{diam} L {radius},0 M {diam},{diam} L {diam},0'
-            sh.attrib['stroke-width'] = str(radius/4)
-            sh.attrib['stroke'] = color
+            sh.set('d', f'M 0,{diam} L 0,0 M {radius},{diam} L {radius},0 M {diam},{diam} L {diam},0')
+            sh.set('stroke-width', str(radius/4))
         elif shape in ['+', 'x']:
             sh = ET.SubElement(mark, 'polygon')
             k = diam/3
             ks = fmt(k)
             ks2 = fmt(k*2)
-            sh.attrib['points'] = (f'{ks},0 {ks2},0 {ks2},{ks}, {diam},{ks} '
-                                   f'{diam},{ks2} {ks2},{ks2} {ks2},{diam} {ks},{diam} '
-                                   f'{ks},{ks2} 0,{ks2} 0,{ks} {ks},{ks}')
+            sh.set('points', (f'{ks},0 {ks2},0 {ks2},{ks}, {diam},{ks} '
+                              f'{diam},{ks2} {ks2},{ks2} {ks2},{diam} {ks},{diam} '
+                              f'{ks},{ks2} 0,{ks2} 0,{ks} {ks},{ks}'))
             if shape == 'x':
-                sh.attrib['transform'] = f'rotate(45 {radius} {radius})'
+                sh.set('transform', f'rotate(45 {radius} {radius})')
         else:
             raise ValueError(f'Unknown marker type {shape}')
 
         if orient:
-            mark.attrib['orient'] = 'auto'
+            mark.set('orient', 'auto')
 
         if shape not in ['-', '|', '||', '|||']:
-            sh.attrib['fill'] = color
-            sh.attrib['stroke'] = strokecolor
-            sh.attrib['stroke-width'] = str(strokewidth)
+            set_color(color, sh, 'fill')
+            set_color(strokecolor, sh, 'stroke')
+            sh.set('stroke-width', str(strokewidth))
+        else:
+            set_color(color, sh, 'stroke')
 
         return name
 
@@ -224,7 +246,7 @@ class Canvas:
     def path(self, x: Sequence[float], y: Sequence[float], stroke: DashTypes = '-',
              color: str = 'black', width: float = 2, markerid: Optional[str] = None,
              startmarker: Optional[str] = None, endmarker: Optional[str] = None,
-             dataview: Optional[ViewBox] = None):
+             dataview: Optional[ViewBox] = None) -> None:
         ''' Add a path to the SVG
 
             Args:
@@ -249,28 +271,25 @@ class Canvas:
         pointstr = f'M {fmt(x[0])},{fmt(y[0])} '
         pointstr += 'L '
         pointstr += ' '.join(f'{fmt(xx)},{fmt(yy)}' for xx, yy in zip(x[1:], y[1:]))
-        path.attrib['d'] = pointstr
-        path.attrib['stroke'] = color
-        path.attrib['stroke-width'] = str(width)
-        path.attrib['fill'] = 'none'
+        path.set('d', pointstr)
+        set_color(color, path, 'stroke')
+        path.set('stroke-width', str(width))
+        path.set('fill', 'none')
         if markerid is not None:
-            path.attrib['marker-start'] = f'url(#{markerid})'
-            path.attrib['marker-mid'] = f'url(#{markerid})'
-            path.attrib['marker-end'] = f'url(#{markerid})'
+            path.set('marker-start', f'url(#{markerid})')
+            path.set('marker-mid', f'url(#{markerid})')
+            path.set('marker-end', f'url(#{markerid})')
         if startmarker is not None:
-            path.attrib['marker-start'] = f'url(#{startmarker})'
+            path.set('marker-start', f'url(#{startmarker})')
         if endmarker is not None:
-            path.attrib['marker-end'] = f'url(#{endmarker})'
+            path.set('marker-end', f'url(#{endmarker})')
         if stroke not in ['-', 'solid', None, 'none', '']:
-            path.attrib['stroke-dasharray'] = getdash(stroke, width)
-        if stroke in [None, 'none', '']:
-            path.attrib['stroke'] = 'none'
-        if self.clip:
-            path.attrib['clip-path'] = f'url(#{self.clip})'
+            path.set('stroke-dasharray', getdash(stroke, width))
+        set_clip(path, self.clip)
 
     def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
              strokecolor: str = 'black', strokewidth: float = 2,
-             rcorner: float = 0, dataview: Optional[ViewBox] = None) -> ET.Element:
+             rcorner: float = 0, dataview: Optional[ViewBox] = None) -> None:
         ''' Add a rectangle to the canvas
 
             Args:
@@ -293,21 +312,20 @@ class Canvas:
 
         y = self.flipy(y) - h  # xy is top-left corner
         fill = 'none' if fill is None else fill
-        attrib = {'x': fmt(x), 'y': fmt(y),
-                  'width': fmt(w), 'height': fmt(h),
-                  'fill': fill, 'stroke': strokecolor,
-                  'stroke-width': str(strokewidth)}
+        rect = ET.SubElement(
+            self.group, 'rect',
+            attrib={'x': fmt(x), 'y': fmt(y),
+                    'width': fmt(w), 'height': fmt(h),
+                    'fill': fill,
+                    'stroke-width': str(strokewidth)})
+        set_color(strokecolor, rect, 'stroke')
         if rcorner:
-            attrib['rx'] = str(rcorner)
-        if self.clip:
-            attrib['clip-path'] = f'url(#{self.clip})'
-
-        rect = ET.SubElement(self.group, 'rect', attrib=attrib)
-        return rect
+            rect.set('rx', str(rcorner))
+        set_clip(rect, self.clip)
 
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
                strokecolor: str = 'red', strokewidth: float = 1,
-               stroke: DashTypes = '-', dataview: Optional[ViewBox] = None):
+               stroke: DashTypes = '-', dataview: Optional[ViewBox] = None) -> None:
         ''' Add a circle to the canvas (always a circle, the width/height
             will not be scaled to data coordinates).
 
@@ -326,15 +344,15 @@ class Canvas:
             radius = radius * self.viewbox.w/dataview.w
 
         y = self.flipy(y)
-        attrib = {'cx': fmt(x), 'cy': fmt(y), 'r': fmt(radius),
-                  'stroke': strokecolor, 'fill': color,
-                  'stroke-width': str(strokewidth)}
-        if stroke != '-' and stroke not in [None, 'none', '']:
-            attrib['stroke-dasharray'] = getdash(stroke, strokewidth)
-        if self.clip:
-            attrib['clip-path'] = f'url(#{self.clip})'
-        circ = ET.SubElement(self.group, 'circle', attrib=attrib)
-        return circ
+        circ = ET.SubElement(
+            self.group, 'circle',
+            attrib={'cx': fmt(x), 'cy': fmt(y), 'r': fmt(radius),
+                    'stroke-width': str(strokewidth)})
+        set_color(strokecolor, circ, 'stroke')
+        set_color(color, circ, 'fill')
+        if stroke not in ['-', None, 'none', '']:
+            circ.set('stroke-dasharray', getdash(stroke, strokewidth))
+        set_clip(circ, self.clip)
 
     def text(self, x: float, y: float, s: str,
              color: str = 'black',
@@ -382,8 +400,8 @@ class Canvas:
                        rotate=rotate)
 
     def poly(self, points: Sequence[PointType], color: str = 'black',
-             strokecolor: str = 'red', strokewidth: float = 1, alpha: float = 1.0,
-             dataview: Optional[ViewBox] = None):
+             strokecolor: str = 'red', strokewidth: float = 1,
+             dataview: Optional[ViewBox] = None) -> None:
         ''' Add a polygon to the canvas
 
             Args:
@@ -391,7 +409,6 @@ class Canvas:
                 color: Fill color
                 strokecolor: Border color
                 strokewidth: Width of border
-                alpha: Opacity (0-1) of fill color
         '''
         x = [p[0] for p in points]
         y = [p[1] for p in points]
@@ -403,20 +420,18 @@ class Canvas:
         pointstr = ''
         for px, py in zip(x, y):
             pointstr += f'{fmt(px)},{fmt(py)} '
-        attrib = {'points': pointstr,
-                  'stroke': strokecolor,
-                  'fill': color,
-                  'stroke-width': str(strokewidth)}
-        if alpha != 1:
-            attrib['fill-opacity'] = str(alpha)
-        if self.clip:
-            attrib['clip-path'] = f'url(#{self.clip})'
-        poly = ET.SubElement(self.group, 'polygon', attrib=attrib)
-        return poly
+
+        poly = ET.SubElement(
+            self.group, 'polygon',
+            attrib={'points': pointstr,
+                    'stroke-width': str(strokewidth)})
+        set_color(strokecolor, poly, 'stroke')
+        set_color(color, poly, 'fill')
+        set_clip(poly, self.clip)
 
     def wedge(self, cx: float, cy: float, radius: float, theta: float,
               starttheta: float = 0, color: str = 'red',
-              strokecolor: str = 'black', strokewidth: float = 1) -> ET.Element:
+              strokecolor: str = 'black', strokewidth: float = 1) -> None:
         ''' Add a wedge/filled arc (ie pie chart slice)
 
             Args:
@@ -439,17 +454,15 @@ class Canvas:
         path = ET.SubElement(self.group, 'path')
         pointstr = f'M {fmt(cx)},{fmt(cy)} L {fmt(x1)},{fmt(y1)} '
         pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 1 {fmt(x2)} {fmt(y2)} Z'
-        path.attrib['d'] = pointstr
-        path.attrib['stroke'] = strokecolor
-        path.attrib['stroke-width'] = str(strokewidth)
-        path.attrib['fill'] = color
-        if self.clip:
-            path.attrib['clip-path'] = f'url(#{self.clip})'
-        return path
+        path.set('d', pointstr)
+        set_color(strokecolor, path, 'stroke')
+        set_color(color, path, 'fill')
+        path.set('stroke-width', str(strokewidth))
+        set_clip(path, self.clip)
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
             theta2: float = 180, strokecolor: str = 'black',
-            strokewidth: float = 1, dataview: Optional[ViewBox] = None) -> ET.Element:
+            strokewidth: float = 1, dataview: Optional[ViewBox] = None) -> None:
         ''' Add an open arc
 
             Args:
@@ -479,18 +492,16 @@ class Canvas:
         path = ET.SubElement(self.group, 'path')
         pointstr = f'M {fmt(x1)},{fmt(y1)} '
         pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 0 {fmt(x2)} {fmt(y2)}'
-        path.attrib['d'] = pointstr
-        path.attrib['stroke'] = strokecolor
-        path.attrib['stroke-width'] = str(strokewidth)
-        path.attrib['fill'] = 'none'
-        if self.clip:
-            path.attrib['clip-path'] = f'url(#{self.clip})'
-        return path
+        path.set('d', pointstr)
+        path.set('stroke-width', str(strokewidth))
+        path.set('fill', 'none')
+        set_color(strokecolor, path, 'stroke')
+        set_clip(path, self.clip)
 
     def ellipse(self, cx: float, cy: float, r1: float, r2: float,
                 theta: float = 0, color: str = 'black',
                 strokecolor: str = 'black', strokewidth: float = 1,
-                dataview: Optional[ViewBox] = None) -> ET.Element:
+                dataview: Optional[ViewBox] = None) -> None:
         ''' Add an ellipse
 
             Args:
@@ -514,15 +525,13 @@ class Canvas:
         ellipse.set('cy', str(cy))
         ellipse.set('rx', str(r1))
         ellipse.set('ry', str(r2))
-        ellipse.set('stroke', strokecolor)
         ellipse.set('stroke-width', str(strokewidth))
-        ellipse.set('fill', color)
+        set_color(strokecolor, ellipse, 'stroke')
+        set_color(color, ellipse, 'fill')
 
         if theta:
             ellipse.set('transform', f'rotate({-theta} {cx} {cy})')
-        if self.clip:
-            ellipse.attrib['clip-path'] = f'url(#{self.clip})'
-        return ellipse
+        set_clip(ellipse, self.clip)
 
     def bezier(self,
                p1: PointType, p2: PointType,
@@ -530,7 +539,7 @@ class Canvas:
                stroke: DashTypes = '-',
                color: str = 'black', width: float = 2, markerid: Optional[str] = None,
                startmarker: Optional[str] = None, endmarker: Optional[str] = None,
-               dataview: Optional[ViewBox] = None):
+               dataview: Optional[ViewBox] = None) -> None:
         ''' Add a bezier curve to the SVG
 
             Args:
@@ -564,17 +573,14 @@ class Canvas:
         if p4 is not None:
             pointstr += f' {fmt(p4[0])},{fmt(p4[1])}'
 
-        path.attrib['d'] = pointstr
-        path.attrib['stroke'] = color
-        path.attrib['stroke-width'] = str(width)
-        path.attrib['fill'] = 'none'
+        set_color(color, path, 'stroke')
+        path.set('d', pointstr)
+        path.set('stroke-width', str(width))
+        path.set('fill', 'none')
         if startmarker is not None:
-            path.attrib['marker-start'] = f'url(#{startmarker})'
+            path.set('marker-start', f'url(#{startmarker})')
         if endmarker is not None:
-            path.attrib['marker-end'] = f'url(#{endmarker})'
-        if stroke != '-' and stroke not in [None, 'none', '']:
-            path.attrib['stroke-dasharray'] = getdash(stroke, width)
-        if stroke in [None, 'none', '']:
-            path.attrib['stroke'] = 'none'
-        if self.clip:
-            path.attrib['clip-path'] = f'url(#{self.clip})'
+            path.set('marker-end', f'url(#{endmarker})')
+        if stroke not in ['-', None, 'none', '']:
+            path.set('stroke-dasharray', getdash(stroke, width))
+        set_clip(path, self.clip)

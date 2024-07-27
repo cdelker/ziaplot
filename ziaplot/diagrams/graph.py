@@ -54,6 +54,43 @@ class Graph(Diagram):
     def __init__(self):
         super().__init__()
         self._equal_aspect = False
+        self._pad_datarange = True
+
+    def axesnames(self, x: str|None = None, y: str|None = None) -> Diagram:
+        ''' Set names for the x and y axes '''
+        self._xname = x
+        self._yname = y
+        return self
+
+    def xticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
+               minor: Optional[Sequence[float]] = None) -> Diagram:
+        ''' Set x axis tick values and names '''
+        self._xtickvalues = values
+        self._xticknames = names
+        self._xtickminor = minor
+        self._clearcache()
+        return self
+
+    def yticks(self, values: Sequence[float], names: Optional[Sequence[str]] = None,
+               minor: Optional[Sequence[float]] = None) -> Diagram:
+        ''' Set y axis tick values and names '''
+        self._ytickvalues = values
+        self._yticknames = names
+        self._ytickminor = minor
+        self._clearcache()
+        return self
+
+    def noxticks(self) -> Diagram:
+        ''' Turn off x axis tick marks '''
+        self.showxticks = False
+        self._clearcache()
+        return self
+
+    def noyticks(self) -> Diagram:
+        ''' Turn off y axis tick marks '''
+        self.showyticks = False
+        self._clearcache()
+        return self
 
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
@@ -124,13 +161,15 @@ class Graph(Diagram):
         else:
             yminor = None
 
-        # Add a bit of padding to data range
-        dx = xsty.pad * (xmax - xmin)
-        dy = ysty.pad * (ymax - ymin)
-        if len(xticks) > 1:
-            dx = xticks[1]-xticks[0]
-        if len(yticks) > 1:
-            dy = yticks[1]-yticks[0]
+        dx = dy = 0.
+        if self._pad_datarange:
+            # Add a bit of padding to data range
+            dx = xsty.pad * (xmax - xmin)
+            dy = ysty.pad * (ymax - ymin)
+            if len(xticks) > 1:
+                dx = xticks[1]-xticks[0]
+            if len(yticks) > 1:
+                dy = yticks[1]-yticks[0]
         xrange = (xmin - dx*xsty.pad,
                 xmax + dx*xsty.pad)
         yrange = (ymin - dy*ysty.pad,
@@ -363,6 +402,7 @@ class GraphQuad(Graph):
     '''
     def __init__(self):
         super().__init__()
+        self._pad_datarange = False
 
     def _clearcache(self):
         ''' Clear LRU cache when inputs changes '''
@@ -640,7 +680,7 @@ class GraphQuad(Graph):
 
         if self._xname:
             sty = self._build_style('Graph.XName')
-            canvas.text(xrght[0]+sty.margin+arrowwidth,
+            canvas.text(xrght[0]+sty.margin+arrowwidth*1.5,
                         xrght[1],
                         self._xname,
                         color=sty.get_color(),
@@ -651,7 +691,7 @@ class GraphQuad(Graph):
         if self._yname:
             sty = self._build_style('Graph.YName')
             canvas.text(ytop[0],
-                        ytop[1]+sty.margin+arrowwidth,
+                        ytop[1]+sty.margin+arrowwidth*1.5,
                         self._yname,
                         color=sty.get_color(),
                         font=sty.font,

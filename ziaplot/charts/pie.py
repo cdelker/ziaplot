@@ -69,8 +69,8 @@ class Pie(Diagram):
                     or `value`.
         '''
         pie = cls(labelmode=labelmode)
+        diagram_stack.pause = True
         for name, value in slices.items():
-            diagram_stack.pause = True
             pie.add(PieSlice(value).name(name))
         diagram_stack.pause = False
         return pie
@@ -86,8 +86,8 @@ class Pie(Diagram):
                     or `value`.
         '''
         pie = cls(labelmode=labelmode)
+        diagram_stack.pause = True
         for value in slices:
-            diagram_stack.pause = True
             pie.add(PieSlice(value))
         diagram_stack.pause = False
         return pie

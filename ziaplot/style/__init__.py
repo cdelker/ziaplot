@@ -9,6 +9,5 @@ from .style import (
     Valign,
     OffsetType,
     PointType,
-    SpanType,
     Style
 )

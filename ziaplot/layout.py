@@ -118,6 +118,11 @@ class LayoutGrid(Container):
             except NameError:  # Not in Jupyter/IPython
                 pass
 
+    def __iadd__(self, comp: Drawable):
+        ''' Allow += notation for adding components '''
+        self.add(comp)
+        return self
+
     def add(self, diagram: Drawable):
         ''' Add a Diagram to the grid '''
         self.diagrams.append(diagram)
@@ -155,7 +160,7 @@ class LayoutGrid(Container):
                 sty = diag._build_style()
                 a = Graph()
                 a.add(diag)
-                a._style.span = sty.span
+                a._span = diag._span
                 drawdiags.append(a)
             else:
                 drawdiags.append(diag)
@@ -180,11 +185,11 @@ class LayoutGrid(Container):
         for diag in drawdiags:
             sty = diag._build_style()
             while True:
-                diagcells = usedcells(row, col, *sty.span)
+                diagcells = usedcells(row, col, *diag._span)
                 if cellmap.keys().isdisjoint(diagcells):
                     for cell in diagcells:
                         cellmap[cell] = diag
-                    cellloc[diag] = row, col, row+sty.span[0], col+sty.span[1]
+                    cellloc[diag] = row, col, row+diag._span[0], col+diag._span[1]
                     break
                 else:
                     row, col = nextcell(row, col)
@@ -250,6 +255,9 @@ class LayoutGrid(Container):
 
 class LayoutEmpty(Container):
     ''' Empty placeholder for layout '''
+    def __init__(self):
+        super().__init__()
+        diagram_stack.push_component(self)
 
     def _borders(self, **kwargs) -> Borders:
         ''' Calculate borders around the layout box to fit the ticks and legend '''

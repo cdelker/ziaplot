@@ -54,7 +54,6 @@ from .annotations import Text, Angle, Arrow
 from .charts import Pie, PieSlice, BarChart, Bar, BarChartGrouped, BarSeries, BarChartHoriz, BarChartGroupedHoriz
 from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
 from .shapes import Circle, Ellipse, Rectangle
-from .text import settextmode
 from .config import config
 from .util import linspace
 from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND

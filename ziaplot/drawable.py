@@ -1,10 +1,14 @@
 ''' SVG Drawable base class '''
 
-from typing import Optional, Literal
+from typing import Optional, Literal, Tuple
 import os
 import xml.etree.ElementTree as ET
 
 from .canvas import Canvas, Borders, ViewBox
+
+
+SpanType = Tuple[int, int]
+
 
 
 class Drawable:
@@ -14,23 +18,26 @@ class Drawable:
     def __init__(self):
         self._cssid: str | None = None
         self._csscls: str | None = None
+        self._span: SpanType = 1, 1
 
     def __contains__(self, other: 'Drawable'):
         return None
 
     def cssid(self, idn: str) -> 'Drawable':
         ''' Set the CSS id for the item. Matches items in CSS with #name selector '''
-        self.cssid = idn
+        self._cssid = idn
+        return self
 
     def cssclass(self, cls: str) -> 'Drawable':
         ''' Set the CSS class name for the item. Matches items in CSS with .name selector '''
         self._csscls = cls
+        return self
 
     def span(self, columns: int = 1, rows: int = 1) -> 'Drawable':
         ''' Set the row and column span for the item when placed in a
             grid layout.
         '''
-        self._style.span = (rows, columns)
+        self._span = columns, rows
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
