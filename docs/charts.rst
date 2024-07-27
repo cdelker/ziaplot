@@ -1,3 +1,5 @@
+.. _Charts:
+
 Charts (Pie and Bar)
 ====================
 
@@ -6,30 +8,28 @@ Charts (Pie and Bar)
     
     import math
     import ziaplot as zp
+    zp.css('Canvas{width:400;height:300;}')
 
 
-In Ziaplot, the term "chart" is used for figures where the x value is qualitative. This includes Pie charts and bar charts.
+The term "chart" is used for diagrams where the x value is qualitative. This includes Pie charts and bar charts.
 
 |
 
-Bar Chart
----------
+BarChart
+--------
 
-A bar chart with a single series of data is made using :py:class:`ziaplot.charts.bar.BarChart`. Using the chart's context
-manager, each bar is added using :py:class:`ziaplot.charts.bar.BarSingle`.
+A bar chart. The Diagram is :py:class:`ziaplot.charts.bar.BarChart`, with
+:py:class:`ziaplot.charts.bar.Bar` instances added to it:
 
 .. jupyter-execute::
 
-    with zp.BarChart() as p:
-        zp.BarSingle(3).name('January')
-        zp.BarSingle(5).name('February')
-        zp.BarSingle(4).name('March')
-        zp.BarSingle(8).name('April')
-        p.xname = 'Month'
-        p.yname = 'Number'
-        p.title = 'Single Series Bar Chart'
+    with zp.BarChart().axesnames('Month', 'Number').title('Single Series Bar Chart'):
+        zp.Bar(3).name('January')
+        zp.Bar(5).name('February')
+        zp.Bar(4).name('March')
+        zp.Bar(8).name('April')
 
-Alternatively, bar charts may be created from using the `fromdict` class method:
+Or the `fromdict` class method creates the chart from a dictionary.
 
 .. jupyter-execute::
 
@@ -37,16 +37,13 @@ Alternatively, bar charts may be created from using the `fromdict` class method:
              'February': 6,
              'March': 2,
              'April': 5}
-    zp.BarChart.fromdict(
-         items,
-         xname='Month',
-         yname='Number',
-         title='Bar Chart From Dictionary')
+    zp.BarChart.fromdict(items).axesnames('Month', 'Number').title('Bar Chart From Dictionary')
 
 
-A :py:class:`ziaplot.charts.bar.BarChartGrouped` creates a bar chart with multiple data series, grouped by x-value.
-The group value names are provided when the BarChart is instantiated.
-Sets of bars are then added as :py:class:`ziaplot.charts.bar.BarSeries`.
+BarChartGrouped
+---------------
+
+A bar chart with multiple bars at each x value. The same-colored bars form a group or "series".
 
 .. jupyter-execute::
 
@@ -56,53 +53,72 @@ Sets of bars are then added as :py:class:`ziaplot.charts.bar.BarSeries`.
         zp.BarSeries(2, 1, 5, 4).name('Cherry')
 
 
-Bar charts may also be drawn with horizontal bars.
+:py:class:`ziaplot.charts.bar.BarChartGrouped`
+:py:class:`ziaplot.charts.bar.BarSeries`
+
+BarChartGroupedHoriz
+--------------------
+
+A grouped bar chart with horizontal bars.
 
 .. jupyter-execute::
 
-    with zp.BarChartGrouped(groups=['January', 'February', 'March', 'April'], horiz=True):
+    with zp.BarChartGroupedHoriz(groups=['January', 'February', 'March', 'April']):
         zp.BarSeries(4, 4, 5, 6).name('Apple')
         zp.BarSeries(3, 4, 4, 5).name('Blueberry')
         zp.BarSeries(2, 1, 5, 4).name('Cherry')
 
-Or from a dictionary:
-
-.. jupyter-execute::
-
-    items = {'Apple': (4, 4, 5, 6),
-             'Blueberry': (3, 4, 4, 5),
-             'Cherry': (2, 2, 5, 4)}
-    zp.BarChartGrouped.fromdict(
-        items,
-        groups=['January', 'February', 'March', 'April'])
-
-
 |
 
-Pie Chart
----------
+Pie
+---
 
-:py:class:`ziaplot.charts.pie.Pie` charts consist of wedges that are added to the pie as :py:class:`ziaplot.charts.pie.PieSlice`.
-Note the use of `extrude` to pull a single pie wedge out from the center.
-The slice values are normalized so the pie will always fill to 100\%.
+A pie chart. The Diagram is :py:class:`ziaplot.charts.pie.Pie`, with :py:class:`ziaplot.charts.pie.PieSlice` added to it.
 
 .. jupyter-execute::
 
-    with zp.Pie(labelmode='percent'):
-        zp.PieSlice(3).name('a').extrude(True)
+    with zp.Pie():
+        zp.PieSlice(3).name('a')
         zp.PieSlice(10).name('b')
-        zp.PieSlice(5).name('c').color('green')
+        zp.PieSlice(5).name('c')
+
+.. note::
+
+    The slice values are normalized so the pie will always fill to 100\%.
 
 
 Pie Charts may also be made from dictionaries or from lists.
 
 .. jupyter-execute::
 
-    zp.Pie().fromdict({'a': 20, 'b': 30, 'c': 40, 'd': 10}, labelmode='name')
+    zp.Pie().fromdict({'a': 20, 'b': 30, 'c': 40, 'd': 10})
 
 .. jupyter-execute::
 
-    zp.Pie().fromlist((3, 4, 2, 2, 5, 1), labelmode='value')
+    zp.Pie().fromlist((3, 4, 2, 2, 5, 1))
 
 
-The `labelmode` parameter changes what is displayed outside each slice, and may be `name`, `value`, `percent`, or `none`.
+.. tip::
+
+    Use the `labelmode` parameter to change the label displayed outside each slice.
+    Options are `name`, `value`, `percent`, or `none`.
+
+
+    .. jupyter-execute::
+
+        with zp.Pie(labelmode='percent'):
+            zp.PieSlice(3).name('a')
+            zp.PieSlice(10).name('b')
+            zp.PieSlice(5).name('c')
+
+.. tip::
+
+    Use `.extrude()` to pull a slice away from the center of the pie.
+
+
+    .. jupyter-execute::
+
+        with zp.Pie(labelmode='value'):
+            zp.PieSlice(3).name('a').extrude()
+            zp.PieSlice(10).name('b')
+            zp.PieSlice(5).name('c')
