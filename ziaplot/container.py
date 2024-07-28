@@ -1,4 +1,6 @@
 ''' Drawing containers for holding Diagrams and Components '''
+from __future__ import annotations
+
 from .drawable import Drawable
 from .style.style import Style, AppliedStyle
 from .style.css import CssStyle, parse_css, merge_css

@@ -1,4 +1,5 @@
 ''' Positions of grid arcs for Smith charts '''
+from __future__ import annotations
 from typing import Literal
 from dataclasses import dataclass
 import math

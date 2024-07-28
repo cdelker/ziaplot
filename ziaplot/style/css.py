@@ -1,4 +1,5 @@
 ''' Parse CSS-like style configuration '''
+from __future__ import annotations
 from typing import Any, Sequence
 import re
 from dataclasses import dataclass, field, replace

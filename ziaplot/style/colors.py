@@ -1,5 +1,6 @@
 ''' Color cylces '''
-from typing import Optional, Sequence
+from __future__ import annotations
+from typing import Sequence
 
 from ..util import interp, linspace
 

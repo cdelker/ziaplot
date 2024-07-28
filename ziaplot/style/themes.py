@@ -1,4 +1,5 @@
 ''' Style themes '''
+from __future__ import annotations
 from .css import CssStyle, parse_css, merge
 from .style import Style, AppliedStyle
 
