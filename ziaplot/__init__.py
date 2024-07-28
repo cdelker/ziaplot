@@ -69,4 +69,4 @@ from .calcs import (
 from .container import save
 
 
-__version__ = '0.6a0'
+__version__ = '0.6'
