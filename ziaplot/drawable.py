@@ -15,7 +15,7 @@ class Drawable:
     ''' Drawable SVG/XML object. Implements common XML and SVG functions,
         plus _repr_ for Jupyter
     '''
-    def __init__(self):
+    def __init__(self) -> None:
         self._cssid: str | None = None
         self._csscls: str | None = None
         self._span: SpanType = 1, 1

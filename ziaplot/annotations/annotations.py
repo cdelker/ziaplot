@@ -134,7 +134,7 @@ class Angle(Annotation):
         ''' Sets the radius of the angle arc '''
         self._style.radius = radius
         if text_radius:
-            self._style.margin = (text_radius, text_radius)
+            self._style.margin = text_radius
         return self
 
     @classmethod

@@ -1,6 +1,6 @@
 ''' Drawing containers for holding Diagrams and Components '''
 from .drawable import Drawable
-from .style.style import Style
+from .style.style import Style, AppliedStyle
 from .style.css import CssStyle, parse_css, merge_css
 from .style.themes import zptheme
 from . import diagram_stack
@@ -8,7 +8,7 @@ from . import diagram_stack
 
 class Container(Drawable):
     ''' Drawing container base class (either Diagrams or Layouts) '''
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._containerstyle = CssStyle()
         self._style = Style()
@@ -26,7 +26,7 @@ class Container(Drawable):
         self._containerstyle = parse_css(css)
         return self
 
-    def _build_style(self, name: str|None = None) -> Style:
+    def _build_style(self, name: str|None = None) -> AppliedStyle:
         ''' Build the Style '''
         if name is None:
             classes = [p.__qualname__ for p in self.__class__.mro()]

@@ -23,12 +23,14 @@ def fmt(f: float) -> str:
 def getdash(dash: DashTypes = ':', linewidth: float = 2) -> str:
     ''' Convert dash style into a stroke-dasharray tag for SVG path '''
     if dash in [':', 'dotted']:
-        dash = f'{linewidth} {linewidth}'
+        dashstyle = f'{linewidth} {linewidth}'
     elif dash in ['--', 'dashed']:
-        dash = f'{linewidth*3} {linewidth*4}'
+        dashstyle = f'{linewidth*3} {linewidth*4}'
     elif dash in ['-.', '.-', 'dashdot']:
-        dash = f'{linewidth*3} {linewidth} {linewidth/2} {linewidth}'
-    return dash
+        dashstyle = f'{linewidth*3} {linewidth} {linewidth/2} {linewidth}'
+    else:
+        dashstyle = str(dash)
+    return dashstyle
 
 
 def set_color(color: str, elm: ET.Element, tag: str = 'stroke') -> None:
@@ -44,7 +46,7 @@ def set_color(color: str, elm: ET.Element, tag: str = 'stroke') -> None:
         elm.set(tag, color)
 
 
-def set_clip(elm: ET.Element, clip: str) -> None:
+def set_clip(elm: ET.Element, clip: str|None) -> None:
     ''' Set clip-path on element if defined '''
     if clip:
         elm.set('clip-path', f'url(#{clip})')

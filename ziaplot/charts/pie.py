@@ -60,7 +60,7 @@ class Pie(Diagram):
     @classmethod
     def fromdict(cls,
                  slices: dict[str, float],
-                 labelmode: str = 'name') -> 'Pie':
+                 labelmode: PieLabelMode = 'name') -> 'Pie':
         ''' Create Pie from bars dictionary
 
             Args:
@@ -77,7 +77,7 @@ class Pie(Diagram):
 
     @classmethod
     def fromlist(cls, slices: list[float],
-                 labelmode: str = 'name') -> 'Pie':
+                 labelmode: PieLabelMode = 'name') -> 'Pie':
         ''' Create Pie from list of values
 
             Args:

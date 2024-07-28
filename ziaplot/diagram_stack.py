@@ -22,7 +22,7 @@ def push_component(comp: Optional[Drawable]) -> None:
     if not pause and len(diagram_stack) > 0:
         diagram, prev_comp = list(diagram_stack.items())[-1]
         if prev_comp is not None and prev_comp not in diagram:
-            diagram.add(prev_comp)
+            diagram.add(prev_comp)  # type: ignore
         diagram_stack[diagram] = comp
 
 def current_diagram() -> Optional[Drawable]:

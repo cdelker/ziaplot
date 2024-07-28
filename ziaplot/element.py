@@ -8,7 +8,7 @@ from __future__ import annotations
 from . import diagram_stack
 from .drawable import Drawable
 from .canvas import DataRange
-from .style.style import Style, DashTypes
+from .style.style import Style, AppliedStyle, DashTypes
 from .style.css import merge_css, CssStyle
 from .style.themes import zptheme
 
@@ -17,19 +17,19 @@ class Component(Drawable):
     ''' Base class for things added to a Diagram '''
     _step_color = False
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._style = Style()
         self._containerstyle: CssStyle | None = None
-        self._name = None
+        self._name: str|None = None
         diagram_stack.push_component(self)
 
-    def style(self, style: str) -> 'Element':
+    def style(self, style: str) -> 'Component':
         ''' Add CSS key-name pairs to the style '''
         self._style = merge_css(self._style, style)
         return self
 
-    def _build_style(self, name: str|None = None) -> Style:
+    def _build_style(self, name: str|None = None) -> AppliedStyle:
         ''' Build the style '''
         if name is None:
             classes = [p.__qualname__ for p in self.__class__.mro()]
@@ -62,18 +62,24 @@ class Component(Drawable):
         ''' Get range of data '''
         return DataRange(None, None, None, None)
 
+    def _logy(self) -> None:
+        ''' Convert y coordinates to log(y) '''
+
+    def _logx(self) -> None:
+        ''' Convert x values to log(x) '''
+
 
 class Element(Component):
     ''' Base class for elements, defining a single object in a plot '''
     _step_color = False  # Whether to increment the color cycle
     legend_square = False  # Draw legend item as a square
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._style = Style()
-        self._name = ''
+        self._name: str = ''
         self._containerstyle: CssStyle | None = None
-        self._markername = None  # SVG ID of marker for legend
+        self._markername: str|None = None  # SVG ID of marker for legend
 
     def _set_cycle_index(self, index: int = 0):
         ''' Set the index of this element within the colorcycle '''
@@ -83,12 +89,6 @@ class Element(Component):
         ''' Sets the element name to include in the legend '''
         self._name = name
         return self
-
-    def _logy(self) -> None:
-        ''' Convert y coordinates to log(y) '''
-
-    def _logx(self) -> None:
-        ''' Convert x values to log(x) '''
 
     def _tangent_slope(self, x: float) -> float:
         ''' Calculate angle tangent to Element at x '''

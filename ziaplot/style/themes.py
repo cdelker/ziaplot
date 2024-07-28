@@ -1,6 +1,6 @@
 ''' Style themes '''
 from .css import CssStyle, parse_css, merge
-from .style import Style
+from .style import Style, AppliedStyle
 
 
 # All themes stacked on top of this default one
@@ -360,7 +360,7 @@ class Theme:
         if name not in self.THEMES:
             raise ValueError(f'No theme named {name}. Use zp.list_themes() to see available theme names')
         self.theme = parse_css(
-            THEME_BASE + self.THEMES.get(name)
+            THEME_BASE + self.THEMES.get(name, '')
         )
 
     def list_themes(self) -> list[str]:
@@ -377,7 +377,7 @@ class Theme:
               cssclass: str|None = None,
               container: CssStyle|None = None,
               instance: Style|None = None,
-              ):
+              ) -> AppliedStyle:
         '''
             Args:
                 classes: List of class names to apply, from higest
@@ -390,7 +390,7 @@ class Theme:
         # Start with base theme to fill everything in
         style = self.theme.extract('*')
         
-        classes = list(reversed(classes))
+        classes = tuple(reversed(classes))
 
         # Merge in the theme
         if len(classes):
@@ -413,7 +413,7 @@ class Theme:
         # Finish with instance overrides
         if instance:
             style = merge(style, instance)
-        return style
+        return AppliedStyle(**style.values())
 
 
 zptheme = Theme()

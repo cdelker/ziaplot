@@ -50,12 +50,12 @@ class Contour(Element):
         ''' Get colors for each level '''
         sty = self._build_style()
         if len(sty.colorcycle) > 2:
-            return sty.colorcycle
+            return list(sty.colorcycle)
         return ColorFade(*sty.colorcycle).colors(self.nlevels)
     
-    def colors(self, *colors: str, stops: Optional[Sequence[float]] = None) -> 'Contour':
+    def colors(self, *colors: str, stops: Sequence[float]|None = None) -> 'Contour':
         ''' Set the start and end colors for the contours '''
-        self._style.colorcycle = ColorFade(*colors, stops).colors(self.nlevels)
+        self._style.colorcycle = ColorFade(*colors, stops=stops).colors(self.nlevels)
         return self
 
     def datarange(self) -> DataRange:

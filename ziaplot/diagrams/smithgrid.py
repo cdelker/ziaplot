@@ -21,7 +21,7 @@ class SmithGrid:
 
 def buildgrid() -> dict[SmithGridLevels, SmithGrid]:
     ''' Get default Smith grid dictionary '''
-    grid: dict[str, SmithGrid] = {}
+    grid: dict[SmithGridLevels, SmithGrid] = {}
     grid['coarse'] = SmithGrid(
         circles=[(.2, 2, 0, True), (.5, 5, 0, True), (1, 5, 0, True),
                  (2, math.inf, 0, True), (5, math.inf, 0, True)],

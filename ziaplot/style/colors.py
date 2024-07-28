@@ -13,11 +13,11 @@ class ColorCycle:
     '''
     def __init__(self, *colors: str):
         if len(colors) > 0:
-            self.cycle = colors
+            self.cycle = list(colors)
         else:
-            self.cycle = ('#ba0c2f', '#ffc600', '#007a86', '#ed8b00',
+            self.cycle = ['#ba0c2f', '#ffc600', '#007a86', '#ed8b00',
                           '#8a387c', '#a8aa19', '#63666a', '#c05131',
-                          '#d6a461', '#a7a8aa')
+                          '#d6a461', '#a7a8aa']
         self._steps = 10
 
     def steps(self, n: int) -> None:
@@ -43,10 +43,10 @@ class ColorFade(ColorCycle):
             stops: List of stop positions for each color in the
                 gradient, starting with 0 and ending with 1.
     '''
-    def __init__(self, *colors: str, stops: Optional[Sequence[float]] = None):
+    def __init__(self, *colors: str, stops: Sequence[float]|None = None):
         if not all(c[0] == '#' for c in colors):
             raise ValueError('ColorFade colors must be #FFFFFF format.')
-        self._colors = colors
+        self._colors = list(colors)
         self._stops = stops
         if self._stops is not None:
             if len(self._stops) != len(colors):
@@ -85,4 +85,4 @@ class ColorFade(ColorCycle):
         R = [int(x) for x in R]
         G = [int(x) for x in G]
         B = [int(x) for x in B]
-        self.cycle = tuple(f'#{rr:02x}{gg:02x}{bb:02x}' for rr, gg, bb in zip(R, G, B))
+        self.cycle = [f'#{rr:02x}{gg:02x}{bb:02x}' for rr, gg, bb in zip(R, G, B)]

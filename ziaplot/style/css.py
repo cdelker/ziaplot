@@ -30,14 +30,18 @@ class CssStyle:
     cssclasses: dict[str, Style] = field(default_factory=dict)
     drawables: dict[str, Style] = field(default_factory=dict)
 
-    def extract(self, classnames: Sequence[str], cssclass: str = '', cssid: str = '') -> Style:
+    def extract(self, classnames: Sequence[str],
+                cssclass: str|None = '', cssid: str|None = '') -> Style:
         ''' Get styles that match - from most general (classname) to most specific (id) '''
         style = Style()
         for cls in classnames:
             style = merge(style, self.drawables.get(cls, Style()))
 
-        style = merge(style, self.cssclasses.get(cssclass, Style()))
-        style = merge(style, self.cssids.get(cssid, Style()))
+        if cssclass:
+            style = merge(style, self.cssclasses.get(cssclass, Style()))
+        
+        if cssid:
+            style = merge(style, self.cssids.get(cssid, Style()))
         return style
 
 
@@ -63,7 +67,7 @@ def caster(cssvalue: str) -> int | float | str:
 def parse_style(style: str | None) -> dict[str, Any]:
     ''' Parse items in one style group {...} '''
     if style is None:
-        return Style()
+        return {}
 
     # Remove CSS comments inside /* ... */
     style = re.sub(r'(\/\*[^*]*\*+([^/*][^*]*\*+)*\/)', '', style)

@@ -13,7 +13,6 @@ TextPosition = Literal['N', 'E', 'S', 'W',
 Halign = Literal['left', 'center', 'right']
 Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
 
-OffsetType = Tuple[float, float]
 PointType = Tuple[float, float]
 
 
@@ -38,8 +37,8 @@ class Style:
 
     height: float | None = None
     width: float | None = None
-    margin: OffsetType | None = None
-    pad: OffsetType | None = None
+    margin: float | None = None
+    pad: float | None = None
 
     colorcycle: Sequence[ColorType] | None = None
     _cycleindex: int = 0
@@ -47,6 +46,40 @@ class Style:
     def __post_init__(self):
         if isinstance(self.colorcycle, str):
             self.colorcycle = [self.colorcycle]
+
+    def _set_cycle_index(self, i: int) -> None:
+        self._cycleindex = i
+
+    def values(self):
+        ''' Get dict of values that are not None '''
+        return {k:v for k, v in asdict(self).items() if v is not None}
+
+
+@dataclass
+class AppliedStyle:
+    ''' An applied style - Nones not allowed (mostly to help
+        with typing)
+    '''
+    color: ColorType
+    edge_color: ColorType
+    stroke: DashTypes
+    stroke_width: float
+
+    shape: MarkerTypes
+    radius: float
+    edge_width: float
+    
+    font: str
+    font_size: float
+    num_format: str
+
+    height: float
+    width: float
+    margin: float
+    pad: float
+
+    colorcycle: Sequence[ColorType]
+    _cycleindex: int = 0
 
     def _set_cycle_index(self, i: int) -> None:
         self._cycleindex = i

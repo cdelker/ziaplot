@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Set, Optional
 import xml.etree.ElementTree as ET
 
-from .diagrams import Graph
+from .diagrams import Graph, Diagram
 from .element import Component
 from .canvas import Canvas, ViewBox, Borders
 from .container import Container
@@ -183,6 +183,7 @@ class LayoutGrid(Container):
         cellloc: dict[Drawable, tuple[int, int, int, int]] = {}  # Cell to x, y, x+sp, y+sp
         row, col = (0, 0)
         for diag in drawdiags:
+            assert isinstance(diag, Container)
             sty = diag._build_style()
             while True:
                 diagcells = usedcells(row, col, *diag._span)

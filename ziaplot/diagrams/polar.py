@@ -134,8 +134,8 @@ class GraphPolar(Diagram):
                         color=ticksty.get_color())
         return radius, cx, cy
 
-    def _drawcomponents(self, canvas: Canvas, radius: float,
-                    cx: float, cy: float, ticks: Ticks) -> None:
+    def _draw_polarcontents(self, canvas: Canvas, radius: float,
+                            cx: float, cy: float, ticks: Ticks) -> None:
         ''' Draw all components
 
             Args:
@@ -160,5 +160,5 @@ class GraphPolar(Diagram):
         ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
-        self._drawcomponents(canvas, radius, cx, cy, ticks)
+        self._draw_polarcontents(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)

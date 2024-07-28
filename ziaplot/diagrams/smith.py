@@ -232,7 +232,7 @@ class GraphSmith(GraphPolar):
         canvas.setviewbox(dest, clippad=5)
 
         # Arcs of constant reactance
-        for b, rmax, rmin, major in smithgrids.get(self.grid).arcs:
+        for b, rmax, rmin, major in smithgrids.get(self.grid, smithgrids['medium']).arcs:
             arc = const_react_arc(b, rmin, rmax)
             color = gridsty.get_color() if major else gridminorsty.get_color()
             width = gridsty.stroke_width if major else gridminorsty.stroke_width
@@ -316,8 +316,8 @@ class GraphSmith(GraphPolar):
         canvas.resetviewbox()
         return radius, cx, cy
 
-    def _drawcomponents(self, canvas: Canvas, radius: float,
-                    cx: float, cy: float, ticks: Ticks) -> None:
+    def _draw_contents(self, canvas: Canvas, radius: float,
+                       cx: float, cy: float, ticks: Ticks) -> None:
         ''' Draw all copmonents
 
             Args:
@@ -340,7 +340,7 @@ class GraphSmith(GraphPolar):
         ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
-        self._drawcomponents(canvas, radius, cx, cy, ticks)
+        self._draw_contents(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)
 
 

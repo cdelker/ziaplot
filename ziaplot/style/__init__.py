@@ -7,7 +7,7 @@ from .style import (
     TextPosition,
     Halign,
     Valign,
-    OffsetType,
     PointType,
-    Style
+    Style,
+    AppliedStyle
 )

@@ -9,6 +9,7 @@ from collections import namedtuple
 import xml.etree.ElementTree as ET
 
 from ..style import ColorFade
+from ..drawable import Drawable
 from ..canvas import Canvas, ViewBox, DataRange, Borders, PointType
 from .. import text
 from ..container import Container
@@ -23,7 +24,7 @@ Ticks = namedtuple('Ticks', ['xticks', 'yticks', 'xnames', 'ynames',
 
 class Diagram(Container):
     ''' Base plotting class '''
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._title: str|None = None
         self._xname: str|None = None
@@ -66,7 +67,7 @@ class Diagram(Container):
             except NameError:  # Not in Jupyter/IPython
                 pass
 
-    def __contains__(self, comp: Component):
+    def __contains__(self, comp: Drawable):
         return comp in self.components
 
     def __iadd__(self, comp: Component):
@@ -228,6 +229,9 @@ class Diagram(Container):
         square = markw / 4
 
         for f in components:
+            assert isinstance(f, Element)
+            if not f._name:
+                continue
             width, _ = text.text_size(
                 f._name, fontsize=legstyle.font_size,
                 font=legstyle.font)
@@ -310,13 +314,17 @@ class Diagram(Container):
 
         # Draw each line
         yytext = ytop - legtxt.font_size
-        for i, s in enumerate(components):
+        for comp in components:
+            assert isinstance(comp, Element)
+            if not comp._name:
+                continue
+
             yyline = yytext + legtxt.font_size/3
-            sstyle = s._build_style()
+            sstyle = comp._build_style()
             
-            if s.legend_square:
+            if comp.legend_square:
                 canvas.text(boxl+square+pad*2, yytext,
-                            s._name,
+                            comp._name,
                             font=legtxt.font,
                             size=legtxt.font_size,
                             color=legtxt.get_color(),
@@ -328,7 +336,7 @@ class Diagram(Container):
 
             else:
                 canvas.text(xright-boxw+markw, yytext,
-                            s._name,
+                            comp._name,
                             color=legtxt.get_color(),
                             font=legtxt.font,
                             size=legsty.font_size,
@@ -339,7 +347,7 @@ class Diagram(Container):
                             [yyline, yyline, yyline],
                             color=sstyle.get_color(),
                             width=sstyle.stroke_width,
-                            markerid=s._markername,
+                            markerid=comp._markername,
                             stroke=sstyle.stroke)
                 canvas.resetviewbox()
             yytext -= legsty.font_size * self.linespacing

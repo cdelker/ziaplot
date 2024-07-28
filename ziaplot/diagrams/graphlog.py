@@ -7,6 +7,7 @@ import math
 
 from ..canvas import Canvas, ViewBox, DataRange
 from .. import text
+from ..element import Element
 from .graph import Graph, Ticks
 
 

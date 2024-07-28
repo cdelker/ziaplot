@@ -5,7 +5,7 @@ from typing import Optional, Sequence, Union
 from ..element import Element, Component
 from ..discrete import Bars, BarsHoriz
 from ..diagrams import Graph
-from ..style import Style
+from ..style import AppliedStyle
 from ..canvas import Canvas, Borders, ViewBox
 from .. import diagram_stack
 
@@ -30,12 +30,12 @@ class BarChart(Graph):
         Note:
             For a bar graph with quantitative x values, use Graph and add Bars instances.
     '''
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.barlist: list[Bar] = []
         self._horiz = False
         self._barwidth = 1.  # Let each bar have data-width = 1
-        self._legend = None
+        self._legend = 'none'
     
     def add(self, bar: Component) -> None:
         ''' Add a single bar '''
@@ -45,14 +45,18 @@ class BarChart(Graph):
         newbar: Union[Bars, BarsHoriz]
         if self._horiz:
             newbar = BarsHoriz((0,), (bar.value,), width=self._barwidth, align='center')
-            newbar.color(bar._style.color).name(bar._name)
         else:
             newbar = Bars((0,), (bar.value,), width=self._barwidth, align='center')
-            newbar.color(bar._style.color).name(bar._name)
+
+        if bar._style.color:
+            newbar.color(bar._style.color)
+        if bar._name:
+            newbar.name(bar._name)
+
         super().add(newbar)
         diagram_stack.pause = False
 
-    def _build_style(self, name: str | None = None) -> Style:
+    def _build_style(self, name: str | None = None) -> AppliedStyle:
         ''' Build the Style '''
         if self._horiz:
             if name == 'Graph.TickX':
@@ -84,7 +88,7 @@ class BarChart(Graph):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         sty = self._build_style()
-        names = [bar._name for bar in self.barlist]
+        names = [str(bar._name) for bar in self.barlist]
         if self._horiz:
             elements = self.components[::-1]
             names = names[::-1]
@@ -161,11 +165,14 @@ class BarChartGrouped(Graph):
             bar = BarsHoriz(x, values, width=self._barwidth, align='left')
         else:
             bar = Bars(x, barseries.values, width=self._barwidth, align='left')
-        bar.color(barseries._style.color).name(barseries._name)
+        if barseries._style.color:
+            bar.color(barseries._style.color)
+        if barseries._name:
+            bar.name(barseries._name)
         super().add(bar)
         diagram_stack.pause = False
 
-    def _build_style(self, name: str | None = None) -> Style:
+    def _build_style(self, name: str | None = None) -> AppliedStyle:
         ''' Build the Style '''
         if self._horiz:
             if name == 'Graph.TickX':
