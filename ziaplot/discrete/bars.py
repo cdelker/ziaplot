@@ -5,13 +5,14 @@ import math
 import xml.etree.ElementTree as ET
 from collections import Counter
 
-from ..canvas import Canvas, Borders, ViewBox, DataRange, Halign
-from ..axes import AxesPlot
-from ..series import Series
+from ..text import Halign
+from ..canvas import Canvas, Borders, ViewBox, DataRange
+from ..diagrams import Graph
+from ..element import Element
 
 
-class Bars(Series):
-    ''' A series of bars to add to an AxesPlot (quantitative x values)
+class Bars(Element):
+    ''' A series of bars to add to an Graph (quantitative x values)
         For qualitative bar chart, use a BarChart instance.
 
         Args:
@@ -21,6 +22,9 @@ class Bars(Series):
             width: Width of all bars
             align: Bar position in relation to x value
     '''
+    _step_color = True
+    legend_square = True
+
     def __init__(self, x: Sequence[float], y: Sequence[float], y2: Optional[Sequence[float]] = None,
                  width: Optional[float] = None, align: Halign = 'center'):
         super().__init__()
@@ -41,11 +45,11 @@ class Bars(Series):
             xmin, xmax = min(self.x)-self.width, max(self.x)
         return DataRange(xmin, xmax, ymin, ymax)
 
-    def logy(self) -> None:
+    def _logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
         self.y = [math.log10(y) for y in self.y]
 
-    def logx(self) -> None:
+    def _logx(self) -> None:
         ''' Convert x values to log(x) '''
         self.x = [math.log10(x) for x in self.x]
         self.width = math.log10(self.x[1] - math.log10(self.x[0]))
@@ -53,7 +57,8 @@ class Bars(Series):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        color = self.style.line.color
+        sty = self._build_style()
+        color = sty.get_color()
         for x, y, y2 in zip(self.x, self.y, self.y2):
             if self.align == 'center':
                 x -= self.width/2
@@ -62,15 +67,15 @@ class Bars(Series):
 
             canvas.rect(x, y2, self.width, y-y2,
                         fill=color,
-                        strokecolor=self.style.border.color,
-                        strokewidth=self.style.border.width,
+                        strokecolor=sty.edge_color,
+                        strokewidth=sty.edge_width,
                         dataview=databox)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot(style=self._axisstyle)
-        ax.add(self)
-        return ax.svgxml(border=border)
+        graph = Graph()
+        graph.add(self)
+        return graph.svgxml(border=border)
 
 
 class BarsHoriz(Bars):
@@ -83,7 +88,8 @@ class BarsHoriz(Bars):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        color = self.style.line.color
+        sty = self._build_style()
+        color = sty.get_color()
         for x, y, y2 in zip(self.x, self.y, self.y2):
             if self.align == 'center':
                 x -= self.width/2
@@ -93,13 +99,13 @@ class BarsHoriz(Bars):
             canvas.rect(y2, x, y-y2,
                         self.width,
                         fill=color,
-                        strokecolor=self.style.border.color,
-                        strokewidth=self.style.border.width,
+                        strokecolor=sty.edge_color,
+                        strokewidth=sty.edge_width,
                         dataview=databox)
 
 
 class Histogram(Bars):
-    ''' Histogram data series
+    ''' Histogram data
 
         Args:
             x: Data to show as histogram

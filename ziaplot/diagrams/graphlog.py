@@ -1,14 +1,14 @@
-''' Logscale axes '''
-
+''' Logscale Graphs '''
 from __future__ import annotations
 from typing import Sequence
 from functools import lru_cache
-import math
 from copy import deepcopy
+import math
 
-from .axes import AxesPlot, Ticks
 from ..canvas import Canvas, ViewBox, DataRange
 from .. import text
+from ..element import Element
+from .graph import Graph, Ticks
 
 
 def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], list[float]]:
@@ -41,20 +41,18 @@ def logticks(ticks: Sequence[float], divs=10) -> tuple[list[float], list[str], l
     return values, names, minor
 
 
-class AxesLogY(AxesPlot):
-    ''' Plot with Y on a log10 scale
+class GraphLog(Graph):
+    ''' Base Class for log-scale graph '''
+    def __init__(self):
+        super().__init__()
+        self.xlogdivisions = 10
+        self.ylogdivisions = 10
 
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
 
-        Attributes:
-            style: Drawing style
-    '''
+class GraphLogY(GraphLog):
+    ''' Plot with Y on a log10 scale '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -82,51 +80,42 @@ class AxesLogY(AxesPlot):
                 ticks: Tick names and positions
         '''
         ticks = super()._maketicks()
-        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.style.tick.ylogdivisions)
+        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.ylogdivisions)
         yrange = yticks[0], yticks[-1]
+        sty = self._build_style()
 
         ywidth = 0.
         for tick in ynames:
             ywidth = max(ywidth, text.text_size(tick,
-                         fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font).width)
+                         fontsize=sty.font_size,
+                         font=sty.font).width)
 
         ticks = Ticks(ticks.xticks, yticks, ticks.xnames,
                       ynames, ywidth, ticks.xrange, yrange,
                       None, yminor)
         return ticks
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all components to the graph
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        seriesbackup = self.series
-        self.series = [deepcopy(s) for s in seriesbackup]
-        for s in self.series:
-            s.logy()
+        compbackup = self.components
+        self.components = [deepcopy(c) for c in compbackup]
+        for c in self.components:
+            c._logy()
 
-        super()._drawseries(canvas, axisbox, databox)
-        self.series = seriesbackup
+        super()._drawcomponents(canvas, diagbox, databox)
+        self.components = compbackup
 
 
-class AxesLogX(AxesPlot):
-    ''' Plot with Y on a log10 scale
-
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
-    '''
+class GraphLogX(GraphLog):
+    ''' Plot with Y on a log10 scale '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -154,44 +143,34 @@ class AxesLogX(AxesPlot):
                 ticks: Tick names and positions
         '''
         ticks = super()._maketicks()
-        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.style.tick.xlogdivisions)
+        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.xlogdivisions)
         xrange = xticks[0], xticks[-1]
 
         ticks = Ticks(xticks, ticks.yticks, xnames, ticks.ynames,
                       ticks.ywidth, xrange, ticks.yrange, xminor, None)
         return ticks
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all components to the graph
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to svg coordinates
         '''
-        seriesbackup = self.series
-        self.series = [deepcopy(s) for s in seriesbackup]
-        for s in self.series:
-            s.logx()
+        compbackup = self.components
+        self.components = [deepcopy(c) for c in compbackup]
+        for c in self.components:
+            c._logx()
 
-        super()._drawseries(canvas, axisbox, databox)
-        self.series = seriesbackup
+        super()._drawcomponents(canvas, diagbox, databox)
+        self.components = compbackup
 
 
-class AxesLogXY(AxesPlot):
-    ''' Plot with X and Y on a log10 scale
-
-        Args:
-            title: Title to draw above axes
-            xname: Name/label for x axis
-            yname: Name/label for y axis
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
-    '''
+class GraphLogXY(GraphLog):
+    ''' Plot with X and Y on a log10 scale '''
     def _clearcache(self):
+        ''' Clear LRU cache when inputs changes '''
         super()._clearcache()
         self._maketicks.cache_clear()
         self._borders.cache_clear()
@@ -229,35 +208,36 @@ class AxesLogXY(AxesPlot):
                 ticks: Tick names and positions
         '''
         ticks = super()._maketicks()
-        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.style.tick.xlogdivisions)
+        xticks, xnames, xminor = logticks(ticks.xticks, divs=self.xlogdivisions)
         xrange = xticks[0], xticks[-1]
-        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.style.tick.ylogdivisions)
+        yticks, ynames, yminor = logticks(ticks.yticks, divs=self.ylogdivisions)
         yrange = yticks[0], yticks[-1]
+        sty = self._build_style()
 
         ywidth = 0.
         for tick in ynames:
             ywidth = max(ywidth, text.text_size(tick,
-                         fontsize=self.style.tick.text.size,
-                         font=self.style.tick.text.font).width)
+                         fontsize=sty.font_size,
+                         font=sty.font).width)
 
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)
         return ticks
 
-    def _drawseries(self, canvas: Canvas, axisbox: ViewBox, databox: ViewBox) -> None:
-        ''' Draw all series lines/markers
+    def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
+        ''' Draw all components in the graph
 
             Args:
                 canvas: SVG canvas to draw on
-                axisbox: ViewBox of axis within the canvas
+                diagbox: ViewBox of diagram within the canvas
                 databox: ViewBox of data to convert from data to
                     svg coordinates
         '''
-        seriesbackup = self.series
+        compbackup = self.components
+        self.components = [deepcopy(c) for c in compbackup]
+        for c in self.components:
+            c._logx()
+            c._logy()
 
-        self.series = [deepcopy(s) for s in seriesbackup]
-        for s in self.series:
-            s.logx()
-            s.logy()
-        super()._drawseries(canvas, axisbox, databox)
-        self.series = seriesbackup
+        super()._drawcomponents(canvas, diagbox, databox)
+        self.components = compbackup

@@ -19,7 +19,7 @@ import pkg_resources
 # -- Project information -----------------------------------------------------
 
 project = 'ziaplot'
-copyright = '2021-2023, Collin J. Delker'
+copyright = '2021-2024, Collin J. Delker'
 author = 'Collin J. Delker'
 
 release = pkg_resources.get_distribution(project).version
@@ -50,7 +50,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'agogo'
+html_theme = 'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

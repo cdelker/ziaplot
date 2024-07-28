@@ -1,27 +1,26 @@
 ''' Basic shapes '''
-
 from __future__ import annotations
 from typing import Optional
 import math
 
-from ..series import Series
+from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox, DataRange, PointType
 
 
-class ShapeBase(Series):
+class Shape(Element):
     ''' Filled shape '''
-    def color(self, color: str) -> 'ShapeBase':
+    def color(self, color: str) -> 'Shape':
         ''' Sets the fill color '''
-        self.style.shape.color = color
+        self._style.edge_color = color
         return self
 
-    def strokecolor(self, color: str) -> 'ShapeBase':
+    def fill(self, color: str) -> 'Shape':
         ''' Sets the fill color '''
-        self.style.shape.strokecolor = color
+        self._style.color = color
         return self
 
 
-class Ellipse(ShapeBase):
+class Ellipse(Shape):
     ''' Draw an Ellipse
 
         Args:
@@ -42,6 +41,7 @@ class Ellipse(ShapeBase):
         self.theta = theta
 
     def datarange(self) -> DataRange:
+        ''' Data limits '''
         r = max(self.r1, self.r2)
         return DataRange(self.x-r, self.x+r, self.y-r, self.y+r)
 
@@ -81,11 +81,12 @@ class Ellipse(ShapeBase):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
+        sty = self._build_style()
         canvas.ellipse(self.x, self.y, self.r1, self.r2,
                        theta=self.theta,
-                       color=self.style.shape.color,
-                       strokecolor=self.style.shape.strokecolor,
-                       strokewidth=self.style.shape.strokewidth,
+                       color=sty.color,
+                       strokecolor=sty.edge_color,
+                       strokewidth=sty.stroke_width,
                        dataview=databox)
 
 
@@ -107,12 +108,15 @@ class Circle(Ellipse):
         return x, y
 
 
-class Rectangle(ShapeBase):
-    ''' A line series of x-y data
+class Rectangle(Shape):
+    ''' Draw a rectangle
 
         Args:
-            x: X-values to plot
-            y: Y-values to plot
+            x: lower left x value
+            y: lower left y value
+            width: width of rectangle
+            height: height of rectangle
+            cornerradius: radius of corners
     '''
     def __init__(self, x: float, y: float,
                  width: float, height: float,
@@ -127,9 +131,10 @@ class Rectangle(ShapeBase):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
+        sty = self._build_style()
         canvas.rect(self.x, self.y, self.width, self.height,
-                    fill=self.style.shape.color,
-                    strokecolor=self.style.shape.strokecolor,
-                    strokewidth=self.style.shape.strokewidth,
+                    fill=sty.color,
+                    strokecolor=sty.edge_color,
+                    strokewidth=sty.stroke_width,
                     rcorner=self.cornerradius,
                     dataview=databox)

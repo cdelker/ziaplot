@@ -1,33 +1,13 @@
+from .themes import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND
 from .colors import ColorCycle, ColorFade
-from .smithstyle import SmithGrid, SmithStyle
-
-from .styles import setdefault, settextcolor, setaxiscolor
-from .styles import (
-    Default,
-    Lobo,
-    Taffy,
-    Pastel,
-    Bold,
-    Dark,
-    DarkBold,
-    DarkTaffy,
-    DocStyle
-)
-
-from .styletypes import (
-    MarkerStyle,
+from .style import (
     MarkerTypes,
     DashTypes,
-    LineStyle,
-    BorderStyle,
-    TextStyle,
-    ErrorBarStyle,
-    ColorBarStyle,
-    SeriesStyle,
-    AxisStyle,
-    TickStyle,
-    LegendStyle,
-    PieStyle,
-    PolarStyle,
-    Style
+    ColorType,
+    TextPosition,
+    Halign,
+    Valign,
+    PointType,
+    Style,
+    AppliedStyle
 )

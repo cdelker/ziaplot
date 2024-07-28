@@ -2,19 +2,18 @@
 from __future__ import annotations
 from typing import Optional, Sequence, Union, Literal
 import xml.etree.ElementTree as ET
-import math
 
 from ..util import zrange
 from ..style import ColorFade
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..axes import AxesPlot
-from ..series import Series
+from ..diagrams import Graph
+from ..element import Element
 
 
 ColorBarPos = Literal['top', 'right', 'bottom', 'left']
 
 
-class Contour(Series):
+class Contour(Element):
     ''' Contour Plot
 
         Args:
@@ -40,9 +39,23 @@ class Contour(Series):
         self.contours: list[float] = []
         self.colorbar = colorbar
 
-    def colors(self, *colors: str, stops: Optional[Sequence[float]] = None) -> 'Contour':
+    @property
+    def nlevels(self) -> int:
+        ''' Number of levels in the contour '''
+        if isinstance(self.levels, int):
+            return self.levels
+        return len(self.levels)
+
+    def get_color_steps(self) -> list[str]:
+        ''' Get colors for each level '''
+        sty = self._build_style()
+        if len(sty.colorcycle) > 2:
+            return list(sty.colorcycle)
+        return ColorFade(*sty.colorcycle).colors(self.nlevels)
+    
+    def colors(self, *colors: str, stops: Sequence[float]|None = None) -> 'Contour':
         ''' Set the start and end colors for the contours '''
-        self.style.colorbar.colors = ColorFade(*colors, stops=stops)
+        self._style.colorcycle = ColorFade(*colors, stops=stops).colors(self.nlevels)
         return self
 
     def datarange(self) -> DataRange:
@@ -58,26 +71,22 @@ class Contour(Series):
                              min(self.y),
                              max(self.y))
 
-    def _get_colors(self):
-        ''' Function to get colorbar (so it can be overridden by Implicit )'''
-        return self.style.colorbar.colors
-
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         segments = self._build_contours()
-        colors = self._get_colors()
-        colors.steps(len(segments))
+        sty = self._build_style()
+        colors = self.get_color_steps()
         for (xsegs, ysegs), color in zip(segments, colors):
             if len(xsegs) > 0:
                 for xs, ys in zip(xsegs, ysegs):
                     canvas.path(xs, ys,
-                                stroke=self.style.line.stroke,
+                                stroke=sty.stroke,
                                 color=color,
-                                width=self.style.line.width,
+                                width=sty.stroke_width,
                                 dataview=databox)
         if self.colorbar:
-            self._draw_colorbar(canvas, databox)
+            self._draw_colorbar(canvas)
 
     def _build_contours(self):
         ''' Marching Squares Algorithm '''
@@ -166,25 +175,23 @@ class Contour(Series):
             segments.append((segmentx, segmenty))
         return segments
 
-    def _draw_colorbar(self, canvas: Canvas, databox: Optional[ViewBox] = None):
-        ''' Draw colorbar on axis '''
-        nlevels = len(self.contours)
-        xpad = self.style.colorbar.xpad
-        ypad = self.style.colorbar.ypad
-        width = self.style.colorbar.width
-        colorfade = self.style.colorbar.colors
-        colorfade.steps(nlevels)
+    def _draw_colorbar(self, canvas: Canvas):
+        ''' Draw colorbar on Diagram '''
+        nlevels = self.nlevels
+        colorfade = self.get_color_steps()
+        cstyle = self._build_style('Contour.ColorBar')
+        width = cstyle.width
 
         if self.colorbar in ['top', 'bottom']:
-            length = canvas.viewbox.w - xpad*2
+            length = canvas.viewbox.w - cstyle.margin*2
             barwidth = length // (nlevels)
             length = nlevels * barwidth  # Adjust for rounding
 
-            x = canvas.viewbox.x + xpad
-            y = canvas.viewbox.y + canvas.viewbox.h - width - ypad*2.5
+            x = canvas.viewbox.x + cstyle.margin
+            y = canvas.viewbox.y + canvas.viewbox.h - width - cstyle.margin - cstyle.font_size
             y2 = y+width
             if self.colorbar == 'bottom':
-                y = canvas.viewbox.y + ypad
+                y = canvas.viewbox.y + cstyle.margin
                 y2 = y+width
                 
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
@@ -192,26 +199,25 @@ class Contour(Series):
                 canvas.path([barx, barx], [y, y2],
                             width=barwidth, color=color)
                 if i in [0, int(nlevels//2), nlevels-1]:
-                    canvas.text(barx, y2+3, format(level, self.style.colorbar.formatter),
-                                color=self.style.colorbar.text.color,
-                                size=self.style.colorbar.text.size,
+                    canvas.text(barx, y2+3, format(level, cstyle.num_format),
+                                color=cstyle.get_color(),
+                                size=cstyle.font_size,
                                 halign='center', valign='bottom')
 
             canvas.rect(x, y, length, width,
-                        strokewidth=self.style.colorbar.borderwidth,
-                        strokecolor=self.style.colorbar.bordercolor,
+                        strokewidth=cstyle.stroke_width,
+                        strokecolor=cstyle.edge_color,
                         fill=None)
         else:
-            xpad, ypad = ypad, xpad
-            length = canvas.viewbox.h - xpad*2
+            length = canvas.viewbox.h - cstyle.margin*2
             barwidth = length // (nlevels)
             length = nlevels * barwidth  # Adjust for rounding
 
-            y = canvas.viewbox.y + xpad
-            x = canvas.viewbox.x + ypad
+            y = canvas.viewbox.y + cstyle.margin
+            x = canvas.viewbox.x + cstyle.margin + cstyle.font_size
             x2 = x+width
             if self.colorbar == 'right':
-                x = canvas.viewbox.x + canvas.viewbox.w - width - xpad
+                x = canvas.viewbox.x + canvas.viewbox.w - width - cstyle.margin
                 x2 = x+width
 
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
@@ -220,19 +226,19 @@ class Contour(Series):
                             width=barwidth, color=color)
                 if i in [0, int(nlevels//2), nlevels-1]:
                     canvas.text(x-3, bary,
-                                format(level, self.style.colorbar.formatter),
-                                color=self.style.colorbar.text.color,
-                                size=self.style.colorbar.text.size,
+                                format(level, cstyle.num_format),
+                                color=cstyle.get_color(),
+                                size=cstyle.font_size,
                                 rotate=90,
                                 halign='center', valign='bottom')
 
             canvas.rect(x, y, width, length,
-                        strokewidth=self.style.colorbar.borderwidth,
-                        strokecolor=self.style.colorbar.bordercolor,
+                        strokewidth=cstyle.stroke_width,
+                        strokecolor=cstyle.edge_color,
                         fill=None)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
-        ax = AxesPlot(style=self._axisstyle)
-        ax.add(self)
-        return ax.svgxml(border=border)
+        g = Graph()
+        g.add(self)
+        return g.svgxml(border=border)

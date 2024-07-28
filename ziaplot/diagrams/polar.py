@@ -1,34 +1,27 @@
-''' Polar plotting axis '''
-
+''' Polar plotting '''
 from __future__ import annotations
 from typing import Optional
 from functools import lru_cache
 import math
-import xml.etree.ElementTree as ET
 
-from .baseplot import BasePlot, LegendLoc, Ticks
-from .axes import getticks
-from ..canvas import Canvas, Borders, ViewBox, Halign, Valign
-from ..style import Style
+from ..text import Halign, Valign
+from .diagram import Diagram, Ticks
+from .graph import getticks
+from ..canvas import Canvas, Borders, ViewBox
 
 
-class AxesPolar(BasePlot):
-    ''' Polar Plot. Use with LinePolar to define series in (radius, angle)
+class GraphPolar(Diagram):
+    ''' Polar Plot. Use with LinePolar to define lines in (radius, angle)
         format.
 
         Args:
             labeldeg: Draw theta labels in degrees vs. radians
-            title: Title to draw above axes
-            legend: Location of legend
-            style: Drawing style
-
-        Attributes:
-            style: Drawing style
+            labeltheta: Angle for drawing R labels
     '''
-    def __init__(self, labeldeg: bool = True, title: Optional[str] = None, legend: LegendLoc = 'left',
-                 style: Optional[Style] = None):
-        super().__init__(title=title, legend=legend, style=style)
+    def __init__(self, labeldeg: bool = True, labeltheta: float = 0):
+        super().__init__()
         self.labeldegrees = labeldeg
+        self.labeltheta: float = labeltheta
 
     def rrange(self, rmax: float) -> None:
         ''' Sets maximum radius to display '''
@@ -39,6 +32,7 @@ class AxesPolar(BasePlot):
         raise ValueError('Cannot set y (theta) range on polar plot')
 
     def _clearcache(self):
+        ''' Clear the LRU cache when inputs change '''
         super()._clearcache()
         self._maketicks.cache_clear()
 
@@ -48,6 +42,7 @@ class AxesPolar(BasePlot):
             0 to 360, but can be degrees or radians. X/Radius ticks
             depend on the data, but always start at 0.
         '''
+        xsty = self._build_style('Graph.TickX')
         _, xmax, _, _ = self.datarange()
         if self._xtickvalues:
             xticks = self._xtickvalues
@@ -58,7 +53,7 @@ class AxesPolar(BasePlot):
 
         xnames = self._xticknames
         if xnames is None:
-            xnames = [format(xt, self.style.tick.xstrformat) for xt in xticks]
+            xnames = [format(xt, xsty.num_format) for xt in xticks]
 
         yticks = [0, 45, 90, 135, 180, 225, 270, 315]
         if self.labeldegrees:
@@ -69,53 +64,57 @@ class AxesPolar(BasePlot):
         return ticks
 
     def _drawframe(self, canvas: Canvas, ticks: Ticks) -> tuple[float, float, float]:
-        ''' Draw the axis frame, ticks, and grid
+        ''' Draw the graph frame, ticks, and grid
 
             Args:
                 canvas: SVG canvas to draw on
                 ticks: Tick names and positions
         '''
-        radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - self.style.polar.edgepad*2
+        sty = self._build_style()
+        gridsty = self._build_style('Graph.GridX')
+        ticksty = self._build_style('Graph.TickX')
+        radius = min(canvas.viewbox.w, canvas.viewbox.h) / 2 - sty.pad*2 - sty.font_size*2
         cx = canvas.viewbox.x + canvas.viewbox.w/2
         cy = canvas.viewbox.y + canvas.viewbox.h/2
 
-        if self.title:
-            radius -= self.style.polar.title.size/2
-            cy -= self.style.polar.title.size/2
+        if self._title:
+            tsty = self._build_style('Graph.Title')
+            radius -= tsty.font_size/2
+            cy -= tsty.font_size/2
             canvas.text(canvas.viewbox.w/2, canvas.viewbox.h,
-                        self.title, font=self.style.polar.title.font,
-                        size=self.style.polar.title.size,
-                        color=self.style.polar.title.color,
+                        self._title, font=tsty.font,
+                        size=tsty.font_size,
+                        color=tsty.get_color(),
                         halign='center', valign='top')
 
-        canvas.circle(cx, cy, radius, color=self.style.axis.bgcolor,
-                      strokecolor=self.style.axis.color,
-                      strokewidth=self.style.axis.framelinewidth)
+        canvas.circle(cx, cy, radius, color=sty.get_color(),
+                      strokecolor=sty.edge_color,
+                      strokewidth=sty.edge_width)
 
         for i, rname in enumerate(ticks.xnames):
             if i in [0, len(ticks.xnames)-1]:
                 continue
             r = radius / (len(ticks.xticks)-1) * i
-            canvas.circle(cx, cy, r, strokecolor=self.style.axis.gridcolor,
-                          strokewidth=self.style.axis.gridlinewidth,
-                          color='none', stroke=self.style.axis.gridstroke)
+            canvas.circle(cx, cy, r, strokecolor=gridsty.get_color(),
+                          strokewidth=gridsty.stroke_width,
+                          color='none', stroke=gridsty.stroke)
 
-            textx = cx + r * math.cos(math.radians(self.style.polar.rlabeltheta))
-            texty = cy + r * math.sin(math.radians(self.style.polar.rlabeltheta))
+            textx = cx + r * math.cos(math.radians(self.labeltheta))
+            texty = cy + r * math.sin(math.radians(self.labeltheta))
             canvas.text(textx, texty, rname, halign='center',
-                        color=self.style.tick.text.color)
+                        color=ticksty.get_color())
 
         for i, (theta, tname) in enumerate(zip(ticks.yticks, ticks.ynames)):
             thetarad = math.radians(theta)
             x = radius * math.cos(thetarad)
             y = radius * math.sin(thetarad)
             canvas.path([cx, cx+x], [cy, cy+y],
-                        color=self.style.axis.gridcolor,
-                        width=self.style.axis.gridlinewidth,
-                        stroke=self.style.axis.gridstroke)
+                        color=gridsty.get_color(),
+                        width=gridsty.stroke_width,
+                        stroke=gridsty.stroke)
 
-            labelx = cx + (radius+self.style.polar.labelpad) * math.cos(-thetarad)
-            labely = cy - (radius+self.style.polar.labelpad) * math.sin(-thetarad)
+            labelx = cx + (radius+sty.margin) * math.cos(-thetarad)
+            labely = cy - (radius+sty.margin) * math.sin(-thetarad)
             halign: Halign
             valign: Valign
             if abs(labelx - cx) < .1:
@@ -132,12 +131,12 @@ class AxesPolar(BasePlot):
                 valign = 'top'
 
             canvas.text(labelx, labely, tname, halign=halign, valign=valign,
-                        color=self.style.tick.text.color)
+                        color=ticksty.get_color())
         return radius, cx, cy
 
-    def _drawseries(self, canvas: Canvas, radius: float,
-                    cx: float, cy: float, ticks: Ticks) -> None:
-        ''' Draw all data series
+    def _draw_polarcontents(self, canvas: Canvas, radius: float,
+                            cx: float, cy: float, ticks: Ticks) -> None:
+        ''' Draw all components
 
             Args:
                 canvas: SVG canvas to draw on
@@ -145,27 +144,14 @@ class AxesPolar(BasePlot):
                 cx, cy: canvas center of full circle
                 ticks: Tick definitions
         '''
-        colorseries = [s for s in self.series if s.__class__.__name__ != 'Text']
-        self.style.colorcycle.steps(len(colorseries))
-
-        for i, s in enumerate(colorseries):
-            if s.style.line.color == 'undefined':
-                s.style.line.color = self.style.colorcycle[i]
-            elif s.style.line.color.startswith('C') and s.style.line.color[1:].isnumeric():
-                # Convert things like 'C1'
-                s.style.line.color = self.style.colorcycle[s.style.line.color]
-
-            if s.style.marker.color == 'undefined':
-                s.style.marker.color = self.style.colorcycle[i]
-            elif s.style.marker.color.startswith('C') and s.style.marker.color[1:].isnumeric():
-                s.style.marker.color = self.style.colorcycle[s.style.marker.color]
+        self._assign_component_colors(self.components)
 
         dradius = ticks.xticks[-1]
         databox = ViewBox(-dradius, -dradius, dradius*2, dradius*2)
         viewbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         canvas.setviewbox(viewbox)
-        for s in self.series:
-            s._xml(canvas, databox=databox)
+        for f in self.components:
+            f._xml(canvas, databox=databox)
         canvas.resetviewbox()
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -174,5 +160,5 @@ class AxesPolar(BasePlot):
         ticks = self._maketicks()
         radius, cx, cy = self._drawframe(canvas, ticks)
         axbox = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
-        self._drawseries(canvas, radius, cx, cy, ticks)
+        self._draw_polarcontents(canvas, radius, cx, cy, ticks)
         self._drawlegend(canvas, axbox, ticks)

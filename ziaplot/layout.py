@@ -1,23 +1,24 @@
-''' Layouts for creating multi-axis plots '''
+''' Layouts for creating multi-diagram drawings '''
 from __future__ import annotations
 from typing import Set, Optional
 import xml.etree.ElementTree as ET
 
-from .axes import AxesPlot
-from .series import Series
+from .diagrams import Graph, Diagram
+from .element import Component
 from .canvas import Canvas, ViewBox, Borders
+from .container import Container
 from .drawable import Drawable
-from . import axis_stack
+from . import diagram_stack
 
 
-def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> list[float]:
+def diag_widths(spec: Optional[str], total: float, gap: float, ndiag: int) -> list[float]:
     ''' Get width of each column (or row) based on the specification string
 
         Args:
             spec: Column (or row) specification
             total: Total width to fill
             gap: Spacing between columns (or rows)
-            naxes: Number of axes
+            ndiag: Number of Diagrams
             
         Notes:
             spec uses a similar style to a CSS grid layout. The string is
@@ -28,15 +29,15 @@ def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> li
                 "200 1fr" --> First column takes 200 pixels, second column the remainder
                 "2fr 1fr" --> First column is twice the width of second
     '''
-    axwidths: list[float]
+    dgwidths: list[float]
     if spec is None:
-        axwidths = [(total - gap*(naxes-1)) / naxes] * naxes
+        dgwidths = [(total - gap*(ndiag-1)) / ndiag] * ndiag
     else:
         specitems = spec.split()
-        if len(specitems) < naxes:
-            specitems.extend([specitems[-1]]*(naxes-len(specitems)))
+        if len(specitems) < ndiag:
+            specitems.extend([specitems[-1]]*(ndiag-len(specitems)))
         
-        fixedwidths = [(naxes-1)*gap]
+        fixedwidths = [(ndiag-1)*gap]
         useablewidth = total - fixedwidths[0]
         fractions = []
         for v in specitems:
@@ -46,25 +47,25 @@ def axis_widths(spec: Optional[str], total: float, gap: float, naxes: int) -> li
                 fractions.append(float(v.rstrip('fr')))
             else:
                 fixedwidths.append(float(v))
-        axwidths = []
+        dgwidths = []
         fixed = sum(fixedwidths)
         for v in specitems:
             if v.endswith('%'):
-                axwidths.append(useablewidth * float(v.rstrip('%'))/100)
+                dgwidths.append(useablewidth * float(v.rstrip('%'))/100)
             elif v.endswith('fr'):
-                axwidths.append((useablewidth - fixed) * float(v.rstrip('fr')) / sum(fractions))
+                dgwidths.append((useablewidth - fixed) * float(v.rstrip('fr')) / sum(fractions))
             else:
-                axwidths.append(float(v))
+                dgwidths.append(float(v))
         
-    return axwidths
+    return dgwidths
 
 
-class LayoutGrid(Drawable):
-    ''' Lay out axes in a grid. Axes added to the layout
+class LayoutGrid(Container):
+    ''' Lay out Diagrams in a grid. Diagrams added to the layout
         fill the grid from left to right, adding rows as needed.
 
         Args:
-            axes: The axes to add
+            diagrams: The diagrams to add
             columns: Number of columns
             column_widths: String specifying widths of each column (see Note)
             row_heights: String specifying widths of each column (see Note)
@@ -82,45 +83,49 @@ class LayoutGrid(Drawable):
             "2fr 1fr" --> First column is twice the width of second
     '''
     def __init__(self,
-                 *axes: Drawable,
+                 *diagrams: Drawable,
                  columns: int = 1,
                  column_widths: Optional[str] = None,
                  row_heights: Optional[str] = None,
                  column_gap: float = 10,
                  row_gap: float = 10,
                  **kwargs):
-        self.axes = list(axes)
-        self.width = 600.
-        self.height = 400.
+        super().__init__()
+        self.diagrams = list(diagrams)
         self.columns = columns
         self.column_widths = column_widths
         self.row_heights = row_heights
         self.column_gap = column_gap
         self.row_gap = row_gap
 
-    def __contains__(self, axis: Drawable):
-        return axis in self.axes
+    def __contains__(self, diagram: Drawable):
+        return diagram in self.diagrams
 
     def __enter__(self):
         ''' Context Manager - put grid on drawing stack '''
-        axis_stack.push_series(self)
-        axis_stack.push_axis(self)
+        diagram_stack.push_component(self)
+        diagram_stack.push_diagram(self)
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
         ''' Exit context manager - save to file and display '''
-        axis_stack.push_series(None)
-        axis_stack.pop_axis(self)
-        if axis_stack.current_axis() is None:
+        diagram_stack.push_component(None)
+        diagram_stack.pop_diagram(self)
+        if diagram_stack.current_diagram() is None:
             # Display if not inside another layout
             try:
                 display(self)
             except NameError:  # Not in Jupyter/IPython
                 pass
 
-    def add(self, axis: Drawable):
-        ''' Add an axis to the grid '''
-        self.axes.append(axis)
+    def __iadd__(self, comp: Drawable):
+        ''' Allow += notation for adding components '''
+        self.add(comp)
+        return self
+
+    def add(self, diagram: Drawable):
+        ''' Add a Diagram to the grid '''
+        self.diagrams.append(diagram)
 
     def size(self, w: float = 600, h: float = 400) -> 'LayoutGrid':
         ''' Set canvas width and height '''
@@ -130,7 +135,10 @@ class LayoutGrid(Drawable):
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
-        canvas = Canvas(self.width, self.height)
+        sty = self._build_style('Canvas')
+        width = self.width if self.width else sty.width
+        height = self.height if self.height else sty.height
+        canvas = Canvas(width, height, fill=sty.color)
         self._xml(canvas)
         if border:
             attrib = {'x': '0', 'y': '0',
@@ -142,19 +150,20 @@ class LayoutGrid(Drawable):
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
-        naxes = len(self.axes)
-        ncols = self.columns if self.columns > 0 else naxes
+        ndiagrams = len(self.diagrams)
+        ncols = self.columns if self.columns > 0 else ndiagrams
 
-        # Convert Series, etc. to Axes
-        drawaxes: list[Drawable] = []
-        for ax in self.axes:
-            if isinstance(ax, Series):
-                a = AxesPlot()
-                a.add(ax)
-                a.colspan, a.rowspan = ax.colspan, ax.rowspan
-                drawaxes.append(a)
+        # Convert Component, etc. to Diagrams
+        drawdiags: list[Drawable] = []
+        for diag in self.diagrams:
+            if isinstance(diag, Component):
+                sty = diag._build_style()
+                a = Graph()
+                a.add(diag)
+                a._span = diag._span
+                drawdiags.append(a)
             else:
-                drawaxes.append(ax)
+                drawdiags.append(diag)
 
         def nextcell(row: int, col: int) -> tuple[int, int]:
             ''' Advance to next cell '''
@@ -164,7 +173,7 @@ class LayoutGrid(Drawable):
             return row, col
 
         def usedcells(row_start: int, col_start: int, rowspan: int, colspan: int) -> Set[tuple[int, int]]:
-            ''' Get all cells covered by the axis '''
+            ''' Get all cells covered by the Diagram '''
             return {
                 (row, column)
                 for row in range(row_start, row_start + rowspan)
@@ -173,13 +182,15 @@ class LayoutGrid(Drawable):
         cellmap: dict[tuple[int, int], Drawable] = {}  # All cells covered
         cellloc: dict[Drawable, tuple[int, int, int, int]] = {}  # Cell to x, y, x+sp, y+sp
         row, col = (0, 0)
-        for ax in drawaxes:
+        for diag in drawdiags:
+            assert isinstance(diag, Container)
+            sty = diag._build_style()
             while True:
-                axcells = usedcells(row, col, ax.rowspan, ax.colspan)
-                if cellmap.keys().isdisjoint(axcells):
-                    for cell in axcells:
-                        cellmap[cell] = ax
-                    cellloc[ax] = row, col, row+ax.rowspan, col+ax.colspan
+                diagcells = usedcells(row, col, *diag._span)
+                if cellmap.keys().isdisjoint(diagcells):
+                    for cell in diagcells:
+                        cellmap[cell] = diag
+                    cellloc[diag] = row, col, row+diag._span[0], col+diag._span[1]
                     break
                 else:
                     row, col = nextcell(row, col)
@@ -192,42 +203,46 @@ class LayoutGrid(Drawable):
         botborders = [0] * nrows
         lftborders = [0] * ncols
         rgtborders = [0] * ncols
-        for i, ax in enumerate(drawaxes):
-            row1, col1, row2, col2 = cellloc[ax]
-            if hasattr(ax, '_borders'):
-                b = ax._borders()
+        for i, diag in enumerate(drawdiags):
+            row1, col1, row2, col2 = cellloc[diag]
+            if hasattr(diag, '_borders'):
+                b = diag._borders()
                 topborders[row1] = max(topborders[row1], b.top)
                 botborders[row2-1] = max(botborders[row2-1], b.bottom)
                 lftborders[col1] = max(lftborders[col1], b.left)
                 rgtborders[col2-1] = max(rgtborders[col2-1], b.right)
 
         # Size of viewboxes, not including borders
-        axwidths = axis_widths(self.column_widths, self.width, self.column_gap, ncols)
-        axheights = axis_widths(self.row_heights, self.height, self.row_gap, nrows)
+        sty = self._build_style('Canvas')
+        fullwidth = self.width if self.width else sty.width
+        fullheight = self.height if self.height else sty.height
+
+        dgwidths = diag_widths(self.column_widths, fullwidth, self.column_gap, ncols)
+        dgheights = diag_widths(self.row_heights, fullheight, self.row_gap, nrows)
 
         vboxes = []
-        for i, ax in enumerate(drawaxes):
-            row1, col1, row2, col2 = cellloc[ax]
-            width = sum(axwidths[col1:col2]) + (col2-col1-1)*self.column_gap
-            height = sum(axheights[row1:row2]) + (row2-row1-1)*self.row_gap
-            x = sum(axwidths[:col1]) + col1*self.column_gap
-            y = self.height - (sum(axheights[:row2]) + (row2-1)*self.row_gap)
+        for i, diag in enumerate(drawdiags):
+            row1, col1, row2, col2 = cellloc[diag]
+            width = sum(dgwidths[col1:col2]) + (col2-col1-1)*self.column_gap
+            height = sum(dgheights[row1:row2]) + (row2-row1-1)*self.row_gap
+            x = sum(dgwidths[:col1]) + col1*self.column_gap
+            y = fullheight - (sum(dgheights[:row2]) + (row2-1)*self.row_gap)
             vboxes.append(ViewBox(x, y, width, height))
 
         # Draw a background rectangle over whole grid
-        # TODO: get style from layout, not last axis that was placed
-        if hasattr(ax, 'style') and hasattr(ax.style, 'bgcolor'):  # type: ignore
+        cstyle = self._build_style('Canvas')
+        if cstyle.get_color() not in [None, 'none']:
             canvas.resetviewbox()
             canvas.rect(canvas.viewbox.x,
                         canvas.viewbox.y,
                         canvas.viewbox.w,
                         canvas.viewbox.h,
-                        fill=ax.style.bgcolor,  # type: ignore
-                        strokecolor=ax.style.bgcolor)  # type: ignore
+                        fill=cstyle.color,
+                        strokecolor=cstyle.edge_color)
 
-        # Now draw the axes
-        for i, ax in enumerate(drawaxes):
-            row1, col1, row2, col2 = cellloc[ax]
+        # Now draw each diagram
+        for i, diag in enumerate(drawdiags):
+            row1, col1, row2, col2 = cellloc[diag]
             borders = Borders(
                 lftborders[col1],
                 rgtborders[col2-1],
@@ -235,17 +250,18 @@ class LayoutGrid(Drawable):
                 botborders[row2-1])
 
             canvas.setviewbox(vboxes[i])
-            ax._xml(canvas, borders=borders)
+            diag._xml(canvas, borders=borders)
             canvas.resetviewbox()
 
 
-class LayoutEmpty(Drawable):
+class LayoutEmpty(Container):
     ''' Empty placeholder for layout '''
     def __init__(self):
-        axis_stack.push_series(self)
         super().__init__()
+        diagram_stack.push_component(self)
 
-    def _borders(self, **kwargs):
+    def _borders(self, **kwargs) -> Borders:
+        ''' Calculate borders around the layout box to fit the ticks and legend '''
         return Borders(0,0,0,0)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -254,30 +270,30 @@ class LayoutEmpty(Drawable):
 
 
 class LayoutV(LayoutGrid):
-    ''' Lay out axes in vertical stack
+    ''' Lay out Diagrams in vertical stack
 
         Args:
-            axes: The axes to add
+            diagrams: The Diagrams/Graphs to add
             row_gap: Spacing between rows
     '''
     def __init__(self,
-                 *axes: Drawable,
+                 *diagrams: Drawable,
                  row_gap: float = 10, **kwargs):
-        super().__init__(*axes,
+        super().__init__(*diagrams,
                          row_gap=row_gap,
                          columns=1, **kwargs)
 
 
 class LayoutH(LayoutGrid):
-    ''' Lay out axis in horizontal row
+    ''' Lay out Diagrams in horizontal row
     
         Args:
-            axes: The axes to add
+            diagrams: The Diagrams/Graphs to add
             column_gap: Spacing between columns
     '''
     def __init__(self,
-                 *axes: Drawable,
+                 *diagrams: Drawable,
                  column_gap: float = 10, **kwargs):
-        super().__init__(*axes,
+        super().__init__(*diagrams,
                          column_gap=column_gap,
                          columns=-1, **kwargs)

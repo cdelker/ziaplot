@@ -35,7 +35,7 @@ class MainGUI(QtWidgets.QMainWindow):
         y = [(i*2) + random.normalvariate(10, 2) for i in range(n)]
         avg = sum(y)/len(y)
         x = list(range(n))
-        p = zp.AxesPlot()
+        p = zp.Graph()
         p += zp.PolyLine(x, y).marker('o')
         p += zp.HLine(avg)
         self.image.load(p.imagebytes())

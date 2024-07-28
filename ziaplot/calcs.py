@@ -1,8 +1,9 @@
-''' Methods for finding intersections, maxima, minima, etc. '''
+''' Calculations for finding intersections, maxima, minima, etc. '''
+import math
 
 from .geo.line import Line
 from .geo.function import Function
-from .series import PointType
+from .style import PointType
 from .util import root, maximum, minimum
 
 
@@ -18,6 +19,13 @@ def line_intersection(line1: Line, line2: Line) -> PointType:
     if d == 0:
         raise ValueError('No intersection')
     return dx/d, dy/d
+
+
+def angle_of_intersection(line1: Line, line2: Line) -> float:
+    ''' Find angle between the two lines in degrees '''
+    m1, m2 = line1.slope, line2.slope
+    theta = abs(math.atan(m1) - math.atan(m2)) % math.tau
+    return math.degrees(theta)
 
 
 def y_intercept(line: Line) -> PointType:

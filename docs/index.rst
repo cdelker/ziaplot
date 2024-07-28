@@ -1,9 +1,10 @@
 Ziaplot
 =======
 
-Ziaplot is for easy, lightweight, and Pythonic plotting of data and geometric diagrams
-in SVG format. It can graph functional relationships, and geometric diagrams,
-and discrete (x, y) data.
+Ziaplot is for easy, lightweight, and Pythonic creation of geometric diagrams, data plots,
+and charts in SVG format.
+It can graph functional relationships, geometric figures, implicit functions, discrete (x, y) data,
+histograms, and pie and bar charts.
 
 
 .. jupyter-execute::
@@ -12,7 +13,7 @@ and discrete (x, y) data.
     import math
     import random
     import ziaplot as zp
-    zp.styles.setdefault(zp.styles.DocStyle)
+    zp.css('Canvas{width:300;height:250;}')
 
     random.seed(827243)
     x = zp.linspace(0, 10, 15)
@@ -20,18 +21,14 @@ and discrete (x, y) data.
     x2 = zp.linspace(0, 10, 25)
     y2 = [.5 + .9 * xx + random.random() for xx in x2]
 
-    with zp.LayoutGrid(columns=2).size(800, 600):
-        with zp.AxesPlot():#.size(400, 300):
+    with zp.LayoutGrid(columns=2).size(700, 800):
+        with zp.Graph():
             zp.PolyLine(x, y).marker('o')
             zp.PolyLine(x2, y2).marker('^')
-        with zp.AxesPlot().xrange(-1, 3.5).yrange(0, 4):
-            zp.Function(lambda x: math.exp(-x*2), (-.65, 3.5)).endmarkers('<', '>')
 
-        with (zp.AxesGraph()
-                .size(400, 300)
+        with (zp.GraphQuad().css(zp.CSS_BLACKWHITE+zp.CSS_NOGRID)
+                .size(300, 250)
                 .xrange(-1, 5).yrange(-1, 3)) as g:
-            g.style.axis.bgcolor = 'none'
-            g.style.axis.gridcolor = 'none'
             g.xticks(zp.ticker[0:5:1], minor=zp.ticker[0:5:.125])
             g.yticks(zp.ticker[0:3:.5], minor=zp.ticker[0:2.75:.125])
             f = zp.Function(lambda x: 0.6*math.cos(4.5*(x-4)+2.1) - 1.2*math.sin(x-4)+.1*x+.2,
@@ -40,36 +37,47 @@ and discrete (x, y) data.
             zp.Point.at_maximum(f, 2, 2.5).color('red').guidex().guidey()
             zp.Point.at_maximum(f, 3, 4).color('blue').guidex().guidey()
         
-        with (zp.AxesGraph(style=zp.styles.BlackWhite())
+        with (zp.GraphQuad()
+                .axesnames('V', 'P')
+                .css(zp.CSS_BLACKWHITE)
+                .xrange(0, .9).yrange(0, 1)
+                .noxticks().noyticks()
+                .equal_aspect()):
+            p1 = zp.Point(.1, .9).label('1', 'NE')
+            p2 = zp.Point(.6, .6).label('2', 'NE')
+            p3 = zp.Point(.8, .1).label('3', 'E')
+            p4 = zp.Point(.3, .3).label('4', 'SW')
+            zp.Curve(p2.point, p1.point).midmarker('>')
+            zp.Curve(p3.point, p2.point).midmarker('>')
+            zp.Curve(p3.point, p4.point).midmarker('<')
+            zp.Curve(p4.point, p1.point).midmarker('<')
+            
+        with (zp.GraphQuad().css(zp.CSS_BLACKWHITE)
                 .equal_aspect()
-                .size(300, 300)
                 .xticks((-1.2, 1.2)).yticks((-1.2, 1.2))
-                .noxticks().noyticks()) as g:
+                .noxticks().noyticks()):
             c = zp.Circle(0, 0, 1)
             r = zp.Radius(c, 65).label('1', 0.6, 'NW').color('blue')
-            b = zp.Segment((0, 0), (r.p2[0], 0)).label(r'$\cos(\theta)$', .6, 'S')
-            zp.Segment(r.p2, (r.p2[0], 0)).label(r'$\sin(\theta)$', .75, 'E').color('blue')
-            zp.Angle(r, b, quad=4).label(r'$\theta$', color='red').color('red')
+            b = zp.Segment((0, 0), (r.p2[0], 0)).label('cos(θ)', .6, 'S')
+            zp.Segment(r.p2, (r.p2[0], 0)).label('sin(θ)', .75, 'E').color('blue')
+            zp.Angle(r, b, quad=4).label('θ', color='red').color('red')
             zp.Point.on_circle(c, 65)
 
-|
+        zp.Pie.fromdict({'a':3, 'b':2, 'c':3, 'd':2, 'e':4, 'f':2}).legend('none')
 
-Ziaplot can also create bar and pie charts:
+        with zp.BarChartGrouped(groups=('a', 'b', 'c', 'd')):
+            zp.BarSeries(2, 2, 4, 3)
+            zp.BarSeries(2, 3, 1, 4)
 
-.. jupyter-execute::
-    :hide-code:
-
-    p = zp.Pie().fromdict({'a':3, 'b':2, 'c':3, 'd':2, 'e':4, 'f':2}, legend='none')
-    p2 = zp.BarChartGrouped(groups=('a', 'b', 'c', 'd'))
-    p2 += zp.BarSeries(2, 2, 4, 3)
-    p2 += zp.BarSeries(2, 3, 1, 4)
-    zp.LayoutH(p2, p).size(800, 300)
 
 |
+
+See the :ref:`Examples` for more, or jump in to the :ref:`Start`.
 
 Ziaplot is written in pure-Python, with no dependencies.
 An optional dependency of `cairosvg` can be installed to convert
-ziaplot's SVG figures into PNG or other formats.
+ziaplot's SVG images into PNG or other formats.
+
 
 |
 
@@ -96,11 +104,11 @@ Source code is available on `Github <https://github.com/cdelker/ziaplot>`_.
    :maxdepth: 2
    :caption: Contents:
 
-   start.rst
-   axes.rst
-   discrete.rst
+   intro.rst
+   guide.rst
+   graphs.rst
    geometric.rst
-   polar.rst
+   discrete.rst
    charts.rst
    layout.rst
    style.rst

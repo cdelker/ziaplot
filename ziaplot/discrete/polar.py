@@ -6,7 +6,7 @@ from .polylines import PolyLine
 
 
 class LinePolar(PolyLine):
-    ''' Define a data PolyLine series using polar coordinates
+    ''' Define a data PolyLine using polar coordinates
 
         Args:
             radius: The radius values to plot

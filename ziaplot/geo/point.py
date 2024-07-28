@@ -3,24 +3,26 @@ from __future__ import annotations
 from typing import Optional
 import math
 
+from ..calcs import line_intersection, func_intersection, local_min, local_max
 from ..text import TextPosition, text_align_ofst
-from ..style import MarkerTypes, DashTypes
+from ..style import MarkerTypes, PointType
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from ..series import Series, PointType
+from ..element import Element
 from ..shapes import Circle
 from .function import Function
 from .line import Line
 from .bezier import BezierQuad
-from ..find import line_intersection, func_intersection, local_min, local_max
 
 
-class Point(Series):
+class Point(Element):
     ''' Point with optional text label
 
         Args:
             x: X-value
             y: Y-value
     '''
+    _step_color = False
+
     def __init__(self, x: float, y: float):
         super().__init__()
         self.x = x
@@ -29,26 +31,18 @@ class Point(Series):
         self._text_pos: Optional[TextPosition] = None
         self._guidex: Optional[float] = None
         self._guidey: Optional[float] = None
-        self.style.line.width = 0
-        self.style.point.marker.shape = 'round'
-        self.style.point.marker.radius = 4
 
     @property
     def point(self) -> PointType:
         ''' XY coordinate tuple '''
         return self.x, self.y
 
-    def color(self, color: str) -> 'Series':
-        ''' Sets the series color '''
-        self.style.point.marker.color = color
-        return self
-
     def marker(self, marker: MarkerTypes, radius: Optional[float] = None,
                orient: bool = False) -> 'Point':
-        ''' Sets the series marker '''
-        self.style.point.marker.shape = marker
+        ''' Sets the point marker shape and size '''
+        self._style.shape = marker
         if radius:
-            self.style.point.marker.radius = radius
+            self._style.radius = radius
         return self
 
     def label(self, text: str,
@@ -64,32 +58,14 @@ class Point(Series):
         self._text_pos = pos
         return self
 
-    def guidex(self, toy: float = 0,
-               color: Optional[str] = None,
-               stroke: Optional[DashTypes] = None,
-               width: Optional[float] = None) -> 'Point':
+    def guidex(self, toy: float = 0) -> 'Point':
         ''' Draw a vertical guide line between point and toy '''
         self._guidex = toy
-        if color:
-            self.style.point.guidex.color = color
-        if stroke:
-            self.style.point.guidex.stroke = stroke
-        if width:
-            self.style.point.guidex.width = width
         return self
 
-    def guidey(self, tox: float = 0,
-               color: Optional[str] = None,
-               stroke: Optional[DashTypes] = None,
-               width: Optional[float] = None) -> 'Point':
+    def guidey(self, tox: float = 0) -> 'Point':
         ''' Draw a horizontal guide line between point and tox '''
         self._guidey = tox
-        if color:
-            self.style.point.guidey.color = color
-        if stroke:
-            self.style.point.guidey.stroke = stroke
-        if width:
-            self.style.point.guidey.width = width
         return self
 
     def datarange(self) -> DataRange:
@@ -100,11 +76,11 @@ class Point(Series):
         return DataRange(self.x - dx, self.x + dx,
                          self.y - dy, self.y + dy)
 
-    def logx(self) -> None:
+    def _logx(self) -> None:
         ''' Convert x coordinates to log(x) '''
         self.x = math.log10(self.x)
 
-    def logy(self) -> None:
+    def _logy(self) -> None:
         ''' Convert y coordinates to log(y) '''
         self.y = math.log10(self.y)
 
@@ -112,36 +88,40 @@ class Point(Series):
              borders: Optional[Borders] = None) -> None:
         ''' Add XML elements to the canvas '''
         if self._guidex is not None:
+            style = self._build_style('Point.GuideX')
             canvas.path([self.x, self.x], [self._guidex, self.y],
-                        color=self.style.point.guidex.color,
-                        stroke=self.style.point.guidex.stroke,
-                        width=self.style.point.guidex.width,
+                        color=style.get_color(),
+                        stroke=style.stroke,
+                        width=style.stroke_width,
                         dataview=databox)
         if self._guidey is not None:
+            style = self._build_style('Point.GuideY')
             canvas.path([self._guidey, self.x], [self.y, self.y],
-                        color=self.style.point.guidex.color,
-                        stroke=self.style.point.guidex.stroke,
-                        width=self.style.point.guidex.width,
+                        color=style.get_color(),
+                        stroke=style.stroke,
+                        width=style.stroke_width,
                         dataview=databox)
 
-        markname = canvas.definemarker(self.style.point.marker.shape,
-                                        self.style.point.marker.radius,
-                                        self.style.point.marker.color,
-                                        self.style.point.marker.strokecolor,
-                                        self.style.point.marker.strokewidth)
+        sty = self._build_style()
+        markname = canvas.definemarker(sty.shape,
+                                       sty.radius,
+                                       sty.get_color(),
+                                       sty.edge_color,
+                                       sty.edge_width)
         canvas.path([self.x], [self.y],
-                    color=self.style.point.marker.color,
+                    color=sty.get_color(),
                     markerid=markname,
                     dataview=databox)
 
         if self._text:
+            style = self._build_style('Point.Text')
             dx, dy, halign, valign = text_align_ofst(
-                self._text_pos, self.style.point.text_ofst)
+                self._text_pos, style.margin)
 
             canvas.text(self.x, self.y, self._text,
-                        color=self.style.point.text.color,
-                        font=self.style.point.text.font,
-                        size=self.style.point.text.size,
+                        color=style.get_color(),
+                        font=style.font,
+                        size=style.font_size,
                         halign=halign,
                         valign=valign,
                         pixelofst=(dx, dy),
@@ -179,11 +159,14 @@ class Point(Series):
 
     @classmethod
     def at_intersection(cls, f1: Function, f2: Function,
-                        x1: float, x2: float) -> 'Point':
+                        x1: float|None = None,
+                        x2: float|None = None) -> 'Point':
         ''' Draw a Point at the intersection of two functions '''
         if isinstance(f1, Line) and isinstance(f2, Line):
             x, y= line_intersection(f1, f2)
         else:
+            if x1 is None or x2 is None:
+                raise ValueError('x1 and x2 are required for intersection of non-line functions.')
             x, y = func_intersection(f1, f2, x1, x2)
         return cls(x, y)
 

@@ -19,7 +19,7 @@ else:
     ziamath.config.math.variant = 'sans'
 
 
-from .config import config, TextMode
+from .config import config
 
 TextPosition = Literal['N', 'E', 'S', 'W',
                        'NE', 'NW', 'SE', 'SW']
@@ -33,34 +33,6 @@ def fmt(f: float) -> str:
     p = f'.{config.precision}f'
     s = format(float(f), p)
     return s.rstrip('0').rstrip('.')  # Strip trailing zeros
-
-
-def settextmode(mode: TextMode, svg2=True) -> None:
-    ''' Set the mode for rendering text.
-
-        In 'text' mode, text is drawn as SVG <text> elements
-        and will be searchable in the SVG, however it may
-        render differently on systems without the same fonts
-        installed. In 'path' mode, text converted to SVG
-        <path> elements and will render independently of
-        any fonts on the system. Path mode enables rendering
-        of math expressions, but also requires the
-        ziafont/ziamath packages.
-
-        svg2 mode can be disabled for better compatibility
-        with some SVG rendering software (Inkscape, etc.)
-        that does not fully support SVG 2.0. Only applies
-        when using ziamath for math text.
-
-        Args:
-            mode: Text Mode.
-            svg2: Use SVG 2.0 elements
-    '''
-    warnings.warn('settextmode is deprecated. Use ziamath.config.',  DeprecationWarning)
-    if mode == 'path' and ziamath is None:
-        raise ValueError('Path mode requires ziamath package')
-    config.svg2 = svg2
-    config.text = mode
 
 
 def text_align_ofst(pos: Optional[TextPosition], ofst: float) -> tuple[float, float, Halign, Valign]:

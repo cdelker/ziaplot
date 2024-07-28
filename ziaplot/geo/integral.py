@@ -3,14 +3,23 @@ from __future__ import annotations
 from typing import Optional
 
 from .. import util
-from ..find import func_intersection
+from ..calcs import func_intersection
 from ..canvas import Canvas, Borders, ViewBox
-from ..series import Series
+from ..element import Element
 from .function import Function
 
 
-class IntegralFill(Series):
-    ''' Fill between two functions or between a function and the x-axis '''
+class IntegralFill(Element):
+    ''' Fill between two functions or between a function and the x-axis
+
+        Args:
+            f: Function or Line instance
+            f2: Another Function instance
+            x1: Starting x value to fill
+            x2: Ending x value to fill
+    '''
+    _step_color = True
+
     def __init__(self, f: Function, f2: Optional[Function] = None,
                  x1: Optional[float] = None, x2: Optional[float] = None):
         super().__init__()
@@ -18,15 +27,6 @@ class IntegralFill(Series):
         self.func2 = f2
         self.x1 = x1
         self.x2 = x2
-
-    def alpha(self, alpha: float) -> 'IntegralFill':
-        ''' Set the transparency
-
-            Args:
-                alpha: Transparency (0-1, with 1 being opaque)
-        '''
-        self.style.fillalpha = alpha
-        return self
 
     def _xlimits(self, databox: ViewBox) -> tuple[float, float]:
         ''' Get x-limits to draw over '''
@@ -60,13 +60,10 @@ class IntegralFill(Series):
         xy = list(zip(x, y))
         xy = xy + list(reversed(list(zip(x, ymin))))
 
-        fill = self.style.fillcolor
-        alpha = self.style.fillalpha
-        if fill is None:
-            fill = self.style.line.color
+        sty = self._build_style()
+        fill = sty.get_color()
 
         canvas.poly(xy, color=fill,
-                    alpha=alpha,
                     strokecolor='none',
                     dataview=databox)
 

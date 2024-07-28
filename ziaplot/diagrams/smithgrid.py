@@ -1,8 +1,11 @@
-''' Style for Smith charts '''
-
+''' Positions of grid arcs for Smith charts '''
 from __future__ import annotations
+from typing import Literal
+from dataclasses import dataclass
 import math
-from dataclasses import dataclass, field
+
+
+SmithGridLevels = Literal['coarse', 'medium', 'fine', 'extrafine']
 
 
 @dataclass
@@ -13,13 +16,13 @@ class SmithGrid:
             circles: list of (R, xmax, xmin, major)
             arcs: list of (X, rmax, rmin, major)
     '''
-    circles: list[tuple[float, float, float, bool]] = field(default_factory=list)
-    arcs: list[tuple[float, float, float, bool]] = field(default_factory=list)
+    circles: list[tuple[float, float, float, bool]]
+    arcs: list[tuple[float, float, float, bool]]
 
 
-def defaultgrid():
+def buildgrid() -> dict[SmithGridLevels, SmithGrid]:
     ''' Get default Smith grid dictionary '''
-    grid = {}
+    grid: dict[SmithGridLevels, SmithGrid] = {}
     grid['coarse'] = SmithGrid(
         circles=[(.2, 2, 0, True), (.5, 5, 0, True), (1, 5, 0, True),
                  (2, math.inf, 0, True), (5, math.inf, 0, True)],
@@ -138,19 +141,4 @@ def defaultgrid():
     return grid
 
 
-@dataclass
-class SmithStyle:
-    ''' Style for Smith Charts
-
-        Attributes:
-            grid: Dictionary of grid specifications. [coarse, medium, fine, extrafine]
-            majorcolor: Color for major grid lines
-            majorwidth: Stroke width for major grid lines
-            minorcolor: Color for minor grid lines
-            minorwidth: Stroke width for minor grid lines
-    '''
-    grid: dict[str, SmithGrid] = field(default_factory=defaultgrid)
-    majorcolor: str = '#DDDDDD'
-    majorwidth: float = 1.2
-    minorcolor: str = '#E8E8E8'
-    minorwidth: float = 1.0
+smithgrids = buildgrid()
