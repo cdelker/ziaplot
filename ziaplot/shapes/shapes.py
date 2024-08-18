@@ -87,7 +87,8 @@ class Ellipse(Shape):
                        color=sty.color,
                        strokecolor=sty.edge_color,
                        strokewidth=sty.stroke_width,
-                       dataview=databox)
+                       dataview=databox,
+                       zorder=self._zorder)
 
 
 class Circle(Ellipse):
@@ -137,4 +138,5 @@ class Rectangle(Shape):
                     strokecolor=sty.edge_color,
                     strokewidth=sty.stroke_width,
                     rcorner=self.cornerradius,
-                    dataview=databox)
+                    dataview=databox,
+                    zorder=self._zorder)

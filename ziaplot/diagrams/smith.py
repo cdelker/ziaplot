@@ -225,7 +225,8 @@ class GraphSmith(GraphPolar):
         # Fill/background circle
         canvas.circle(cx, cy, radius, color=sty.get_color(),
                       strokecolor='none',
-                      strokewidth=sty.edge_width)
+                      strokewidth=sty.edge_width,
+                      zorder=self._zorder)
 
         dest = ViewBox(cx-radius, cy-radius, radius*2, radius*2)
         src = ViewBox(-1, -1, 2, 2)
@@ -242,11 +243,13 @@ class GraphSmith(GraphPolar):
                        theta2=arc.t2,
                        strokecolor=color,
                        strokewidth=width,
-                       dataview=src)
+                       dataview=src,
+                       zorder=self._zorder)
             canvas.arc(arc.x, -arc.y, arc.r, theta1=-arc.t2, theta2=-arc.t1,
                        strokecolor=color,
                        strokewidth=width,
-                       dataview=src)
+                       dataview=src,
+                       zorder=self._zorder)
 
             tx = arc.x + arc.r * math.cos(math.radians(arc.t1))
             ty = arc.y + arc.r * math.sin(math.radians(arc.t1))
@@ -275,21 +278,25 @@ class GraphSmith(GraphPolar):
                 canvas.circle(arc.x, arc.y, arc.r,
                               strokecolor=color,
                               strokewidth=width, color='none',
-                              dataview=src)
+                              dataview=src,
+                              zorder=self._zorder)
             elif xmin == -xmax:
                 canvas.arc(arc.x, arc.y, arc.r, theta1=arc.t1, theta2=arc.t2,
                            strokecolor=color,
                            strokewidth=width,
-                           dataview=src)
+                           dataview=src,
+                           zorder=self._zorder)
             else:
                 canvas.arc(arc.x, arc.y, arc.r, theta1=arc.t1, theta2=arc.t2,
                            strokecolor=color,
                            strokewidth=width,
-                           dataview=src)
+                           dataview=src,
+                           zorder=self._zorder)
                 canvas.arc(arc.x, arc.y, arc.r, theta1=-arc.t2, theta2=-arc.t1,
                            strokecolor=color,
                            strokewidth=width,
-                           dataview=src)
+                           dataview=src,
+                           zorder=self._zorder)
 
             if major:
                 canvas.text(arc.x-arc.r-.01, arc.y+.01,
@@ -302,7 +309,8 @@ class GraphSmith(GraphPolar):
         canvas.path([-1, 1], [0, 0],
                     color=gridsty.get_color(),
                     width=gridsty.stroke_width,
-                    dataview=src)
+                    dataview=src,
+                    zorder=self._zorder)
 
         canvas.text(-1.01, 0, '0',
                     color='black',
@@ -312,7 +320,8 @@ class GraphSmith(GraphPolar):
         # Dark border circle
         canvas.circle(cx, cy, radius, color='none',
                       strokecolor=sty.edge_color,
-                      strokewidth=sty.edge_width)
+                      strokewidth=sty.edge_width,
+                      zorder=self._zorder)
         canvas.resetviewbox()
         return radius, cx, cy
 
@@ -373,12 +382,14 @@ class SmithConstResistance(Element):
             canvas.arc(arc.x, arc.y, arc.r, arc.t1, arc.t2,
                        strokecolor=color,
                        strokewidth=sty.stroke_width,
-                       dataview=databox)
+                       dataview=databox,
+                       zorder=self._zorder)
         else:
             canvas.circle(arc.x, arc.y, arc.r,
                           color='none', strokecolor=color,
                           strokewidth=sty.stroke_width,
-                          dataview=databox)
+                          dataview=databox,
+                          zorder=self._zorder)
 
 
 class SmithConstReactance(Element):
@@ -407,8 +418,10 @@ class SmithConstReactance(Element):
         canvas.arc(arc.x, arc.y, arc.r, theta1=arc.t1, theta2=arc.t2,
                    strokecolor=color,
                    strokewidth=sty.stroke_width,
-                   dataview=databox)
+                   dataview=databox,
+                   zorder=self._zorder)
         canvas.arc(arc.x, -arc.y, arc.r, theta1=-arc.t2, theta2=-arc.t1,
                    strokecolor=color,
                    strokewidth=sty.stroke_width,
-                   dataview=databox)
+                   dataview=databox,
+                   zorder=self._zorder)

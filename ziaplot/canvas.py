@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Sequence, Optional, Tuple
 import math
 from collections import namedtuple
+from operator import attrgetter
 import xml.etree.ElementTree as ET
 
 from . import text
@@ -12,6 +13,9 @@ from .style import MarkerTypes, DashTypes, PointType
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
+SvgElm = namedtuple('SvgElm', ['element', 'zorder', 'insorder'])
+SvgText = namedtuple('SvgText', 'x y s color font size halign valign rotate')
+
 
 def fmt(f: float) -> str:
     ''' String format, stripping trailing zeros '''
@@ -50,7 +54,6 @@ def set_clip(elm: ET.Element, clip: str|None) -> None:
     ''' Set clip-path on element if defined '''
     if clip:
         elm.set('clip-path', f'url(#{clip})')
-
 
 
 class Transform:
@@ -96,30 +99,57 @@ class Canvas:
     def __init__(self, width: float, height: float, fill: Optional[str] = None):
         self.canvaswidth = width
         self.canvasheight = height
+        self.fill = fill
         self.viewbox = ViewBox(0, 0, width, height)
-        self.root = ET.Element(
-            'svg',
-            attrib={'xmlns': 'http://www.w3.org/2000/svg',
-                   'height': str(height),
-                   'width': str(width),
-                   'viewBox': f'0 0 {fmt(width)} {fmt(height)}'})
-        if fill:
-            rect = ET.SubElement(self.root, 'rect',
-                                 attrib={'width': '100%', 'height': '100%'})
-            set_color(fill, rect, 'fill')
+
+        self.elements: list[SvgElm|SvgText] = []
         self.defs: Optional[ET.Element] = None
         self.clip: Optional[str] = None
         self._clipnames: list[str] = []
         self._marknames: list[str] = []
-        self.newgroup()
+
+    def _build(self) -> ET.Element:
+        ''' Build the XML '''
+        root = ET.Element(
+            'svg',
+            attrib={'xmlns': 'http://www.w3.org/2000/svg',
+                   'height': str(self.canvasheight),
+                   'width': str(self.canvaswidth),
+                   'viewBox': f'0 0 {fmt(self.canvaswidth)} {fmt(self.canvasheight)}'})
+        
+        if self.defs:
+            root.insert(0, self.defs)
+
+        if self.fill:
+            rect = ET.SubElement(root, 'rect',
+                                 attrib={'width': '100%', 'height': '100%'})
+            set_color(self.fill, rect, 'fill')
+
+        # Sort by zorder, then insertion order
+        for elm in sorted(self.elements, key=attrgetter('zorder', 'insorder')):
+            if isinstance(elm.element, ET.Element):
+                root.append(elm.element)
+            else:
+                assert isinstance(elm.element, SvgText)
+                txt = elm.element
+                text.draw_text(
+                    elm.element.x, elm.element.y, elm.element.s,
+                    root,
+                    color=elm.element.color,
+                    font=elm.element.font,
+                    size=elm.element.size,
+                    halign=elm.element.halign,
+                    valign=elm.element.valign,
+                    rotate=elm.element.rotate)
+        return root
 
     def xml(self) -> ET.Element:
         ''' Get XML Element for SVG '''
-        return self.root
+        return self._build()
 
     def svg(self) -> str:
         ''' Get SVG text '''
-        return ET.tostring(self.root, encoding='unicode')
+        return ET.tostring(self.xml(), encoding='unicode')
 
     def resetviewbox(self) -> None:
         ''' Reset the current canvas viewbox to the full canvas '''
@@ -131,7 +161,6 @@ class Canvas:
         self.viewbox = viewbox
         if self.defs is None:
             self.defs = ET.Element('defs')
-            self.root.insert(0, self.defs)
 
         name = 'diagclip{}'.format(len(self._clipnames)+1)
         self._clipnames.append(name)
@@ -146,10 +175,9 @@ class Canvas:
                     'height': fmt(self.viewbox.h+2*clippad)})
         self.clip = name
 
-    def newgroup(self) -> ET.Element:
-        ''' Start a new SVG group <g> tag. '''
-        self.group = ET.SubElement(self.root, 'g')
-        return self.group
+    def add_element(self, element: ET.Element | SvgText, zorder: int = 1):
+        ''' Add an elemenet to the canvas '''
+        self.elements.append(SvgElm(element, zorder, len(self.elements)))
 
     def definemarker(self, shape: MarkerTypes = 'round', radius: float = 4, color: str = 'red',
                      strokecolor: str = 'black', strokewidth: float = 1,
@@ -169,7 +197,6 @@ class Canvas:
 
         if self.defs is None:
             self.defs = ET.Element('defs')
-            self.root.insert(0, self.defs)
         mark = ET.SubElement(self.defs, 'marker')
         diam = radius*2
         rstroke = radius + strokewidth
@@ -248,7 +275,8 @@ class Canvas:
     def path(self, x: Sequence[float], y: Sequence[float], stroke: DashTypes = '-',
              color: str = 'black', width: float = 2, markerid: Optional[str] = None,
              startmarker: Optional[str] = None, endmarker: Optional[str] = None,
-             dataview: Optional[ViewBox] = None) -> None:
+             dataview: Optional[ViewBox] = None,
+             zorder: int = 1) -> None:
         ''' Add a path to the SVG
 
             Args:
@@ -269,7 +297,7 @@ class Canvas:
 
         y = [self.flipy(yy) for yy in y]
 
-        path = ET.SubElement(self.group, 'path')
+        path = ET.Element('path')
         pointstr = f'M {fmt(x[0])},{fmt(y[0])} '
         pointstr += 'L '
         pointstr += ' '.join(f'{fmt(xx)},{fmt(yy)}' for xx, yy in zip(x[1:], y[1:]))
@@ -288,10 +316,12 @@ class Canvas:
         if stroke not in ['-', 'solid', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
         set_clip(path, self.clip)
+        self.add_element(path, zorder)
 
     def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
              strokecolor: str = 'black', strokewidth: float = 2,
-             rcorner: float = 0, dataview: Optional[ViewBox] = None) -> None:
+             rcorner: float = 0, dataview: Optional[ViewBox] = None,
+             zorder: int = 1) -> None:
         ''' Add a rectangle to the canvas
 
             Args:
@@ -314,8 +344,8 @@ class Canvas:
 
         y = self.flipy(y) - h  # xy is top-left corner
         fill = 'none' if fill is None else fill
-        rect = ET.SubElement(
-            self.group, 'rect',
+        rect = ET.Element(
+            'rect',
             attrib={'x': fmt(x), 'y': fmt(y),
                     'width': fmt(w), 'height': fmt(h),
                     'fill': fill,
@@ -324,10 +354,12 @@ class Canvas:
         if rcorner:
             rect.set('rx', str(rcorner))
         set_clip(rect, self.clip)
+        self.add_element(rect, zorder)
 
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
                strokecolor: str = 'red', strokewidth: float = 1,
-               stroke: DashTypes = '-', dataview: Optional[ViewBox] = None) -> None:
+               stroke: DashTypes = '-', dataview: Optional[ViewBox] = None,
+               zorder: int = 1) -> None:
         ''' Add a circle to the canvas (always a circle, the width/height
             will not be scaled to data coordinates).
 
@@ -346,8 +378,8 @@ class Canvas:
             radius = radius * self.viewbox.w/dataview.w
 
         y = self.flipy(y)
-        circ = ET.SubElement(
-            self.group, 'circle',
+        circ = ET.Element(
+            'circle',
             attrib={'cx': fmt(x), 'cy': fmt(y), 'r': fmt(radius),
                     'stroke-width': str(strokewidth)})
         set_color(strokecolor, circ, 'stroke')
@@ -355,6 +387,7 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             circ.set('stroke-dasharray', getdash(stroke, strokewidth))
         set_clip(circ, self.clip)
+        self.add_element(circ, zorder)
 
     def text(self, x: float, y: float, s: str,
              color: str = 'black',
@@ -364,7 +397,8 @@ class Canvas:
              valign: text.Valign = 'bottom',
              rotate: Optional[float] = None,
              pixelofst: Optional[PointType] = None,
-             dataview: Optional[ViewBox] = None) -> None:
+             dataview: Optional[ViewBox] = None,
+             zorder: int = 10) -> None:
         ''' Add text to the canvas
 
             Args:
@@ -393,17 +427,14 @@ class Canvas:
             y += pixelofst[1]
 
         y = self.flipy(y)
-        text.draw_text(x, y, s, self.group,
-                       color=color,
-                       font=font,
-                       size=size,
-                       halign=halign,
-                       valign=valign,
-                       rotate=rotate)
+        self.add_element(
+            SvgText(x, y, s, color, font, size, halign, valign, rotate),
+            zorder=zorder)
 
     def poly(self, points: Sequence[PointType], color: str = 'black',
              strokecolor: str = 'red', strokewidth: float = 1,
-             dataview: Optional[ViewBox] = None) -> None:
+             dataview: Optional[ViewBox] = None,
+             zorder: int = 1) -> None:
         ''' Add a polygon to the canvas
 
             Args:
@@ -423,17 +454,19 @@ class Canvas:
         for px, py in zip(x, y):
             pointstr += f'{fmt(px)},{fmt(py)} '
 
-        poly = ET.SubElement(
-            self.group, 'polygon',
+        poly = ET.Element(
+            'polygon',
             attrib={'points': pointstr,
                     'stroke-width': str(strokewidth)})
         set_color(strokecolor, poly, 'stroke')
         set_color(color, poly, 'fill')
         set_clip(poly, self.clip)
+        self.add_element(poly, zorder)
 
     def wedge(self, cx: float, cy: float, radius: float, theta: float,
               starttheta: float = 0, color: str = 'red',
-              strokecolor: str = 'black', strokewidth: float = 1) -> None:
+              strokecolor: str = 'black', strokewidth: float = 1,
+              zorder: int = 1) -> None:
         ''' Add a wedge/filled arc (ie pie chart slice)
 
             Args:
@@ -453,7 +486,7 @@ class Canvas:
         y2 = cy + radius * math.sin(starttheta + theta)
 
         flag = 1 if theta > math.pi else 0
-        path = ET.SubElement(self.group, 'path')
+        path = ET.Element('path')
         pointstr = f'M {fmt(cx)},{fmt(cy)} L {fmt(x1)},{fmt(y1)} '
         pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 1 {fmt(x2)} {fmt(y2)} Z'
         path.set('d', pointstr)
@@ -461,10 +494,12 @@ class Canvas:
         set_color(color, path, 'fill')
         path.set('stroke-width', str(strokewidth))
         set_clip(path, self.clip)
+        self.add_element(path, zorder)
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
             theta2: float = 180, strokecolor: str = 'black',
-            strokewidth: float = 1, dataview: Optional[ViewBox] = None) -> None:
+            strokewidth: float = 1, dataview: Optional[ViewBox] = None,
+            zorder: int  = 1) -> None:
         ''' Add an open arc
 
             Args:
@@ -491,7 +526,7 @@ class Canvas:
         y2 = cy + radius * math.sin(-theta2)
 
         flag = 1 if theta2-theta1 > math.pi else 0
-        path = ET.SubElement(self.group, 'path')
+        path = ET.Element('path')
         pointstr = f'M {fmt(x1)},{fmt(y1)} '
         pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 0 {fmt(x2)} {fmt(y2)}'
         path.set('d', pointstr)
@@ -499,11 +534,13 @@ class Canvas:
         path.set('fill', 'none')
         set_color(strokecolor, path, 'stroke')
         set_clip(path, self.clip)
+        self.add_element(path, zorder)
 
     def ellipse(self, cx: float, cy: float, r1: float, r2: float,
                 theta: float = 0, color: str = 'black',
                 strokecolor: str = 'black', strokewidth: float = 1,
-                dataview: Optional[ViewBox] = None) -> None:
+                dataview: Optional[ViewBox] = None,
+                zorder: int = 1) -> None:
         ''' Add an ellipse
 
             Args:
@@ -522,7 +559,7 @@ class Canvas:
             r2 = r2 * self.viewbox.h / dataview.h
         cy = self.flipy(cy)
 
-        ellipse = ET.SubElement(self.group, 'ellipse')
+        ellipse = ET.Element('ellipse')
         ellipse.set('cx', str(cx))
         ellipse.set('cy', str(cy))
         ellipse.set('rx', str(r1))
@@ -534,6 +571,7 @@ class Canvas:
         if theta:
             ellipse.set('transform', f'rotate({-theta} {cx} {cy})')
         set_clip(ellipse, self.clip)
+        self.add_element(ellipse, zorder)
 
     def bezier(self,
                p1: PointType, p2: PointType,
@@ -541,7 +579,8 @@ class Canvas:
                stroke: DashTypes = '-',
                color: str = 'black', width: float = 2, markerid: Optional[str] = None,
                startmarker: Optional[str] = None, endmarker: Optional[str] = None,
-               dataview: Optional[ViewBox] = None) -> None:
+               dataview: Optional[ViewBox] = None,
+               zorder: int = 1) -> None:
         ''' Add a bezier curve to the SVG
 
             Args:
@@ -567,7 +606,7 @@ class Canvas:
         if p4 is not None:
             p4 = p4[0], self.flipy(p4[1])
 
-        path = ET.SubElement(self.group, 'path')
+        path = ET.Element('path')
         pointstr = f'M {fmt(p1[0])},{fmt(p1[1])} '
         pointstr += 'C ' if p4 is not None else 'Q '
         pointstr += f'{fmt(p2[0])},{fmt(p2[1])}'
@@ -586,3 +625,4 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
         set_clip(path, self.clip)
+        self.add_element(path, zorder)

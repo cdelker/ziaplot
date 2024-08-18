@@ -149,7 +149,8 @@ class Pie(Diagram):
             canvas.circle(cx, cy, radius,
                           color=slicestyle.get_color(),
                           strokecolor=slicestyle.edge_color,
-                          strokewidth=slicestyle.stroke_width)
+                          strokewidth=slicestyle.stroke_width,
+                          zorder=slice._zorder)
 
             if self.labelmode == 'name':
                 labeltext = slice._name
@@ -184,7 +185,8 @@ class Pie(Diagram):
                 canvas.wedge(cxx, cyy, radius, thetas[i], starttheta=theta,
                              color=slicestyle.get_color(),
                              strokecolor=slicestyle.edge_color,
-                             strokewidth=slicestyle.stroke_width)
+                             strokewidth=slicestyle.stroke_width,
+                             zorder=slice._zorder)
 
                 tstyle = self._build_style('PieSlice.Text')
                 labelx = cxx + (radius+tstyle.margin) * math.cos(thetahalf)

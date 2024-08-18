@@ -30,6 +30,7 @@ class Text(Component):
         self.halign = halign
         self.valign = valign
         self.rotate = rotate
+        self._zorder: int = 10
 
     def color(self, color: str) -> 'Text':
         ''' Sets the text color '''
@@ -59,4 +60,5 @@ class Text(Component):
                     halign=self.halign,
                     valign=self.valign,
                     rotate=self.rotate,
-                    dataview=databox)
+                    dataview=databox,
+                    zorder=self._zorder)

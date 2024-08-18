@@ -84,7 +84,8 @@ class Contour(Element):
                                 stroke=sty.stroke,
                                 color=color,
                                 width=sty.stroke_width,
-                                dataview=databox)
+                                dataview=databox,
+                                zorder=self._zorder)
         if self.colorbar:
             self._draw_colorbar(canvas)
 
@@ -197,7 +198,7 @@ class Contour(Element):
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
                 barx = x + barwidth*(i + 0.5)
                 canvas.path([barx, barx], [y, y2],
-                            width=barwidth, color=color)
+                            width=barwidth, color=color, zorder=self._zorder)
                 if i in [0, int(nlevels//2), nlevels-1]:
                     canvas.text(barx, y2+3, format(level, cstyle.num_format),
                                 color=cstyle.get_color(),
@@ -207,7 +208,7 @@ class Contour(Element):
             canvas.rect(x, y, length, width,
                         strokewidth=cstyle.stroke_width,
                         strokecolor=cstyle.edge_color,
-                        fill=None)
+                        fill=None, zorder=self._zorder)
         else:
             length = canvas.viewbox.h - cstyle.margin*2
             barwidth = length // (nlevels)
@@ -223,7 +224,7 @@ class Contour(Element):
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
                 bary = y + barwidth*(i + 0.5)
                 canvas.path([x, x2], [bary, bary],
-                            width=barwidth, color=color)
+                            width=barwidth, color=color, zorder=self._zorder)
                 if i in [0, int(nlevels//2), nlevels-1]:
                     canvas.text(x-3, bary,
                                 format(level, cstyle.num_format),
@@ -235,7 +236,7 @@ class Contour(Element):
             canvas.rect(x, y, width, length,
                         strokewidth=cstyle.stroke_width,
                         strokecolor=cstyle.edge_color,
-                        fill=None)
+                        fill=None, zorder=self._zorder)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

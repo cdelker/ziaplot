@@ -69,7 +69,8 @@ class Bars(Element):
                         fill=color,
                         strokecolor=sty.edge_color,
                         strokewidth=sty.edge_width,
-                        dataview=databox)
+                        dataview=databox,
+                        zorder=self._zorder)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
@@ -101,7 +102,8 @@ class BarsHoriz(Bars):
                         fill=color,
                         strokecolor=sty.edge_color,
                         strokewidth=sty.edge_width,
-                        dataview=databox)
+                        dataview=databox,
+                        zorder=self._zorder)
 
 
 class Histogram(Bars):

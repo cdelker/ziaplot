@@ -17,6 +17,7 @@ class Container(Drawable):
         self._cycleindex = 0
         self.width: float|None = None
         self.height: float|None = None
+        self._zorder: int = 0  # Containers drawn at bottom
 
     def style(self, css: str) -> 'Drawable':
         '''Set the style for this Drawable using CSS elements '''

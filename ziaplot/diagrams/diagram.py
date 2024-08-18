@@ -332,7 +332,8 @@ class Diagram(Container):
                 canvas.rect(boxl+pad, yytext, square, square,
                             fill=sstyle.get_color(),
                             strokecolor=sstyle.edge_color,
-                            strokewidth=sstyle.edge_width)
+                            strokewidth=sstyle.edge_width,
+                            zorder=self._zorder)
 
             else:
                 canvas.text(xright-boxw+markw, yytext,
@@ -348,7 +349,8 @@ class Diagram(Container):
                             color=sstyle.get_color(),
                             width=sstyle.stroke_width,
                             markerid=comp._markername,
-                            stroke=sstyle.stroke)
+                            stroke=sstyle.stroke,
+                            zorder=self._zorder)
                 canvas.resetviewbox()
             yytext -= legsty.font_size * self.linespacing
 
@@ -360,14 +362,14 @@ class Diagram(Container):
                 diagbox: ViewBox of diagram within the canvas
         '''
         if self._title:
-            canvas.newgroup()
             sty = self._build_style('Graph.Title')
             centerx = diagbox.x + diagbox.w/2
             canvas.text(centerx, diagbox.y+diagbox.h, self._title,
                         color=sty.get_color(),
                         font=sty.font,
                         size=sty.font_size,
-                        halign='center', valign='bottom')
+                        halign='center', valign='bottom',
+                        zorder=self._zorder)
 
     def _drawcomponents(self, canvas: Canvas, diagbox: ViewBox, databox: ViewBox) -> None:
         ''' Draw all components to the diagram

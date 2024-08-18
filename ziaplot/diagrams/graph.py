@@ -232,21 +232,22 @@ class Graph(Diagram):
                 diagbox: ViewBox of diagram within the canvas
         '''
         sty = self._build_style()
-        canvas.newgroup()
         bgcolor = sty.get_color()
         if bgcolor:
             canvas.rect(diagbox.x, diagbox.y, diagbox.w, diagbox.h,
-                        strokecolor='none', fill=sty.color)
+                        strokecolor='none', fill=sty.color, zorder=self._zorder)
 
         if self.fullbox:
             canvas.rect(diagbox.x, diagbox.y, diagbox.w, diagbox.h,
                         strokecolor=sty.edge_color,
-                        strokewidth=sty.edge_width)
+                        strokewidth=sty.edge_width,
+                        zorder=self._zorder)
         else:
             canvas.path([diagbox.x, diagbox.x, diagbox.x+diagbox.w],
                         [diagbox.y+diagbox.h, diagbox.y, diagbox.y],
                         color=sty.edge_color,
-                        width=sty.edge_width)
+                        width=sty.edge_width,
+                        zorder=self._zorder)
 
     def _drawticks(self, canvas: Canvas, ticks: Ticks, diagbox: ViewBox, databox: ViewBox) -> None:
         ''' Draw tick marks and labels
@@ -263,7 +264,6 @@ class Graph(Diagram):
         gridx_sty = self._build_style('Graph.GridX')
         gridy_sty = self._build_style('Graph.GridY')
 
-        canvas.newgroup()
         xform = Transform(databox, diagbox)
         for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
             x, _ = xform.apply(xtick, 0)
@@ -275,11 +275,13 @@ class Graph(Diagram):
                 canvas.path([x, x], [diagbox.y, diagbox.y+diagbox.h],
                             color=gridx_sty.color,
                             stroke=gridx_sty.stroke,
-                            width=gridx_sty.stroke_width)
+                            width=gridx_sty.stroke_width,
+                            zorder=self._zorder)
 
             if self.showxticks:
                 canvas.path([x, x], [y1, y2], color=xsty.get_color(),
-                            width=xsty.stroke_width)
+                            width=xsty.stroke_width,
+                            zorder=self._zorder)
     
                 canvas.text(x, y2-xsty.margin, xtickname,
                             color=xsty.get_color(),
@@ -296,7 +298,8 @@ class Graph(Diagram):
                         y1 = diagbox.y
                         y2 = y1 - xsty_minor.height
                         canvas.path([x, x], [y1, y2], color=xsty.color,
-                                    width=xsty_minor.stroke_width)
+                                    width=xsty_minor.stroke_width,
+                                    zorder=self._zorder)
 
         for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
             _, y = xform.apply(0, ytick)
@@ -309,17 +312,20 @@ class Graph(Diagram):
                 canvas.path([diagbox.x, diagbox.x+diagbox.w], [y, y],
                             color=gridy_sty.color,
                             stroke=gridy_sty.stroke,
-                            width=gridy_sty.stroke_width)
+                            width=gridy_sty.stroke_width,
+                            zorder=self._zorder)
 
             if self.showyticks:
                 canvas.path([x1, x2], [y, y], color=ysty.get_color(),
-                            width=ysty.stroke_width)
+                            width=ysty.stroke_width,
+                            zorder=self._zorder)
 
                 canvas.text(x2-ysty.margin, y, ytickname,
                             color=ysty.get_color(),
                             font=ysty.font,
                             size=ysty.font_size,
-                            halign='right', valign='center')
+                            halign='right', valign='center',
+                            zorder=self._zorder)
     
                 if ticks.yminor:
                     ysty_minor = self._build_style('Graph.TickYMinor')
@@ -330,7 +336,8 @@ class Graph(Diagram):
                         x1 = diagbox.x
                         x2 = diagbox.x - ysty_minor.height
                         canvas.path([x1, x2], [y, y], color=ysty_minor.get_color(),
-                                    width=ysty_minor.stroke_width)
+                                    width=ysty_minor.stroke_width,
+                                    zorder=self._zorder)
 
         if self._xname:
             sty = self._build_style('Graph.XName')
@@ -490,7 +497,6 @@ class GraphQuad(Graph):
         # Quad draws the title on the left so the centered y axis
         # doesn't hit it
         if self._title:
-            canvas.newgroup()
             sty = self._build_style('Graph.Title')
             canvas.text(diagbox.x, diagbox.y+diagbox.h, self._title,
                         color=sty.get_color(),
@@ -507,9 +513,9 @@ class GraphQuad(Graph):
         '''
         sty = self._build_style()
         if sty.color:
-            canvas.newgroup()
             canvas.rect(diagbox.x, diagbox.y, diagbox.w, diagbox.h,
-                        strokecolor='none', fill=sty.color)
+                        strokecolor='none', fill=sty.color,
+                        zorder=self._zorder)
 
     def _legendloc(self, diagbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> PointType:
         ''' Calculate legend location
@@ -561,7 +567,6 @@ class GraphQuad(Graph):
         gridx_sty = self._build_style('Graph.GridX')
         gridy_sty = self._build_style('Graph.GridX')
 
-        canvas.newgroup()
         xform = Transform(databox, diagbox)
         xleft = xform.apply(databox.x, 0)
         xrght = xform.apply(databox.x+databox.w, 0)
@@ -601,13 +606,15 @@ class GraphQuad(Graph):
                     color=sty.edge_color,
                     width=sty.edge_width,
                     startmarker=xmarker,
-                    endmarker=endmark)
+                    endmarker=endmark,
+                    zorder=self._zorder)
         canvas.path([ytop[0], ybot[0]],
                     yaxis,
                     color=sty.edge_color,
                     width=sty.edge_width,
                     startmarker=startmark,
-                    endmarker=ymarker)
+                    endmarker=ymarker,
+                    zorder=self._zorder)
 
         if self.showxticks:
             for xtick, xtickname in zip(ticks.xticks, ticks.xnames):
@@ -620,12 +627,14 @@ class GraphQuad(Graph):
                     canvas.path([x, x], [ybot[1], ytop[1]],
                                 color=gridx_sty.get_color(),
                                 stroke=gridx_sty.stroke,
-                                width=gridx_sty.stroke_width)
+                                width=gridx_sty.stroke_width,
+                                zorder=self._zorder)
                     
                 if xleft[0] < x < xrght[0]:
                     # Don't draw ticks outside the arrows
                     canvas.path([x, x], [y1, y2], color=xsty.get_color(),
-                                width=xsty.stroke_width)
+                                width=xsty.stroke_width,
+                                zorder=self._zorder)
 
                     canvas.text(x, y2-xsty.margin, xtickname,
                                 color=xsty.get_color(),
@@ -642,7 +651,8 @@ class GraphQuad(Graph):
                     y1 = xleft[1] + xsty_minor.height/2
                     y2 = xleft[1] - xsty_minor.height/2
                     canvas.path([x, x], [y1, y2], color=xsty_minor.get_color(),
-                                width=xsty_minor.stroke_width)
+                                width=xsty_minor.stroke_width,
+                                zorder=self._zorder)
 
         if self.showyticks:
             for ytick, ytickname in zip(ticks.yticks, ticks.ynames):
@@ -655,12 +665,14 @@ class GraphQuad(Graph):
                     canvas.path([xleft[0], xrght[0]], [y, y],
                                 color=gridy_sty.get_color(),
                                 stroke=gridy_sty.stroke,
-                                width=gridy_sty.stroke_width)
+                                width=gridy_sty.stroke_width,
+                                zorder=self._zorder)
 
                 if ybot[1] < y < ytop[1]:
                     # Don't draw ticks outside the arrows
                     canvas.path([x1, x2], [y, y], color=ysty.get_color(),
-                                width=xsty.stroke_width)
+                                width=xsty.stroke_width,
+                                zorder=self._zorder)
 
                     canvas.text(x2-ysty.margin, y, ytickname,
                             color=ysty.get_color(),
@@ -676,7 +688,8 @@ class GraphQuad(Graph):
                     x1 = ytop[0] + ysty_minor.height/2
                     x2 = ytop[0] - ysty_minor.height/2
                     canvas.path([x1, x2], [y, y], color=ysty_minor.get_color(),
-                                width=ysty_minor.stroke_width)
+                                width=ysty_minor.stroke_width,
+                                zorder=self._zorder)
 
         if self._xname:
             sty = self._build_style('Graph.XName')

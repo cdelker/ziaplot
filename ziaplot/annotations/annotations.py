@@ -39,6 +39,7 @@ class Arrow(Annotation):
         self._text_pos: Optional[TextPosition] = None
         self._tailmarker = tailmarker
         self._endmarker = marker
+        self._zorder: int = 8
 
     def label(self, text: str,
               pos: TextPosition = 'NE') -> 'Arrow':
@@ -87,7 +88,8 @@ class Arrow(Annotation):
                     width=sty.stroke_width,
                     startmarker=tailmark,
                     endmarker=endmark,
-                    dataview=databox)
+                    dataview=databox,
+                    zorder=self._zorder)
 
         if self._text:
             dx, dy, halign, valign = text_align_ofst(
@@ -114,6 +116,7 @@ class Angle(Annotation):
         self.arcs = arcs
         self._label: Optional[LineLabel] = None
         self.square_right = True
+        self._zorder: int = 8
 
     def label(self, label: str, color: Optional[str] = None,
               size: Optional[float] = None) -> 'Angle':
@@ -198,7 +201,8 @@ class Angle(Annotation):
             canvas.path(xpath, ypath,
                         color=sty.color,
                         width=sty.stroke_width,
-                        dataview=databox
+                        dataview=databox,
+                        zorder=self._zorder
                         )
         else:
             dradius = sty.margin * databox.w / canvas.viewbox.w
@@ -208,7 +212,8 @@ class Angle(Annotation):
                         math.degrees(theta2),
                         strokecolor=sty.color,
                         strokewidth=sty.stroke_width,
-                        dataview=databox
+                        dataview=databox,
+                        zorder=self._zorder
                         )
 
         if self._label:

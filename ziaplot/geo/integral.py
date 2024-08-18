@@ -27,6 +27,7 @@ class IntegralFill(Element):
         self.func2 = f2
         self.x1 = x1
         self.x2 = x2
+        self._zorder: int = 1  # Place below function lines
 
     def _xlimits(self, databox: ViewBox) -> tuple[float, float]:
         ''' Get x-limits to draw over '''
@@ -65,7 +66,8 @@ class IntegralFill(Element):
 
         canvas.poly(xy, color=fill,
                     strokecolor='none',
-                    dataview=databox)
+                    dataview=databox,
+                    zorder=self._zorder)
 
     @classmethod
     def intersection(cls, f: Function, f2: Function,

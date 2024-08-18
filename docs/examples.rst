@@ -177,7 +177,7 @@ Geometric
             .css(zp.CSS_BLACKWHITE+zp.CSS_NOGRID)
             .size(500, 500)
             .xrange(-2, 2).xticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])
-            .yrange(-2, 2).yticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])):
+            .yrange(-2, 2).yticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])) as d:
         theta = 40
         circ = zp.Circle(0, 0, 1)
         xaxis = zp.HLine(0)
@@ -185,25 +185,21 @@ Geometric
         y1 = zp.HLine(1).stroke('--').label('y=1', .25, 'N')
         hyp = zp.Line((0,0), math.tan(math.radians(theta)))
         tan = zp.Tangent.to_circle(circ, theta)
-        # Find point locations, but draw them later so they stay on top
-        E = zp.x_intercept(tan)
-        D = zp.y_intercept(tan)
-        C = zp.line_intersection(y1, hyp)
-        B = zp.line_intersection(x1, hyp)
-        A = zp.line_intersection(hyp, tan)
-        sec = zp.Segment((0, 0), E).strokewidth(4).color('purple').label('sec θ', .5, 'S', color='purple')
-        csc = zp.Segment((0, 0), D).strokewidth(4).color('orange').label('csc θ', .5, 'W', color='orange')
-        cot = zp.Segment.horizontal(C).strokewidth(4).color('green').label('cot θ', .4, 'N', color='green')
-        tan = zp.Segment.vertical(B).strokewidth(4).color('blue').label('tan θ', .6, 'E', color='blue')
-        cos = zp.Segment.horizontal(A).strokewidth(4).color('lime').label('cos θ$', .6, 'N', color='lime')
-        sin = zp.Segment.vertical(A).strokewidth(4).color('cyan').label('sin θ', .6, 'W', color='cyan')
-        zp.Angle.to_zero(hyp, quad=4).label('θ')
+        
         zp.Point(0, 0).label('O', 'SE').color('red')
-        zp.Point(*A).label('A', 'E').color('red')
-        zp.Point(*B).label('B', 'W').color('red')
-        zp.Point(*C).label('C', 'N').color('red')
-        zp.Point(*D).label('D', 'E').color('red')
-        zp.Point(*E).label('E', 'SW').color('red')
+        A = zp.Point.at_intersection(hyp, tan).label('A', 'E').color('red')
+        B = zp.Point.at_intersection(x1, hyp).label('B', 'W').color('red')
+        C = zp.Point.at_intersection(y1, hyp).label('C', 'N').color('red')
+        D = zp.Point.at(tan, x=0).label('D', 'E').color('red')
+        E = zp.Point.at_y(tan, y=0).label('E', 'SW').color('red')
+
+        cot = zp.Segment.horizontal(C.point).strokewidth(4).color('green').label('cot θ', .4, 'N', color='green')
+        sin = zp.Segment.vertical(A.point).strokewidth(4).color('cyan').label('sin θ', .6, 'W', color='cyan')
+        sec = zp.Segment((0, 0), E.point).strokewidth(4).color('purple').label('sec θ', .5, 'S', color='purple')
+        csc = zp.Segment((0, 0), D.point).strokewidth(4).color('orange').label('csc θ', .5, 'W', color='orange')
+        tan = zp.Segment.vertical(B.point).strokewidth(4).color('blue').label('tan θ', .6, 'E', color='blue')
+        cos = zp.Segment.horizontal(A.point).strokewidth(4).color('lime').label('cos θ', .6, 'N', color='lime')
+        zp.Angle.to_zero(hyp, quad=4).label('θ')
 
 (`Based on Unit Circle from Wikipedia <https://en.wikipedia.org/wiki/Trigonometric_functions#/media/File:Unit_Circle_Definitions_of_Six_Trigonometric_Functions.svg>`_)
 

@@ -31,6 +31,7 @@ class Point(Element):
         self._text_pos: Optional[TextPosition] = None
         self._guidex: Optional[float] = None
         self._guidey: Optional[float] = None
+        self._zorder: int = 6  # Points should usually be above other things
 
     @property
     def point(self) -> PointType:
@@ -93,14 +94,16 @@ class Point(Element):
                         color=style.get_color(),
                         stroke=style.stroke,
                         width=style.stroke_width,
-                        dataview=databox)
+                        dataview=databox,
+                        zorder=self._zorder)
         if self._guidey is not None:
             style = self._build_style('Point.GuideY')
             canvas.path([self._guidey, self.x], [self.y, self.y],
                         color=style.get_color(),
                         stroke=style.stroke,
                         width=style.stroke_width,
-                        dataview=databox)
+                        dataview=databox,
+                        zorder=self._zorder)
 
         sty = self._build_style()
         markname = canvas.definemarker(sty.shape,
@@ -111,7 +114,8 @@ class Point(Element):
         canvas.path([self.x], [self.y],
                     color=sty.get_color(),
                     markerid=markname,
-                    dataview=databox)
+                    dataview=databox,
+                    zorder=self._zorder)
 
         if self._text:
             style = self._build_style('Point.Text')

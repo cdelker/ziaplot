@@ -83,7 +83,8 @@ class BezierQuad(Element):
                       width=sty.stroke_width,
                       startmarker=startmark,
                       endmarker=endmark,
-                      dataview=databox)
+                      dataview=databox,
+                      zorder=self._zorder)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
@@ -100,7 +101,8 @@ class BezierQuad(Element):
             canvas.path([midx, midx1], [midy, midy1],
                         color='none',
                         startmarker=midmark,
-                        dataview=databox)
+                        dataview=databox,
+                        zorder=self._zorder)
 
 
     def svgxml(self, border: bool = False) -> ET.Element:

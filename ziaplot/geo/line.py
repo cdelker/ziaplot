@@ -216,7 +216,8 @@ class Line(Function):
                     width=sty.stroke_width,
                     startmarker=startmark,
                     endmarker=endmark,
-                    dataview=databox)
+                    dataview=databox,
+                    zorder=self._zorder)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
@@ -234,7 +235,8 @@ class Line(Function):
             canvas.path([midx, midx1], [midy, midy1],
                         color='none',
                         startmarker=midmark,
-                        dataview=databox)
+                        dataview=databox,
+                        zorder=self._zorder)
 
         self._place_labels(x, y, canvas, databox)
 

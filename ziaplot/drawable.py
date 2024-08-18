@@ -19,6 +19,7 @@ class Drawable:
         self._cssid: str | None = None
         self._csscls: str | None = None
         self._span: SpanType = 1, 1
+        self._zorder: int = 1
 
     def __contains__(self, other: 'Drawable'):
         return None
@@ -38,6 +39,11 @@ class Drawable:
             grid layout.
         '''
         self._span = columns, rows
+        return self
+
+    def zorder(self, zorder: int = 1) -> 'Drawable':
+        ''' Set zorder for the drawable '''
+        self._zorder = zorder
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,

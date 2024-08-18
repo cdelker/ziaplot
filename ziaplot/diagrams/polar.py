@@ -89,7 +89,8 @@ class GraphPolar(Diagram):
 
         canvas.circle(cx, cy, radius, color=sty.get_color(),
                       strokecolor=sty.edge_color,
-                      strokewidth=sty.edge_width)
+                      strokewidth=sty.edge_width,
+                      zorder=self._zorder)
 
         for i, rname in enumerate(ticks.xnames):
             if i in [0, len(ticks.xnames)-1]:
@@ -97,7 +98,8 @@ class GraphPolar(Diagram):
             r = radius / (len(ticks.xticks)-1) * i
             canvas.circle(cx, cy, r, strokecolor=gridsty.get_color(),
                           strokewidth=gridsty.stroke_width,
-                          color='none', stroke=gridsty.stroke)
+                          color='none', stroke=gridsty.stroke,
+                          zorder=self._zorder)
 
             textx = cx + r * math.cos(math.radians(self.labeltheta))
             texty = cy + r * math.sin(math.radians(self.labeltheta))
@@ -111,7 +113,8 @@ class GraphPolar(Diagram):
             canvas.path([cx, cx+x], [cy, cy+y],
                         color=gridsty.get_color(),
                         width=gridsty.stroke_width,
-                        stroke=gridsty.stroke)
+                        stroke=gridsty.stroke,
+                        zorder=self._zorder)
 
             labelx = cx + (radius+sty.margin) * math.cos(-thetarad)
             labely = cy - (radius+sty.margin) * math.sin(-thetarad)
