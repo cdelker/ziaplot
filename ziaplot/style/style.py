@@ -32,7 +32,7 @@ class Style:
     edge_width: float | None = None
     
     font: str | None = None
-    font_size: float | None = None
+    font_size: float | str | None = None
     num_format: str | None = None
 
     height: float | None = None

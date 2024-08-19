@@ -6,9 +6,23 @@ from dataclasses import dataclass, field, replace
 
 from .style import Style
 
+NAMED_SIZE_INCREMENTS = {
+    'xx-small': -6,
+    'x-small': -4,
+    'small': -2,
+    'medium': 0,
+    'normal': 0,
+    'large': 4,
+    'x-large': 8,
+    'xx-large': 12
+}
+
 
 def merge(style: Style, style2: Style) -> Style:
     ''' Merge style2 on top of style1, replacing any non-none items '''
+    if isinstance(style2.font_size, str) and isinstance(style.font_size, int):
+        size_adder = NAMED_SIZE_INCREMENTS.get(style2.font_size, 0)
+        style2.font_size = style.font_size + size_adder
     return replace(style, **style2.values())
 
 

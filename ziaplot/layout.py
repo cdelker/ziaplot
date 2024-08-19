@@ -140,12 +140,13 @@ class LayoutGrid(Container):
         height = self.height if self.height else sty.height
         canvas = Canvas(width, height, fill=sty.color)
         self._xml(canvas)
+        xml = canvas.xml()
         if border:
             attrib = {'x': '0', 'y': '0',
                       'width': '100%', 'height': '100%',
                       'fill': 'none', 'stroke': 'black'}
-            ET.SubElement(canvas.group, 'rect', attrib=attrib)
-        return canvas.xml()
+            ET.SubElement(xml, 'rect', attrib=attrib)
+        return xml
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:

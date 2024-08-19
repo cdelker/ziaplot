@@ -102,7 +102,7 @@ class Canvas:
         self.fill = fill
         self.viewbox = ViewBox(0, 0, width, height)
 
-        self.elements: list[SvgElm|SvgText] = []
+        self.elements: list[SvgElm] = []
         self.defs: Optional[ET.Element] = None
         self.clip: Optional[str] = None
         self._clipnames: list[str] = []

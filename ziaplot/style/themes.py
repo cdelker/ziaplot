@@ -14,7 +14,7 @@ THEME_BASE = ''' * {
         radius: 8;          /* Marker size */
         edge_width: 1;      /* Border around markers, bars, etc. */
         font: sans-serif;
-        font_size: 14;
+        font_size: 16;
         num_format: g;
         height: 0;
         width: 0;
@@ -30,7 +30,7 @@ THEME_BASE = ''' * {
     Graph {
         color: #F6F6F6;
         edge_width: 2;
-        font_size: 16;
+        font_size: large;
     }
     Graph.GridX {
         color: lightgray;
@@ -43,13 +43,13 @@ THEME_BASE = ''' * {
         stroke_width: 1;
     }
     Graph.Title {
-        font_size: 18;
+        font_size: x-large;
     }
     Graph.XName {
-        font_size: 14;
+        font_size: normal;
     }
     Graph.YName {
-        font_size: 14;
+        font_size: normal;
     }
     Graph.Legend {
         color: none;
@@ -59,11 +59,11 @@ THEME_BASE = ''' * {
         pad: 4;        /* Between legend frame and contents */
     }
     Graph.LegendText {
-        font_size: 14;
+        font_size: normal;
         margin: 4;
     }
     Graph.TickX {
-        font_size: 13;
+        font_size: small;
         height: 9;
         stroke_width: 2;
         margin: 4;
@@ -75,7 +75,7 @@ THEME_BASE = ''' * {
         stroke_width: 1;
     }
     Graph.TickY {
-        font_size: 13;
+        font_size: small;
         height: 9;
         stroke_width: 2;
         margin: 4;
@@ -108,7 +108,7 @@ THEME_BASE = ''' * {
         margin: 0.5;      /* Space between bar groups */
     }
     BarChart.TickX {
-        font_size: 13;
+        font_size: small;
         height: 9;
         stroke_width: 2;
         margin: 4;
@@ -116,7 +116,7 @@ THEME_BASE = ''' * {
         pad: 0;  /* Let bars sit at exact bottom of axis */
     }
     BarChartHoriz.TickY {
-        font_size: 13;
+        font_size: small;
         height: 9;
         stroke_width: 2;
         margin: 4;
@@ -151,7 +151,7 @@ THEME_BASE = ''' * {
         stroke_width: 1;
     }
     PieSlice.Text {
-        font_size: 14;
+        font_size: normal;
         margin: 4;    
     }
     Element {
@@ -201,7 +201,7 @@ THEME_BASE = ''' * {
         radius: 4;
     }
     Point.Text {
-        font_size: 12;
+        font_size: normal;
         margin: 8;
     }
     Point.GuideX {
@@ -216,7 +216,7 @@ THEME_BASE = ''' * {
         color: blue 30%;
     }
     Line.Text {
-        font_size: 12;
+        font_size: normal;
         margin: 8;
     }
     Angle {
@@ -225,7 +225,7 @@ THEME_BASE = ''' * {
         margin: 4;  /* between successive arcs */
     }
     Angle.Text {
-        font_size: 14;
+        font_size: normal;
         margin: 5;
     }
     Shape {
