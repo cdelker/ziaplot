@@ -255,7 +255,7 @@ THEME_DARK = '''
         color: black;
     }
     Graph {
-        color: black;
+        color: #222222;
         edge_color: #cccccc;
     }
     Graph.GridX {

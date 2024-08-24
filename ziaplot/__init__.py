@@ -48,6 +48,7 @@ from .diagrams import (
     GraphSmith,
     SmithConstResistance,
     SmithConstReactance,
+    NumberLine,
     ticker
 )
 from .annotations import Text, Angle, Arrow

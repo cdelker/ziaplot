@@ -230,18 +230,7 @@ class LayoutGrid(Container):
             y = fullheight - (sum(dgheights[:row2]) + (row2-1)*self.row_gap)
             vboxes.append(ViewBox(x, y, width, height))
 
-        # Draw a background rectangle over whole grid
-        cstyle = self._build_style('Canvas')
-        if cstyle.get_color() not in [None, 'none']:
-            canvas.resetviewbox()
-            canvas.rect(canvas.viewbox.x,
-                        canvas.viewbox.y,
-                        canvas.viewbox.w,
-                        canvas.viewbox.h,
-                        fill=cstyle.color,
-                        strokecolor=cstyle.edge_color)
-
-        # Now draw each diagram
+        # Draw each diagram
         for i, diag in enumerate(drawdiags):
             row1, col1, row2, col2 = cellloc[diag]
             borders = Borders(

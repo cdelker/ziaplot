@@ -181,7 +181,8 @@ class Canvas:
 
     def definemarker(self, shape: MarkerTypes = 'round', radius: float = 4, color: str = 'red',
                      strokecolor: str = 'black', strokewidth: float = 1,
-                     orient: bool = False) -> str:
+                     orient: bool = False,
+                     align_endpoint: bool = False) -> str:
         ''' Define a new marker in SVG <defs>.
 
             Args:
@@ -201,7 +202,12 @@ class Canvas:
         diam = radius*2
         rstroke = radius + strokewidth
         mark.set('id', name)
-        mark.set('viewBox', f'{-strokewidth} {-strokewidth} {rstroke*2} {rstroke*2}')
+        if shape in ['arrow', '>']:
+            mark.set('viewBox', f'{-strokewidth-radius} {-strokewidth} {rstroke*2} {rstroke*2}')
+        elif shape in ['larrow', '<']:
+            mark.set('viewBox', f'{-strokewidth+radius} {-strokewidth} {rstroke*2} {rstroke*2}')
+        else:
+            mark.set('viewBox', f'{-strokewidth} {-strokewidth} {rstroke*2} {rstroke*2}')
         mark.set('refX', f'{radius}')
         mark.set('refY', f'{radius}')
         mark.set('markerWidth', f'{diam}')
@@ -224,10 +230,10 @@ class Canvas:
             sh.set('points', f'{diam},0 0,0 {radius},{diam}')
         elif shape in ['larrow', '<']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.set('points', f'0,{radius} {diam},0 {diam},{diam}')
+            sh.set('points', f'{radius},{radius} {diam+radius},0 {diam+radius},{diam}')
         elif shape in ['arrow', '>']:
             sh = ET.SubElement(mark, 'polygon')
-            sh.set('points', f'0,0 0,{diam} {diam},{radius}')
+            sh.set('points', f'{-radius},0 {-radius},{diam} {radius},{radius}')
         elif shape == '-':
             sh = ET.SubElement(mark, 'path')
             sh.set('d', f'M 0,{radius} L {diam},{radius}')

@@ -244,6 +244,35 @@ Geometric
 
 |
 
+.. jupyter-execute::
+
+    css = zp.CSS_BLACKWHITE + '''
+        * {
+            font_size: 22;
+        }
+        Circle {
+            stroke_width: 3;
+        }
+        Segment {
+            stroke_width: 5;
+        }
+        Angle {
+            stroke_width: 3;
+        }
+        Radius {
+            stroke_width: 4;
+            }
+        '''
+    with zp.Diagram().css(css):
+        circ = zp.Circle(0, 0, 1).color('gray').fill('whitesmoke')
+        zp.Arrow((1.1, 0), (-1.1, 0)).zorder(2)
+        zp.Arrow((0, 1.1), (0, -1.1))
+        rad = zp.Radius(circ, theta=65)
+        pt = zp.Point.on_circle(circ, theta=65).label(r'$e^{iθ}$')
+        sin = zp.Segment.vertical(pt.point, 0).color('green').label(r'sin(θ)', .7, 'E')
+        cos = zp.Segment.horizontal(sin.p2, 0).color('steelblue').label(r'cos(θ)', .5, 'S')
+        zp.Angle(rad, cos, quad=4).color('purple').label('θ')
+
 Contour Plots
 -------------
 

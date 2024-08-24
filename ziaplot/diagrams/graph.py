@@ -590,16 +590,16 @@ class GraphQuad(Graph):
             xaxis = [xleft[0],
                      xrght[0]-xsty.width]
         else:
-            xaxis = [xleft[0]+arrowwidth+xsty.width,
-                     xrght[0]-arrowwidth-xsty.width]
+            xaxis = [xleft[0]+xsty.width,
+                     xrght[0]-xsty.width]
 
         if databox.y == 0:
             ymarker = None
             yaxis = [ytop[1]-ysty.width,
                      ybot[1]]
         else:
-            yaxis = [ytop[1]-arrowwidth-ysty.width,
-                     ybot[1]+arrowwidth+ysty.width]
+            yaxis = [ytop[1]-ysty.width,
+                     ybot[1]+ysty.width]
         
         canvas.path(xaxis,
                     [xleft[1], xrght[1]],
@@ -693,7 +693,7 @@ class GraphQuad(Graph):
 
         if self._xname:
             sty = self._build_style('Graph.XName')
-            canvas.text(xrght[0]+sty.margin+arrowwidth*1.5,
+            canvas.text(xrght[0]+xsty.margin,
                         xrght[1],
                         self._xname,
                         color=sty.get_color(),
@@ -704,7 +704,7 @@ class GraphQuad(Graph):
         if self._yname:
             sty = self._build_style('Graph.YName')
             canvas.text(ytop[0],
-                        ytop[1]+sty.margin+arrowwidth*1.5,
+                        ytop[1]+ysty.margin,
                         self._yname,
                         color=sty.get_color(),
                         font=sty.font,

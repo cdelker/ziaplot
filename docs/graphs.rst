@@ -8,7 +8,7 @@ Diagrams and Graphs
     
     import math
     import ziaplot as zp
-    zp.css('Canvas{width:400;height:300;}')
+    zp.css('Canvas{width:400;height:300;} Element {radius:6;}')
 
 
 All Ziaplot drawings start on an Diagram instance on which to draw.
@@ -39,8 +39,8 @@ Diagram
 -------
 
 For geometric drawings, :py:class:`ziaplot.diagrams.diagram.Diagram` provides a drawing
-surface without any axis lines, tick marks, etc. Here, a `Diagram` is
-used to draw a circle, its diameter and a radius.
+surface without any axis lines, tick marks, etc. The below circle, with its diameter and radius,
+was drawn on a `Diagram`.
 
 .. jupyter-execute::
     :hide-code:
@@ -174,6 +174,15 @@ starting at 10, ending at 20, with increments of 2:
 
     zp.Graph().xticks(zp.ticker[10:20:2]).yticks(zp.ticker[0:.75:.125])
 
+Note that `GraphQuad` removes the tick labels on the very edges of the graph
+so they don't overlap with the axis arrows.
+It may be necessary to increase the ticker range to show all the labels that are desired,
+for example, to show labels for ticks from -10 to 10, use a ticker range up to 11:
+
+.. jupyter-execute::
+
+    zp.GraphQuad().xticks(zp.ticker[-11:11:1]).yticks(zp.ticker[-6:6:1])
+
 
 Color Fading
 ************
@@ -248,6 +257,26 @@ Data can be plotted on logarithmic scales using :py:class:`ziaplot.diagrams.grap
     p4 += line
     zp.LayoutGrid(p1, p3, p2, p4, gutter=-20, columns=2).size(500, 500)
 
+|
+
+Number Line Graphs
+------------------
+
+A Number Line is a one-dimensional graph.
+However, it is not drawn as truly one-dimensional so that lines and other
+shapes may be drawn above or below the axis.
+:py:class:`ziaplot.diagrams.oned.NumberLine` works similarly to a `GraphQuad`
+but does not show a y-axis.
+
+.. jupyter-execute::
+
+    with zp.NumberLine().xticks(zp.ticker[-1:11:1]).yrange(-1, 1):
+        zp.Segment((1,0), (4,0)).endmarkers('s', '>').strokewidth(5)
+        zp.Curve((3,.05), (5,.05)).endmarkers('', '>')
+        zp.Curve((6,.05), (8,.05)).endmarkers('', '>')
+        zp.Segment((7,-.2), (9,-.2)).endmarkers('|', '|')
+
+|
 
 Polar and Smith Graphs
 ----------------------
