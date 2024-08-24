@@ -1,5 +1,13 @@
 # Release notes
 
+### 0.7 - 2024-08-24
+
+- Added `NumberLine` graph type
+- Added a zorder parameter for layering drawing elements
+- Allow named font sizes, such as "large" and "small", in CSS
+- Change arrowhead marker to point at its data coordinate rather than be centered over it
+
+
 ### 0.6 - 2024-07-27
 
 This release includes major BREAKING CHANGES. The API was reworked to focus more on
