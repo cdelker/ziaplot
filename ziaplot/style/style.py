@@ -41,6 +41,7 @@ class Style:
     pad: float | None = None
 
     colorcycle: Sequence[ColorType] | None = None
+    colorfade: Sequence[str] | None = None
     _cycleindex: int = 0
 
     def __post_init__(self):
@@ -79,6 +80,7 @@ class AppliedStyle:
     pad: float
 
     colorcycle: Sequence[ColorType]
+    colorfade: Sequence[str] | None = None
     _cycleindex: int = 0
 
     def _set_cycle_index(self, i: int) -> None:

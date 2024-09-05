@@ -316,6 +316,21 @@ The available themes are shown below.
         fig = zp.LayoutGrid(p3, p4, p2, p, columns=2)
         return fig
 
+    def test_gradientstyle():
+        xf = zp.linspace(0, 10, 10)
+        x = y = zp.util.zrange(-2., 3., .1)
+        z = [[2 * (math.exp(-xx**2 - yy**2) - math.exp(-(xx-1)**2 - (yy-1)**2)) for xx in x] for yy in y]
+
+        with zp.LayoutH().size(600,300):
+            with zp.Graph():
+                for i in range(12):
+                    yf = [xi*(i+1) for xi in xf]
+                    zp.PolyLine(xf, yf)
+            
+            with zp.Graph().size(400,300):
+                p = zp.Contour(x, y, z, levels=12, colorbar='right')
+
+
 |
 
 Default
@@ -420,5 +435,182 @@ Dark Bold
 
     zp.theme('darkbold')
     teststyle()
+
+|
+
+Colorblind-Friendly Themes
+**************************
+
+The following themes were published by `Paul Tol <https://personal.sron.nl/~pault/data/colourschemes.pdf>`_.
+They were optimized for accessibility on screen and in print.
+
+Bright
+^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('bright')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('bright')
+    teststyle()
+
+|
+
+Vibrant
+^^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('vibrant')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('vibrant')
+    teststyle()
+
+|
+
+Muted
+^^^^^
+
+.. jupyter-input::
+
+    zp.theme('muted')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('muted')
+    teststyle()
+
+|
+
+Light
+^^^^^
+
+.. jupyter-input::
+
+    zp.theme('light')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('light')
+    teststyle()
+
+|
+
+High Contrast
+^^^^^^^^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('highcontrast')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('highcontrast')
+    teststyle()
+
+|
+
+Medium Contrast
+^^^^^^^^^^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('medcontrast')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('medcontrast')
+    teststyle()
+
+|
+
+Diverging and Sequential Color Themes
+*************************************
+
+These color themes, also published by Paul Tol for colorblind accessibility,
+are for gradient data.
+
+Sunset
+^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('sunset')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('sunset')
+    test_gradientstyle()
+
+|
+
+BuRd
+^^^^
+
+.. jupyter-input::
+
+    zp.theme('burd')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('burd')
+    test_gradientstyle()
+
+|
+
+PRGn
+^^^^
+
+.. jupyter-input::
+
+    zp.theme('prgn')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('prgn')
+    test_gradientstyle()
+
+|
+
+YlOrBr
+^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('ylorbr')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('ylorbr')
+    test_gradientstyle()
+
+|
+
+Iridescent
+^^^^^^^^^^
+
+.. jupyter-input::
+
+    zp.theme('iridescent')
+
+.. jupyter-execute::
+    :hide-code:
+
+    zp.theme('iridescent')
+    test_gradientstyle()
 
 |

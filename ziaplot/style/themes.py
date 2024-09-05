@@ -20,7 +20,8 @@ THEME_BASE = ''' * {
         width: 0;
         margin: 0;
         pad: 0;
-        colorcycle: black;
+        colorcycle: black;  /* Discrete colors
+        colorfade: none;    /* Linearly interpolated colors */
     }
     Canvas {
         color: none;
@@ -184,9 +185,8 @@ THEME_BASE = ''' * {
         margin: 8;  /* to text */
     }
     Contour {
-      /* Contours fade between these two colors, or step 
-        if more than 2 colors are defined */
-        colorcycle: #007a86, #ba0c2f;
+        colorcycle: none;  /* Use colorcycle for discrete colors */
+        colorfade: #007a86, #ba0c2f;
     }
     Contour.ColorBar {
         stroke_width: 1;
@@ -310,6 +310,169 @@ THEME_BOLD = '''
     }
 '''
 
+# Paul Tol's Color Themes
+# https://personal.sron.nl/~pault/data/colourschemes.pdf
+
+THEME_BRIGHT = '''
+    Graph {
+        color: #FAFAFA;
+    }
+    Element {
+        colorcycle: #4477AA, #EE6677, #228833, #CCBB44,
+                    #66CCEE, #AA3377, #BBBBBB;
+    }
+    '''
+
+THEME_VIBRANT = '''
+    Graph {
+        color: #FAFAFA;
+    }
+    Element {
+        colorcycle: #EE7733, #0077BB, #CC3311, #009988,
+                    #33BBEE, #EE3377, #BBBBBB;
+    }
+    '''
+
+THEME_MUTED = '''
+    Graph {
+        color: #FAFAFA;
+    }
+    Element {
+        colorcycle: #CC6677, #332288, #DDCC77, #117733,
+                    #88CCEE, #882255, #44AA99, #999933, #AA4499;
+    }
+    '''
+
+THEME_LIGHT = '''
+    Graph {
+        color: #FAFAFA;
+    }
+    Element {
+        colorcycle: #77AADD, #EE8866, #EEDD88, #FFAABB,
+                    #99DDFF, #44BB99, #BBCC33, #AAAA00, #DDDDDD;
+    }
+    '''
+
+THEME_HIGHCONTRAST = '''
+    Graph {
+        color: none;
+    }
+    Element {
+        colorcycle: #004488, #DDAA33, #BB5566;
+    }
+    '''
+
+THEME_MEDONTRAST = '''
+    Graph {
+        color: none;
+    }
+    Element {
+        colorcycle: #6699CC, #EECC66, #994455,
+                    #004488, #997700, #EE99AA;
+    }
+    '''
+
+THEME_SUNSET = '''
+    Graph {
+        color: #FAFAFA;
+        colorfade: #364B9A, #4A7BB7, #6EA6CD, #98CAE1,
+                   #C2E4EF, #EAECCC, #FEDA8B, #FDB366,
+                   #F67E4B, #DD3D2D, #A50026;
+    }
+    Contour {
+        colorfade: #364B9A, #4A7BB7, #6EA6CD, #98CAE1,
+                   #C2E4EF, #EAECCC, #FEDA8B, #FDB366,
+                   #F67E4B, #DD3D2D, #A50026;
+    }
+    Pie {
+        colorfade: #364B9A, #4A7BB7, #6EA6CD, #98CAE1,
+                   #C2E4EF, #EAECCC, #FEDA8B, #FDB366,
+                   #F67E4B, #DD3D2D, #A50026;
+    }
+'''
+
+THEME_BURD = '''
+    Graph {
+        color: none;
+        colorfade: #2166AC, #4393C3, #92C5DE, #D1E5F0,
+                   #F7F7F7, #FDDBC7, #F4A582, #D6604D,
+                   #B2182B;
+    }
+    Contour {
+        colorfade: #2166AC, #4393C3, #92C5DE, #D1E5F0,
+                   #F7F7F7, #FDDBC7, #F4A582, #D6604D,
+                   #B2182B;
+    }
+    Pie {
+        colorfade: #2166AC, #4393C3, #92C5DE, #D1E5F0,
+                   #F7F7F7, #FDDBC7, #F4A582, #D6604D,
+                   #B2182B;
+    }
+'''
+
+THEME_PRGN = '''
+    Graph {
+        color: none;
+        colorfade: #762A83, #9970AB, #C2A5CF, #E7D4E8,
+                   #F7F7F7, #D9F0D3, #ACD39E, #5AAE61,
+                   #1B7837;
+    }
+    Contour {
+        colorfade: #762A83, #9970AB, #C2A5CF, #E7D4E8,
+                   #F7F7F7, #D9F0D3, #ACD39E, #5AAE61,
+                   #1B7837;
+    }
+    Pie {
+        colorfade: #762A83, #9970AB, #C2A5CF, #E7D4E8,
+                   #F7F7F7, #D9F0D3, #ACD39E, #5AAE61,
+                   #1B7837;
+    }
+'''
+
+THEME_YLORBR = '''
+    Graph {
+        color: none;
+        colorfade: #FFFFE5, #FFF7BC, #FEE391, #FEC44F,
+                   #FB9A29, #EC7014, #CC4C02, #993404,
+                   #662506;
+    }
+    Contour {
+        colorfade: #FFFFE5, #FFF7BC, #FEE391, #FEC44F,
+                   #FB9A29, #EC7014, #CC4C02, #993404,
+                   #662506;
+    }
+    Pie {
+        colorfade: #FFFFE5, #FFF7BC, #FEE391, #FEC44F,
+                   #FB9A29, #EC7014, #CC4C02, #993404,
+                   #662506;
+    }
+'''
+
+THEME_IRIDESCENT = '''
+    Graph {
+        color: none;
+        colorfade: #FEFBE9, #FCF7D5, #F5F3C1, #EAF0B5, #DDECBF,
+                   #D0E7CA, #C2E3D2, #B5DDD8, #A8D8DC, #9BD2E1,
+                   #8DCBE4, #81C4E7, #7BBCE7, #7EB2E4, #88A5DD,
+                   #9398D2, #9B8AC4, #9D7DB2, #9A709E, #906388,
+                   #805770, #684957, #46353A;
+    }
+    Contour {
+        colorfade: #FEFBE9, #FCF7D5, #F5F3C1, #EAF0B5, #DDECBF,
+                   #D0E7CA, #C2E3D2, #B5DDD8, #A8D8DC, #9BD2E1,
+                   #8DCBE4, #81C4E7, #7BBCE7, #7EB2E4, #88A5DD,
+                   #9398D2, #9B8AC4, #9D7DB2, #9A709E, #906388,
+                   #805770, #684957, #46353A;
+    }
+    Pie {
+        colorfade: #FEFBE9, #FCF7D5, #F5F3C1, #EAF0B5, #DDECBF,
+                   #D0E7CA, #C2E3D2, #B5DDD8, #A8D8DC, #9BD2E1,
+                   #8DCBE4, #81C4E7, #7BBCE7, #7EB2E4, #88A5DD,
+                   #9398D2, #9B8AC4, #9D7DB2, #9A709E, #906388,
+                   #805770, #684957, #46353A;
+    }
+'''
+
 
 THEME_DARKTAFFY = THEME_DARK + THEME_TAFFY
 THEME_DARKBOLD = THEME_DARK + THEME_BOLD
@@ -347,7 +510,18 @@ class Theme:
         'bold': THEME_BOLD,
         'dark': THEME_DARK,
         'darktaffy': THEME_DARKTAFFY,
-        'darkbold': THEME_DARKBOLD
+        'darkbold': THEME_DARKBOLD,
+        'bright': THEME_BRIGHT,
+        'vibrant': THEME_VIBRANT,
+        'muted': THEME_MUTED,
+        'light': THEME_LIGHT,
+        'highcontrast': THEME_HIGHCONTRAST,
+        'medcontrast': THEME_MEDONTRAST,
+        'sunset': THEME_SUNSET,
+        'burd': THEME_BURD,
+        'prgn': THEME_PRGN,
+        'ylorbr': THEME_YLORBR,
+        'iridescent': THEME_IRIDESCENT,
     }
 
     def __init__(self):

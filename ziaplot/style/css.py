@@ -92,7 +92,7 @@ def parse_style(style: str | None) -> dict[str, Any]:
         item = item.strip()
         if item:
             key,val = item.split(':', maxsplit=1)
-            if key.strip() == 'colorcycle':
+            if key.strip() in ['colorcycle', 'colorfade']:
                 items[key.strip()] = splitcolors(val.strip())
             else:
                 items[key.strip()] = caster(val.strip())

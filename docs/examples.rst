@@ -289,7 +289,7 @@ Contour Plots
 
     CSS = '''
         Contour {
-            colorcycle: #4361EE, #F72585;
+            colorfade: #4361EE, #F72585;
         }
     '''
     delta = .1

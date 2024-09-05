@@ -49,9 +49,9 @@ class Contour(Element):
     def get_color_steps(self) -> list[str]:
         ''' Get colors for each level '''
         sty = self._build_style()
-        if len(sty.colorcycle) > 2:
+        if len(sty.colorcycle) > 1:
             return list(sty.colorcycle)
-        return ColorFade(*sty.colorcycle).colors(self.nlevels)
+        return ColorFade(*sty.colorfade).colors(self.nlevels)
     
     def colors(self, *colors: str, stops: Sequence[float]|None = None) -> 'Contour':
         ''' Set the start and end colors for the contours '''

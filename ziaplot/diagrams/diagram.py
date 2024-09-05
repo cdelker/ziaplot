@@ -147,9 +147,15 @@ class Diagram(Container):
 
         # Filter ones that don't step colors
         components = [f for f in components if f._step_color]
+        sty = self._build_style()
 
         # Apply colorfade if applicable
         if self._colorfade:
+            colors = self._colorfade.colors(len(components))
+            for comp in components:
+                comp._style.colorcycle = colors
+        elif sty.colorfade not in [None, 'none']:
+            self._colorfade = ColorFade(*sty.colorfade)
             colors = self._colorfade.colors(len(components))
             for comp in components:
                 comp._style.colorcycle = colors
