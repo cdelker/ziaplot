@@ -354,8 +354,8 @@ class Canvas:
             'rect',
             attrib={'x': fmt(x), 'y': fmt(y),
                     'width': fmt(w), 'height': fmt(h),
-                    'fill': fill,
                     'stroke-width': str(strokewidth)})
+        set_color(fill, rect, 'fill')
         set_color(strokecolor, rect, 'stroke')
         if rcorner:
             rect.set('rx', str(rcorner))
