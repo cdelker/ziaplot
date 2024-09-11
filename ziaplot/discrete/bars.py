@@ -31,7 +31,12 @@ class Bars(Element):
         self.x = x
         self.y = y
         self.align = align
-        self.width = width if width is not None else self.x[1]-self.x[0]
+        if width is None:
+            self.width = self.x[1]-self.x[0]
+            if self.width == 0:
+                    self.width = 1
+        else:
+            self.width = width
         self.y2 = y2 if y2 is not None else [0] * len(self.x)
 
     def datarange(self):
@@ -137,7 +142,10 @@ class Histogram(Bars):
             binright = binlefts[-1] + binwidth
 
         binr = binright-binlefts[0]
-        xnorm = [(xx-binlefts[0])/binr * bins for xx in x]
+        if binr != 0:
+            xnorm = [(xx-binlefts[0])/binr * bins for xx in x]
+        else:
+            xnorm = [0] * len(x)
         xint = [math.floor(v) for v in xnorm]
 
         if weights is None:
