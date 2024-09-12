@@ -42,8 +42,9 @@ def set_color(color: str, elm: ET.Element, tag: str = 'stroke') -> None:
     assert tag in ['stroke', 'fill']
     if color.strip().endswith('%'):
         name, alpha = color.split(maxsplit=1)
+        alpha = int(alpha[:-1])/100  # percents only supported in svg2 - convert to decimal
         elm.set(tag, name)
-        elm.set(f'{tag}-opacity', alpha)
+        elm.set(f'{tag}-opacity', str(alpha))
     elif color in [None, '', 'none']:
         elm.set(tag, 'none')
     else:
@@ -349,6 +350,14 @@ class Canvas:
             w, h = x2-x, y2-y
 
         y = self.flipy(y) - h  # xy is top-left corner
+
+        if w < 0:
+            x += w
+            w = abs(w)
+        if h < 0:
+            y += h
+            h = abs(h)
+
         fill = 'none' if fill is None else fill
         rect = ET.Element(
             'rect',
@@ -386,7 +395,7 @@ class Canvas:
         y = self.flipy(y)
         circ = ET.Element(
             'circle',
-            attrib={'cx': fmt(x), 'cy': fmt(y), 'r': fmt(radius),
+            attrib={'cx': fmt(x), 'cy': fmt(y), 'r': fmt(abs(radius)),
                     'stroke-width': str(strokewidth)})
         set_color(strokecolor, circ, 'stroke')
         set_color(color, circ, 'fill')
