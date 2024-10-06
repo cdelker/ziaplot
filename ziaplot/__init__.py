@@ -27,6 +27,8 @@ from .geo import (
     IntegralFill,
     BezierQuad,
     BezierCubic,
+    BezierSpline,
+    BezierHobby,
     Curve,
     CurveThreePoint,
     Diameter,

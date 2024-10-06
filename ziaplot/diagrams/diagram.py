@@ -155,6 +155,7 @@ class Diagram(Container):
             for comp in components:
                 comp._style.colorcycle = colors
         elif sty.colorfade not in [None, 'none']:
+            assert sty.colorfade is not None
             self._colorfade = ColorFade(*sty.colorfade)
             colors = self._colorfade.colors(len(components))
             for comp in components:

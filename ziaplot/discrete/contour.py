@@ -51,6 +51,7 @@ class Contour(Element):
         sty = self._build_style()
         if len(sty.colorcycle) > 1:
             return list(sty.colorcycle)
+        assert sty.colorfade is not None
         return ColorFade(*sty.colorfade).colors(self.nlevels)
     
     def colors(self, *colors: str, stops: Sequence[float]|None = None) -> 'Contour':

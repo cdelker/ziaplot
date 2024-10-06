@@ -73,8 +73,7 @@ class TangentSegment:
             extending d1 to the left and d2 to the right.
         '''
         assert 0 <= t <= 1
-        slope = b._tangent_slope(t)
-        theta = math.atan(slope)
+        theta = b._tangent_theta(t)
         x, y = b.xy(t)
         x1 = x - d1 * math.cos(theta)
         x2 = x + d2 * math.cos(theta)
@@ -109,7 +108,10 @@ class Normal:
     def to_bezier(cls, b: BezierQuad, t: float) -> Line:
         ''' Create a linle normal to Bezier at parameter t '''
         assert 0 <= t <= 1
-        slope = -1 / b._tangent_slope(t)
+        try:
+            slope = -1 / b._tangent_slope(t)
+        except ZeroDivisionError:
+            slope = math.inf
         xy = b.xy(t)
         return Line(xy, slope)
 
@@ -157,8 +159,7 @@ class NormalSegment:
             extending d1 to the left and d2 to the right.
         '''
         assert 0 <= t <= 1
-        slope = -1 / b._tangent_slope(t)
-        theta = math.atan(slope)
+        theta = b._tangent_theta(t) + math.pi/2
         x, y = b.xy(t)
         x1 = x - d1 * math.cos(theta)
         x2 = x + d2 * math.cos(theta)

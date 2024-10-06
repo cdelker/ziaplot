@@ -42,9 +42,9 @@ def set_color(color: str, elm: ET.Element, tag: str = 'stroke') -> None:
     assert tag in ['stroke', 'fill']
     if color.strip().endswith('%'):
         name, alpha = color.split(maxsplit=1)
-        alpha = int(alpha[:-1])/100  # percents only supported in svg2 - convert to decimal
+        alpha = str(int(alpha[:-1])/100)  # percents only supported in svg2 - convert to decimal
         elm.set(tag, name)
-        elm.set(f'{tag}-opacity', str(alpha))
+        elm.set(f'{tag}-opacity', alpha)
     elif color in [None, '', 'none']:
         elm.set(tag, 'none')
     else:
@@ -628,6 +628,49 @@ class Canvas:
         pointstr += f' {fmt(p3[0])},{fmt(p3[1])}'
         if p4 is not None:
             pointstr += f' {fmt(p4[0])},{fmt(p4[1])}'
+
+        set_color(color, path, 'stroke')
+        path.set('d', pointstr)
+        path.set('stroke-width', str(width))
+        path.set('fill', 'none')
+        if startmarker is not None:
+            path.set('marker-start', f'url(#{startmarker})')
+        if endmarker is not None:
+            path.set('marker-end', f'url(#{endmarker})')
+        if stroke not in ['-', None, 'none', '']:
+            path.set('stroke-dasharray', getdash(stroke, width))
+        set_clip(path, self.clip)
+        self.add_element(path, zorder)
+
+    def bezier_spline(self,
+               points: Sequence[PointType],
+               stroke: DashTypes = '-',
+               color: str = 'black', width: float = 2, markerid: Optional[str] = None,
+               startmarker: Optional[str] = None, endmarker: Optional[str] = None,
+               dataview: Optional[ViewBox] = None,
+               zorder: int = 1) -> None:
+        ''' Add a multi-bezier curve to the SVG
+
+            Args:
+                points: Control Points
+                stroke: Stroke/linestyle of hte path
+                color: Path color
+                width: Width of path line
+                startmarker: ID name of marker for start point of path
+                endmarker: ID name of marker for end point of path
+                dataview: Viewbox for transforming x, y data into SVG coordinates
+        '''
+        if dataview:  # apply transform from dataview -> self.viewbox
+            xform = Transform(dataview, self.viewbox)
+            points = [xform.apply(*p) for p in points]
+
+        points = [(p[0], self.flipy(p[1])) for p in points]
+
+        path = ET.Element('path')
+        pointstr = f'M {fmt(points[0][0])},{fmt(points[0][1])} '
+        pointstr += 'C '  # Always cubic
+        for i in range(1, len(points)):
+            pointstr += f'{fmt(points[i][0])},{fmt(points[i][1])} '
 
         set_color(color, path, 'stroke')
         path.set('d', pointstr)

@@ -13,7 +13,7 @@ class Polygon(Shape):
         Args:
             v: Vertices
     '''
-    def __init__(self, *verts: Sequence[PointType]):
+    def __init__(self, verts: Sequence[PointType]):
         super().__init__()
         self.verts = verts
 
