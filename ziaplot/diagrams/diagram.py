@@ -317,6 +317,7 @@ class Diagram(Container):
                         strokewidth=legsty.stroke_width,
                         strokecolor=legsty.edge_color,
                         rcorner=5,
+                        zorder=9,  # Above the other graph elements
                         fill=legsty.get_color())
 
         # Draw each line
@@ -335,12 +336,13 @@ class Diagram(Container):
                             font=legtxt.font,
                             size=legtxt.font_size,
                             color=legtxt.get_color(),
-                            halign='left', valign='base')
+                            halign='left', valign='base',
+                            zorder=9)
                 canvas.rect(boxl+pad, yytext, square, square,
                             fill=sstyle.get_color(),
                             strokecolor=sstyle.edge_color,
                             strokewidth=sstyle.edge_width,
-                            zorder=self._zorder)
+                            zorder=9)
 
             else:
                 canvas.text(xright-boxw+markw, yytext,
@@ -348,7 +350,8 @@ class Diagram(Container):
                             color=legtxt.get_color(),
                             font=legtxt.font,
                             size=legsty.font_size,
-                            halign='left', valign='base')
+                            halign='left', valign='base',
+                            zorder=9)
                 linebox = ViewBox(boxl+pad, ytop-boxh, markw-pad*2, boxh)
                 canvas.setviewbox(linebox)  # Clip
                 canvas.path([boxl-pad*2, boxl+markw/2, boxl+markw+pad*2],
@@ -357,7 +360,7 @@ class Diagram(Container):
                             width=sstyle.stroke_width,
                             markerid=comp._markername,
                             stroke=sstyle.stroke,
-                            zorder=self._zorder)
+                            zorder=9)
                 canvas.resetviewbox()
             yytext -= legsty.font_size * self.linespacing
 
