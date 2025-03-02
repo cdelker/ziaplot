@@ -72,4 +72,4 @@ from .calcs import (
 from .container import save
 
 
-__version__ = '0.7'
+__version__ = '0.8'

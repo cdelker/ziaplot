@@ -1,5 +1,16 @@
 # Release notes
 
+### 0.8 - 2025-03-02
+
+- Fix zorder of legends
+- Added BezierSpline and Hobby Curves
+- Add Polygon
+- Fix rectangles with negative width or height
+- Fix histogram with only one bin
+- Fix rectangle fill transparency
+- Added colorblind-friendly themes
+
+
 ### 0.7 - 2024-08-24
 
 - Added `NumberLine` graph type

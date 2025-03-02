@@ -1,6 +1,6 @@
 # ziaplot
 
-Ziaplot is for easy, lightweight, and Pythonic plotting of data in SVG format.
+Ziaplot is for easy, lightweight, and Pythonic plotting of geometric diagrams and discrete data in SVG format.
 
 In ziaplot, a diagram is made from one or more elements added to a Graph.
 Below, a PolyLine is added to a Graph.
