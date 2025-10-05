@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Optional
 import math
 
-from ..calcs import line_intersection, func_intersection, local_min, local_max
+from ..calcs import line_intersection, line_circle_intersection, line_arc_intersection, func_intersection, circle_intersection, local_min, local_max
 from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes, PointType
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..element import Element
-from ..shapes import Circle
+from ..shapes import Circle, Arc
 from .function import Function
 from .line import Line
 from .bezier import BezierQuad
@@ -162,16 +162,49 @@ class Point(Element):
         return cls(x, y)
 
     @classmethod
-    def at_intersection(cls, f1: Function, f2: Function,
-                        x1: float|None = None,
-                        x2: float|None = None) -> 'Point':
-        ''' Draw a Point at the intersection of two functions '''
+    def at_intersection(cls, f1: Function|Line|Circle|Arc, f2: Function|Line|Circle|Arc,
+                        bounds: Optional[tuple[float, float]] = None,
+                        index: int = 0) -> 'Point':
+        ''' Draw a Point at the intersection of two functions, lines, circles, or arcs.
+
+            Args:
+                f1: First function
+                f2: Second function
+                bounds: tuple of x values to bound the search. Only used for intersection
+                    of two Functions
+                index: in cases that may intersect multiple times (such as two circles),
+                    index of the intersection to return.
+            '''
         if isinstance(f1, Line) and isinstance(f2, Line):
-            x, y= line_intersection(f1, f2)
+            x, y = line_intersection(f1, f2)
+
+        elif isinstance(f1, (Arc, Circle)) and isinstance(f2, (Arc, Circle)):
+            p1, p2 = circle_intersection(f1, f2)
+            x, y = p1 if index == 0 else p2
+
+        elif isinstance(f1, Line) and isinstance(f2, Arc):
+            p1, p2 = line_arc_intersection(f1, f2)
+            x, y = p1 if index == 0 else p2
+        elif isinstance(f1, Arc) and isinstance(f2, Line):
+            p1, p2 = line_arc_intersection(f2, f1)
+            x, y = p1 if index == 0 else p2
+        elif isinstance(f1, Line) and isinstance(f2, Circle):
+            p1, p2 = line_circle_intersection(f1, f2)
+            x, y = p1 if index == 0 else p2
+        elif isinstance(f1, Circle) and isinstance(f2, Line):
+            p1, p2 = line_circle_intersection(f2, f1)
+            x, y = p1 if index == 0 else p2
+
         else:
-            if x1 is None or x2 is None:
-                raise ValueError('x1 and x2 are required for intersection of non-line functions.')
-            x, y = func_intersection(f1, f2, x1, x2)
+            if bounds is None:
+                raise ValueError('bounds are required for intersection of non-line functions.')
+            assert isinstance(f1, Function)
+            assert isinstance(f2, Function)
+            x, y = func_intersection(f1, f2, *bounds)
+
+        if not math.isfinite(x) or not math.isfinite(y):
+            raise ValueError('No intersection found')
+
         return cls(x, y)
 
     @classmethod

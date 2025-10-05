@@ -228,11 +228,14 @@ THEME_BASE = ''' * {
         font_size: normal;
         margin: 5;
     }
+    CompassArc {
+        stroke_width: 1;
+    }
     Shape {
         color: none;
         edge_color: black;
         stroke: solid;
-    } 
+    }
 '''
 
 

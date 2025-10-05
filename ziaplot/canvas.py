@@ -7,6 +7,7 @@ from operator import attrgetter
 import xml.etree.ElementTree as ET
 
 from . import text
+from .util import linspace
 from .config import config
 from .style import MarkerTypes, DashTypes, PointType
 
@@ -529,21 +530,27 @@ class Canvas:
         if dataview:
             xform = Transform(dataview, self.viewbox)
             cx, cy = xform.apply(cx, cy)
-            radius = radius * self.viewbox.w / dataview.w
+            radiusx = radius * self.viewbox.w / dataview.w
+            radiusy = radius * self.viewbox.h / dataview.h
         cy = self.flipy(cy)
 
-        theta1 = math.radians((theta1 + 360) % 360)
-        theta2 = math.radians((theta2 + 360) % 360)
+        t1 = math.radians(theta1)
+        t2 = math.radians(theta2)
+        delta = math.degrees(math.atan2(math.sin(t2-t1), math.cos(t2-t1)))
+        if delta < 0:
+            delta = 360+delta
 
-        x1 = cx + radius * math.cos(-theta1)
-        y1 = cy + radius * math.sin(-theta1)
-        x2 = cx + radius * math.cos(-theta2)
-        y2 = cy + radius * math.sin(-theta2)
+        x1 = cx + radiusx * math.cos(-t1)
+        y1 = cy + radiusy * math.sin(-t1)
+        x2 = cx + radiusx * math.cos(-t2)
+        y2 = cy + radiusy * math.sin(-t2)
 
-        flag = 1 if theta2-theta1 > math.pi else 0
+        flag = 1 if delta > 180 else 0
+        direction = 0  # always go CCW
+
         path = ET.Element('path')
         pointstr = f'M {fmt(x1)},{fmt(y1)} '
-        pointstr += f'A {fmt(radius)} {fmt(radius)} 0 {flag} 0 {fmt(x2)} {fmt(y2)}'
+        pointstr += f'A {fmt(radiusx)} {fmt(radiusy)} 0 {flag} {direction} {fmt(x2)} {fmt(y2)}'
         path.set('d', pointstr)
         path.set('stroke-width', str(strokewidth))
         path.set('fill', 'none')

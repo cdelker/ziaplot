@@ -56,14 +56,17 @@ from .diagrams import (
 from .annotations import Text, Angle, Arrow
 from .charts import Pie, PieSlice, BarChart, Bar, BarChartGrouped, BarSeries, BarChartHoriz, BarChartGroupedHoriz
 from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
-from .shapes import Circle, Ellipse, Rectangle, Polygon
+from .shapes import Circle, Ellipse, Rectangle, Polygon, Arc, CompassArc
 from .config import config
 from .util import linspace
 from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND
 from .calcs import (
     line_intersection,
+    line_circle_intersection,
+    line_arc_intersection,
     angle_of_intersection,
     func_intersection,
+    circle_intersection,
     local_max,
     local_min,
     x_intercept,

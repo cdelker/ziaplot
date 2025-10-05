@@ -18,7 +18,7 @@ class Tangent:
         return Line((x, y), slope)
 
     @classmethod
-    def to_circle(cls, circle: Circle, theta: float) -> Line:
+    def to_circle(cls, circle: Ellipse, theta: float) -> Line:
         ''' Create a Line tangent to the circle at theta (degrees) '''
         theta = math.radians(theta)
         x, y = circle._xy(theta)
@@ -100,7 +100,7 @@ class Normal:
         ''' Create a Line tangent to the circle/ellipse at theta '''
         theta = math.radians(theta)
         x, y = circle._xy(theta)
-        phi = circle._tangent(math.radians(theta))
+        phi = circle._tangent(theta) + math.pi/2
         slope = math.tan(phi)
         return Line((x, y), slope)
 
@@ -144,8 +144,7 @@ class NormalSegment:
             extending d1 to the left and d2 to the right.
         '''
         x, y = circle._xy(math.radians(theta))
-        theta = circle._tangent(math.radians(theta))# + math.pi/2
-        theta -= math.pi/2
+        theta = circle._tangent(math.radians(theta)) - math.pi/2
         x1 = x + d1 * math.cos(theta)
         x2 = x - d2 * math.cos(theta)
         y1 = y + d1 * math.sin(theta)

@@ -414,7 +414,7 @@ Placing Points
 * **Point.at_y(f, y)**: Place a point on a Line or Function f at the y value.
 * **Point.on_circle(c, theta)**: Place a point on Circle or Ellipse c at an angle theta.
 * **Point.on_bezier(c, t)**: Place a point on the Bézier curve at parameter t.
-* **Point.at_intersection(f1, f2)**: Place a point at the intersection of two Functions or Lines
+* **Point.at_intersection(f1, f2)**: Place a point at the intersection of two Functions, Lines, or Circles
 * **Point.at_minimum(f, x1, x2)**: Place a point at the local minimum of f between x1 and x2
 * **Point.at_maximum(f, x1, x2)**: Place a point at the local maximum of f between x1 and x2
 
@@ -429,7 +429,7 @@ Placing Points
         zp.Point.at(line, x=-2).label('B')
         zp.Point.on_circle(circle, theta=45).label('C')
         zp.Point.on_bezier(curve, t=.25).label('D')
-        zp.Point.at_intersection(line, func, x1=2, x2=6).label('X')
+        zp.Point.at_intersection(line, func, bounds=(2, 6)).label('X')
         zp.Point.at_minimum(func, -2, 2).label('min', 'S')
         zp.Point.at_maximum(func, 0, 3).label('max', 'N')
 

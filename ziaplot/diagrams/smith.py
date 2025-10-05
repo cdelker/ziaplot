@@ -5,6 +5,7 @@ import math
 from functools import lru_cache
 from collections import namedtuple
 
+from ..calcs import _circle_intersection
 from ..canvas import Canvas, Borders, ViewBox
 from ..element import Element
 from .polar import GraphPolar
@@ -15,49 +16,15 @@ from .smithgrid import smithgrids, SmithGridLevels
 ArcType = namedtuple('ArcType', ['x', 'y', 'r', 't1', 't2'])
 
 
-def circle_intersect(c1: tuple[float, float], c2: tuple[float, float],
-                     r1: float, r2: float) -> Optional[tuple[tuple[float, float], tuple[float, float]]]:
-    ''' Find intersections of two circles
-
-        Args:
-            c1: center (x, y) of first circle
-            c2: center (x, y) of second circle
-            r1: radius of first circle
-            r2: radius of second circle
-
-        Returns:
-            c1: First intersection (x, y)
-            c2: Second intersection (x, y)
-    '''
-    x1, y1 = c1
-    x2, y2 = c2
-    dx, dy = x2-x1, y2-y1
-    dist = math.sqrt(dx*dx + dy*dy)
-
-    if dist > r1+r2 or dist < abs(r1-r2):
-        return None  # No intersections
-    elif dist == 0 and r1 == r2:
-        return None  # Identical
-
-    a = (r1*r1 - r2*r2 + dist*dist) / (2*dist)
-    h = math.sqrt(r1*r1 - a*a)
-    xm = x1 + a*dx/dist
-    ym = y1 + a*dy/dist
-    xs1 = xm + h*dy/dist
-    xs2 = xm - h*dy/dist
-    ys1 = ym - h*dx/dist
-    ys2 = ym + h*dx/dist
-    return (xs1, ys1), (xs2, ys2)
-
-
 def circle_intersect_theta(c1: tuple[float, float], c2: tuple[float, float],
                            r1: float, r2: float) -> Optional[float]:
     ''' Get end angle of arc for reactance lines '''
     x1, y1 = c1
-    try:
-        (xs1, ys1), (xs2, ys2) = circle_intersect(c1, c2, r1, r2)  # type: ignore
-    except (TypeError, ValueError):
+    (xs1, ys1), (xs2, ys2) = _circle_intersection(c1, c2, r1, r2)  # type: ignore
+
+    if not math.isfinite(xs1) or not math.isfinite(xs2):
         return None
+
     theta1 = math.atan2(ys1-y1, xs1-x1)
     theta2 = math.atan2(ys2-y1, xs2-x1)
     # one is always 0 on smith charts - return positive one

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 import math
 
+from ..util import angle_diff
 from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox, DataRange, PointType
 
@@ -99,14 +100,20 @@ class Circle(Ellipse):
             y: Center y coordinate
             radius: Radius of circle
     '''
+    # Drawn as ellipse because aspect may not always be square
     def __init__(self, x: float, y: float, radius: float):
         super().__init__(x, y, radius, radius)
+        self.radius = radius
 
     def _xy(self, theta: float) -> PointType:
         ''' Get x, y coordinate on the circle at the angle theta (radians) '''
         x = self.x + self.r1 * math.cos(theta)
         y = self.y + self.r1 * math.sin(theta)
         return x, y
+
+    def on_arc_point(self, p: PointType) -> bool:
+        ''' Is the angle theta (in degrees) on the circle '''
+        return True
 
 
 class Rectangle(Shape):
@@ -140,3 +147,56 @@ class Rectangle(Shape):
                     rcorner=self.cornerradius,
                     dataview=databox,
                     zorder=self._zorder)
+
+
+
+class Arc(Circle):
+    ''' Draw a circular arc
+
+        Args:
+            x: Center x coordinate
+            y: Center y coordinate
+            radius: Radius of arc
+            theta1: Start angle (degrees)
+            theta2: End angle (degrees)
+    '''
+    def __init__(self, x: float, y: float,
+                 radius: float, theta1: float, theta2: float=0):
+        super().__init__(x, y, radius)
+        self.theta1 = theta1
+        self.theta2 = theta2
+        self.theta1_rad = math.radians(self.theta1)
+        self.theta2_rad = math.radians(self.theta2)
+        self.arc_length_rad = angle_diff(self.theta1_rad, self.theta2_rad)
+
+    def on_arc(self, theta: float) -> bool:
+        ''' Determine whether angle theta (degrees) falls within the arc '''
+        theta = math.radians(theta)
+        delta = angle_diff(self.theta1_rad, theta)
+        return delta <= self.arc_length_rad
+
+    def on_arc_point(self, p: PointType) -> bool:
+        ''' Determine whether angle of point falls on the arc '''
+        theta = math.degrees(math.atan2(p[1]-self.y, p[0]-self.x))
+        return self.on_arc(theta)
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        sty = self._build_style()
+        canvas.arc(self.x, self.y, self.radius,
+                   theta1=self.theta1, theta2=self.theta2,
+                   strokecolor=sty.edge_color,
+                   strokewidth=sty.stroke_width,
+                   dataview=databox,
+                   zorder=self._zorder)
+
+
+class CompassArc(Arc):
+    def __init__(self, x: float, y: float,
+                 radius: float, theta: float,
+                 thetawidth: float):
+        super().__init__(
+            x, y, radius,
+            theta,
+            theta+thetawidth)
