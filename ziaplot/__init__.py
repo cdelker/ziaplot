@@ -17,12 +17,8 @@ from .geo import (
     Line,
     HLine,
     VLine,
-    Tangent,
-    Normal,
     Point,
     Segment,
-    TangentSegment,
-    NormalSegment,
     Vector,
     IntegralFill,
     BezierQuad,
@@ -31,11 +27,6 @@ from .geo import (
     BezierHobby,
     Curve,
     CurveThreePoint,
-    Diameter,
-    Radius,
-    Secant,
-    Chord,
-    Sagitta,
     Implicit
 )
 from .diagrams import (
@@ -60,19 +51,8 @@ from .shapes import Circle, Ellipse, Rectangle, Polygon, Arc, CompassArc
 from .config import config
 from .util import linspace
 from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND
-from .calcs import (
-    line_intersection,
-    line_circle_intersection,
-    line_arc_intersection,
-    angle_of_intersection,
-    func_intersection,
-    circle_intersection,
-    local_max,
-    local_min,
-    x_intercept,
-    y_intercept,
-)
 from .container import save
+from . import geometry
 
 
-__version__ = '0.8'
+__version__ = '0.9a0'

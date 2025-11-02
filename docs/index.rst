@@ -57,7 +57,7 @@ histograms, and pie and bar charts.
                 .xticks((-1.2, 1.2)).yticks((-1.2, 1.2))
                 .noxticks().noyticks()):
             c = zp.Circle(0, 0, 1)
-            r = zp.Radius(c, 65).label('1', 0.6, 'NW').color('blue')
+            r = c.radius_segment(65).label('1', 0.6, 'NW').color('blue')
             b = zp.Segment((0, 0), (r.p2[0], 0)).label('cos(θ)', .6, 'S')
             zp.Segment(r.p2, (r.p2[0], 0)).label('sin(θ)', .75, 'E').color('blue')
             zp.Angle(r, b, quad=4).label('θ', color='red').color('red')

@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from .shapes import Shape
-from ..style import PointType
+from ..geometry import PointType
 
 
 class Polygon(Shape):

@@ -3,7 +3,7 @@ from typing import Optional, Sequence, cast
 import math
 
 from .. import diagram_stack
-from ..util import angle_mean
+from ..geometry import angle_mean
 from ..style import MarkerTypes
 from ..text import TextPosition, Halign, Valign, text_align_ofst
 from ..canvas import Canvas, Borders, ViewBox

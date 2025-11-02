@@ -242,7 +242,7 @@ to elements with the same name set on the element using the `cssclass` method.
         zp.Point.on_circle(c, 45)
         zp.Point.on_circle(c, 60)
         zp.Point.on_circle(c, 75)
-        zp.Diameter(c, -15).cssid('diameter')
+        c.diameter_segment(-15).cssid('diameter')
 
 
 Pre-made CSS

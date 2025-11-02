@@ -5,6 +5,7 @@ from xml.etree import ElementTree as ET
 import math
 
 from .. import util
+from ..geo.line import Line, Segment
 from ..element import Element
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
@@ -70,9 +71,37 @@ class Function(Element):
         x0 = self.xrange[0] if self.xrange else 1
         return util.root_newton(lambda x: self.func(x) - y, x0=x0, tol=y/1E4)
 
+    def xy(self, x: float) -> PointType:
+        ''' Calculate (x, y) on function at x '''
+        return x, self.y(x)
+
     def _tangent_slope(self, x: float) -> float:
         ''' Calculate angle tangent to function at x '''
         return util.derivative(self.func, x)
+
+    def tangent(self, x: float) -> Line:
+        ''' Create tangent line to function at x '''
+        slope = self._tangent_slope(x)
+        p = self.xy(x)
+        return Line(p, slope)
+
+    def normal(self, x: float) -> Line:
+        ''' Create tangent line to function at x '''
+        slope = self._tangent_slope(x)
+        p = self.xy(x)
+        return Line(p, -1/slope)
+
+    def secant(self, x1: float, x2: float) -> Line:
+        ''' Create a Line connecting x1 and x2 on the funciton '''
+        p1 = self.xy(x1)
+        p2 = self.xy(x2)
+        return Line.from_points(p1, p2)
+
+    def chord(self, x1: float, x2: float) -> Segment:
+        ''' Create a chord Segment connecting x1 and x2 on the funciton '''
+        p1 = self.xy(x1)
+        p2 = self.xy(x2)
+        return Segment(p1, p2)
 
     def _local_max(self, x1: float, x2: float) -> float:
         ''' Return x value where maximum point occurs
@@ -151,7 +180,6 @@ class Function(Element):
                         startmarker=midmark,
                         dataview=databox,
                         zorder=self._zorder)
-
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

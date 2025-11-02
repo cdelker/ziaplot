@@ -13,8 +13,6 @@ TextPosition = Literal['N', 'E', 'S', 'W',
 Halign = Literal['left', 'center', 'right']
 Valign = Literal['top', 'center', 'baseline', 'base', 'bottom']
 
-PointType = Tuple[float, float]
-
 
 @dataclass
 class Style:

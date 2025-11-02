@@ -4,10 +4,13 @@ from typing import Optional
 from dataclasses import dataclass
 import math
 
+from .. import geometry
+from ..geometry import PointType
+from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..text import TextPosition, text_align_ofst
-from ..style import MarkerTypes, PointType
-from .function import Function
+from ..style import MarkerTypes
+from ..diagrams import Graph
 
 
 @dataclass
@@ -30,22 +33,29 @@ class LineLabel:
     size: Optional[float] = None
 
 
-class Line(Function):
+class Line(Element):
     ''' A straight Line extending to infinity
 
         Args:
             point: One point on the line
             slope: Slope of the line
     '''
+    _step_color = True
     def __init__(self, point: PointType, slope: float = 0):
+        super().__init__()
         self.slope = slope
         self.point = point
         intercept = -slope * point[0] + point[1]
-        super().__init__(lambda x: intercept + slope * x)
+#        super().__init__(lambda x: intercept + slope * x)
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
         self.midmark: Optional[MarkerTypes] = None
         self._labels: list[LineLabel] = []
+        self.n: int = 200
+
+    def __getitem__(self, idx):
+        ''' Index a, b, c of standard form '''
+        return self.standard[idx]
 
     @property
     def intercept(self) -> float:
@@ -61,8 +71,8 @@ class Line(Function):
         return x2, y2
 
     @property
-    def homogeneous(self) -> tuple[float, float, float]:
-        ''' Line in homogeneous coordinates '''
+    def standard(self) -> tuple[float, float, float]:
+        ''' Line coefficients (A, B, C) in standard form Ax + By = C'''
         p1 = self.point
         p2 = self.point2
         a = p1[1] - p2[1]
@@ -83,6 +93,57 @@ class Line(Function):
         ''' Calculate y at x '''
         y = self.slope * x + self.intercept
         return y
+
+    def xy(self, x: float) -> PointType:
+        ''' Calculate y at x, returning point (x, y) '''
+        return (x, self.y(x))
+
+    def trim(self, x1: float, x2: float) -> 'Segment':
+        ''' Convert the line into a segment '''
+        self.p1 = self.xy(x1)
+        self.p2 = self.xy(x2)
+        self.__class__ = Segment
+        return self
+
+    def trimd(self, x: float, d1: float, d2: float) -> 'Segment':
+        ''' Covnvert the line into a segment extending a distance
+            d1 left and d2 right of point x on the line
+        '''
+        y = self.y(x)
+        theta = math.atan(self.slope)
+        costh = math.cos(theta)
+        sinth = math.sin(theta)
+        x1 = x - d1 * costh
+        x2 = x + d2 * costh
+        y1 = y - d1 * sinth
+        y2 = y + d2 * sinth
+        self.p1 = (x1, y1)
+        self.p2 = (x2, y2)
+        self.__class__ = Segment
+        return self
+
+    def normal(self, p: PointType) -> 'Line':
+        ''' Create normal Line passing through p '''
+        return Line.from_standard(*geometry.line.normal(self, p))
+
+    def bisect_angle(self, other: 'Line', which: int = 0) -> 'Line':
+        ''' Create new line bisecting the two Lines '''
+        b = geometry.line.bisect(self, other)[which]
+        return Line.from_standard(*b)
+
+    def parallel(self, distance: float) -> 'Line':
+        ''' Create a line parallel to another line '''
+        slope = self.slope
+        if math.isfinite(slope):
+            intercept = distance * math.sqrt(1+slope**2) + self.intercept
+            return Line.from_slopeintercept(slope, intercept)
+        else:
+            return Line((self.point[0]+distance, self.point[1]), slope)
+
+    def _evaluate(self, x: Sequence[float]) -> tuple[Sequence[float], Sequence[float]]:
+        ''' Evaluate and return (x, y) in logscale if needed '''
+        y = [self.y(xx) for xx in x]
+        return x, y
 
     def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Line':
         ''' Define markers to show at the start and end of the line. Use defaults
@@ -154,6 +215,17 @@ class Line(Function):
         except ZeroDivisionError:
             slope = math.inf
         return cls(p1, slope)
+
+    @classmethod
+    def from_standard(cls, a: float, b: float, c: float) -> 'Line':
+        ''' Create line from standard form ax + by = c '''
+        try:
+            slope = -a/b
+            intercept = c/b
+            return cls.from_slopeintercept(slope, intercept)
+        except ZeroDivisionError:
+            print(a, b, c)
+            return cls((c/a, 0), math.inf)  # Vertical
 
     def _place_labels(self, x0: PointType, y0: PointType,
                       canvas: Canvas, databox: ViewBox) -> None:
@@ -240,6 +312,12 @@ class Line(Function):
 
         self._place_labels(x, y, canvas, databox)
 
+    def svgxml(self, border: bool = False) -> ET.Element:
+        ''' Generate XML for standalone SVG '''
+        graph = Graph()
+        graph.add(self)
+        return graph.svgxml(border=border)
+
 
 class HLine(Line):
     ''' Horizontal Line at y '''
@@ -274,6 +352,11 @@ class Segment(Line):
         ''' Second point on the segment '''
         return self.p2
 
+    def bisect(self) -> LineType:
+        ''' Perpendicular bisector of the segment '''
+        mid = self.midpoint()
+        return self.normal(mid)
+
     def datarange(self) -> DataRange:
         ''' Get range of data '''
         xmin = min(self.p1[0], self.p2[0])
@@ -302,6 +385,10 @@ class Segment(Line):
     def _endpoints(self, databox: ViewBox) -> tuple[PointType, PointType]:
         ''' Get endpoints of line that will fill the databox '''
         return (self.p1[0], self.p2[0]), (self.p1[1], self.p2[1])
+
+    def midpoint(self) -> PointType:
+        ''' Midpoint of the segment '''
+        return geometry.midpoint(self.p1, self.p2)
 
     @classmethod
     def horizontal(cls, p: PointType, tox: float = 0) -> 'Segment':

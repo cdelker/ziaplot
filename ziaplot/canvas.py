@@ -7,9 +7,10 @@ from operator import attrgetter
 import xml.etree.ElementTree as ET
 
 from . import text
+from .geometry import PointType
 from .util import linspace
 from .config import config
-from .style import MarkerTypes, DashTypes, PointType
+from .style import MarkerTypes, DashTypes
 
 ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])

@@ -47,8 +47,8 @@ was drawn on a `Diagram`.
 
     with zp.Diagram().size(150, 150).equal_aspect():
         circle = zp.Circle(0, 0, .9)
-        zp.Diameter(circle).color('black')
-        zp.Radius(circle, 45).color('black')
+        circle.diameter_segment().color('black')
+        circle.radius_segment(45).color('black')
         zp.Point(0,0).color('black')
 
 

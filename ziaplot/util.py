@@ -4,8 +4,6 @@ from typing import Sequence, Callable, Tuple
 import bisect
 import math
 
-PointType = Tuple[float, float]
-
 
 def zrange(start: float, stop: float, step: float) -> list[float]:
     ''' Like builtin range, but works with floats '''
@@ -139,22 +137,6 @@ def derivative(f: Callable, a: float):
     return (f(a+h) - f(a)) / h
 
 
-def angle_mean(theta1: float, theta2: float) -> float:
-    ''' Circular mean over 0 to 2pi (theta in radians) '''
-    sine = math.sin(theta1) + math.sin(theta2)
-    cosine = math.cos(theta1) + math.cos(theta2)
-    mean = math.atan2(sine, cosine)
-    return (mean + math.tau) % math.tau
 
 
-def angle_diff(theta1: float, theta2: float):
-    ''' Get angular difference between theta2 and theta1 (radians) '''
-    delta = math.atan2(math.sin(theta2-theta1), math.cos(theta2-theta1))
-    if delta < 0:
-        delta = delta + math.tau
-    return delta
 
-
-def distance(p1: PointType, p2: PointType):
-    ''' Distance between two points '''
-    return math.sqrt((p1[0]- p2[0])**2 + (p1[1] - p2[1])**2)

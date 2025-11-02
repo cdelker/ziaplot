@@ -3,7 +3,7 @@ from typing import Callable
 
 from ..util import linspace
 from ..discrete import Contour
-from ..style import PointType
+from ..geometry import PointType
 
 
 class Implicit(Contour):

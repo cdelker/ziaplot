@@ -23,6 +23,7 @@ class Component(Drawable):
         self._containerstyle: CssStyle | None = None
         self._name: str|None = None
         self._zorder: int = 2  # Components draw on top of containers
+        self._erased: bool = False
         diagram_stack.push_component(self)
 
     def style(self, style: str) -> 'Component':

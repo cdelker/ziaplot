@@ -174,6 +174,16 @@ class Diagram(Container):
         self.components.append(comp)
         self._clearcache()
 
+    def erase(self, *comp: Component) -> None:
+        ''' Erase a previously added component '''
+        for c in comp:
+            assert isinstance(c, Component)
+            try:
+                self.components.remove(c)
+            except ValueError:
+                pass  # Already removed
+        self._clearcache()
+
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' XML for standalone SVG '''
         sty = self._build_style('Canvas')
@@ -429,12 +439,9 @@ class Diagram(Container):
             daspect = databox.w / databox.h
             aspect = diagbox.w / diagbox.h
             ratio = daspect / aspect
-            diagbox = ViewBox(
-                diagbox.x,
-                diagbox.y,
-                diagbox.w if ratio >= 1 else diagbox.w * ratio,
-                diagbox.h if ratio <= 1 else diagbox.h / ratio
-            )
-
+            databox = ViewBox(databox.x, databox.y,
+                              databox.w if ratio >= 1 else databox.w / ratio,
+                              databox.h if ratio <= 1 else databox.h * ratio,
+                              )
         self._drawtitle(canvas, diagbox)
         self._drawcomponents(canvas, diagbox, databox)

@@ -1,11 +1,12 @@
-''' Point with optiona text and guide lines'''
+''' Point with optional text and guide lines'''
 from __future__ import annotations
 from typing import Optional
 import math
 
-from ..calcs import line_intersection, line_circle_intersection, line_arc_intersection, func_intersection, circle_intersection, local_min, local_max
+from .. import geometry
+from ..geometry import PointType, LineType
 from ..text import TextPosition, text_align_ofst
-from ..style import MarkerTypes, PointType
+from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..element import Element
 from ..shapes import Circle, Arc
@@ -32,6 +33,9 @@ class Point(Element):
         self._guidex: Optional[float] = None
         self._guidey: Optional[float] = None
         self._zorder: int = 6  # Points should usually be above other things
+
+    def __getitem__(self, idx):
+        return [self.x, self.y][idx]
 
     @property
     def point(self) -> PointType:
@@ -131,6 +135,22 @@ class Point(Element):
                         pixelofst=(dx, dy),
                         dataview=databox)
 
+    def reflect(self, line: LineType) -> 'Point':
+        ''' Create a new point reflected over line '''
+        x, y = geometry.reflect(self, line)
+        return Point(x, y)
+
+    def image(self, line: LineType) -> 'Point':
+        ''' Create a new point imaged onto the line (point on line at
+            shortest distance to point)
+        '''
+        x, y = geometry.image(self, line)
+        return Point(x, y)
+
+    def bisect(self, point: PointType) -> 'Line':
+        ''' Create a new line bisecting the two points '''
+        return Line.from_standard(*geometry.line.bisect_points(self, point))
+
     @classmethod
     def at(cls, f: Function, x: float) -> 'Point':
         ''' Draw a Point at y = f(x) '''
@@ -146,25 +166,34 @@ class Point(Element):
     @classmethod
     def at_minimum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local minimum of f between x1 and x2 '''
-        x, y = local_min(f, x1, x2)
+        x, y = geometry.function.local_min(f.y, x1, x2)
         return cls(x, y)
 
     @classmethod    
     def at_maximum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local maximum of f between x1 and x2 '''
-        x, y = local_max(f, x1, x2)
+        x, y = geometry.function.local_max(f.y, x1, x2)
+        return cls(x, y)
+
+    @classmethod
+    def at_midpoint(cls, a: PointType, b: PointType) -> 'Point':
+        #x = (a[0] + b[0])/2
+        #y = (a[1] + b[1])/2
+        x, y = geometry.midpoint(a, b)
         return cls(x, y)
 
     @classmethod
     def on_circle(cls, circle: Circle, theta: float) -> 'Point':
         ''' Draw a Point on the circle at angle theta (degrees) '''
-        x, y = circle._xy(math.radians(theta))
+        x, y = geometry.circle.point(circle, math.radians(theta))
         return cls(x, y)
 
     @classmethod
     def at_intersection(cls, f1: Function|Line|Circle|Arc, f2: Function|Line|Circle|Arc,
                         bounds: Optional[tuple[float, float]] = None,
-                        index: int = 0) -> 'Point':
+                        index: int = 0,
+                        offarc: bool = False
+                        ) -> 'Point':
         ''' Draw a Point at the intersection of two functions, lines, circles, or arcs.
 
             Args:
@@ -174,33 +203,31 @@ class Point(Element):
                     of two Functions
                 index: in cases that may intersect multiple times (such as two circles),
                     index of the intersection to return.
-            '''
+        '''
         if isinstance(f1, Line) and isinstance(f2, Line):
-            x, y = line_intersection(f1, f2)
+            x, y = geometry.intersect.lines(f1, f2)
 
         elif isinstance(f1, (Arc, Circle)) and isinstance(f2, (Arc, Circle)):
-            p1, p2 = circle_intersection(f1, f2)
+            p1, p2 = geometry.intersect.circles(f1, f2)
             x, y = p1 if index == 0 else p2
 
-        elif isinstance(f1, Line) and isinstance(f2, Arc):
-            p1, p2 = line_arc_intersection(f1, f2)
+        elif isinstance(f1, Line) and isinstance(f2, Arc) and not offarc:
+            p1, p2 = geometry.intersect.line_arc(f1, f2)
             x, y = p1 if index == 0 else p2
-        elif isinstance(f1, Arc) and isinstance(f2, Line):
-            p1, p2 = line_arc_intersection(f2, f1)
+        elif isinstance(f1, Arc) and isinstance(f2, Line) and not offarc:
+            p1, p2 = geometry.intersect.line_arc(f2, f1)
             x, y = p1 if index == 0 else p2
         elif isinstance(f1, Line) and isinstance(f2, Circle):
-            p1, p2 = line_circle_intersection(f1, f2)
+            p1, p2 = geometry.intersect.line_circle(f1, f2)
             x, y = p1 if index == 0 else p2
         elif isinstance(f1, Circle) and isinstance(f2, Line):
-            p1, p2 = line_circle_intersection(f2, f1)
+            p1, p2 = geometry.intersect.line_circle(f2, f1)
             x, y = p1 if index == 0 else p2
 
         else:
             if bounds is None:
                 raise ValueError('bounds are required for intersection of non-line functions.')
-            assert isinstance(f1, Function)
-            assert isinstance(f2, Function)
-            x, y = func_intersection(f1, f2, *bounds)
+            x, y = geometry.intersect.functions(f1.y, f2.y, *bounds)
 
         if not math.isfinite(x) or not math.isfinite(y):
             raise ValueError('No intersection found')

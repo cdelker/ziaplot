@@ -8,10 +8,13 @@ from itertools import accumulate
 from xml.etree import ElementTree as ET
 
 from .. import util
+from .. import geometry
+from ..geometry import PointType
 from ..canvas import Canvas, Borders, ViewBox
 from ..element import Element
-from ..style import MarkerTypes, PointType
+from ..style import MarkerTypes
 from ..diagrams import Graph
+from .line import Line, Segment
 
 
 class BezierQuad(Element):
@@ -32,6 +35,12 @@ class BezierQuad(Element):
         self.endmark: Optional[MarkerTypes] = None
         self.midmark: Optional[MarkerTypes] = None
 
+    def __getitem__(self, idx):
+        return [self.p1, self.p2, self.p3][idx]
+
+    def __len__(self):
+        return 3
+
     def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'BezierQuad':
         ''' Define markers to show at the start and end of the curve. Use defaults
             to show arrowheads pointing outward in the direction of the curve.
@@ -47,30 +56,34 @@ class BezierQuad(Element):
 
     def xy(self, t: float) -> PointType:
         ''' Evaluate (x, y) value of curve at parameter t '''
-        x = self.p2[0] + (1-t)**2 * (self.p1[0] - self.p2[0]) + t**2 * (self.p3[0] - self.p2[0])
-        y = self.p2[1] + (1-t)**2 * (self.p1[1] - self.p2[1]) + t**2 * (self.p3[1] - self.p2[1])
-        return x, y
+        return geometry.bezier.xy(self, t)
 
-    def _tangent_slope(self, t: float) -> float:
-        ''' Get slope of tangent at parameter t '''
-        bprime_x = 2*(1-t) * (self.p2[0] - self.p1[0]) + 2*t*(self.p3[0] - self.p2[0])
-        bprime_y = 2*(1-t) * (self.p2[1] - self.p1[1]) + 2*t*(self.p3[1] - self.p2[1])
-        return bprime_y / bprime_x
+    def tangent(self, t: float) -> Line:
+        ''' Create tangent line at parameter t '''
+        assert 0 <= t <= 1
+        slope = geometry.bezier.tangent_slope(self, t)
+        p = self.xy(t)
+        return Line(p, slope)
 
-    def _tangent_theta(self, t: float) -> float:
-        ''' Get angle of tangent at parameter t '''
-        bprime_x = 2*(1-t) * (self.p2[0] - self.p1[0]) + 2*t*(self.p3[0] - self.p2[0])
-        bprime_y = 2*(1-t) * (self.p2[1] - self.p1[1]) + 2*t*(self.p3[1] - self.p2[1])
-        return math.atan2(bprime_y, bprime_x)
+    def normal(self, t: float) -> Line:
+        assert 0 <= t <= 1
+        slope = geometry.bezier.tangent_slope(self, t)
+        p = self.xy(t)
+        try:
+            m = -1/slope
+        except ZeroDivisionError:
+            m = math.inf
+        return Line(p, m)
 
-    def length(self, n: int = 50) -> float:
-        ''' Approximate length of the curve
+    def secant(self, t1: float, t2: float) -> Line:
+        p1 = self.xy(t1)
+        p2 = self.xy(t2)
+        return Line.from_points(p1, p2)
 
-            Args:
-                n: the number of points in t used to
-                    linearly approximate the curve
-        '''
-        return bezier_length(self, n)
+    def chord(self, t1: float, t2: float) -> Segment:
+        p1 = self.xy(t1)
+        p2 = self.xy(t2)
+        return Segment(p1, p2)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -111,7 +124,7 @@ class BezierQuad(Element):
                                           sty.edge_width,
                                           orient=True)
             midx, midy = self.xy(0.5)
-            slope = self._tangent_slope(0.5)
+            slope = geometry.bezier.tangent_slope(self, 0.5)
             dx = midx/1E3
             midx1 = midx + dx
             midy1 = midy + dx*slope
@@ -140,23 +153,11 @@ class BezierCubic(BezierQuad):
         super().__init__(p1, p2, p3)
         self.p4 = p4
 
-    def xy(self, t: float) -> PointType:
-        ''' Evaluate (x, y) on curve at parameter t '''
-        assert self.p4 is not None
-        return cubic_xy(t, self.p1, self.p2, self.p3, self.p4)
+    def __getitem__(self, idx):
+        return [self.p1, self.p2, self.p3, self.p4][idx]
 
-    def _tangent_slope(self, t: float) -> float:
-        ''' Get slope of tangent at parameter t '''
-        assert self.p4 is not None
-        bprime_x = 3*(1-t)**2 * (self.p2[0]-self.p1[0]) + 6*(1-t)*t*(self.p3[0]-self.p2[0]) + 3*t**2*(self.p4[0]-self.p3[0])
-        bprime_y = 3*(1-t)**2 * (self.p2[1]-self.p1[1]) + 6*(1-t)*t*(self.p3[1]-self.p2[1]) + 3*t**2*(self.p4[1]-self.p3[1])
-        return bprime_y / bprime_x
-
-    def _tangent_theta(self, t: float) -> float:
-        assert self.p4 is not None
-        bprime_x = 3*(1-t)**2 * (self.p2[0]-self.p1[0]) + 6*(1-t)*t*(self.p3[0]-self.p2[0]) + 3*t**2*(self.p4[0]-self.p3[0])
-        bprime_y = 3*(1-t)**2 * (self.p2[1]-self.p1[1]) + 6*(1-t)*t*(self.p3[1]-self.p2[1]) + 3*t**2*(self.p4[1]-self.p3[1])
-        return math.atan2(bprime_y, bprime_x)
+    def __len__(self):
+        return 4
 
 
 class Curve(BezierQuad):
@@ -166,7 +167,7 @@ class Curve(BezierQuad):
     def __init__(self, p1: PointType, p2: PointType, k: float = .15):
         thetanorm = math.atan2((p2[1] - p1[1]), (p2[0] - p1[0])) + math.pi/2
         mid = (p1[0] + p2[0])/2, (p1[1] + p2[1]) / 2
-        length = util.distance(p1, p2) * k
+        length = geometry.distance(p1, p2) * k
         pc = (mid[0] + length * math.cos(thetanorm),
               mid[1] + length * math.sin(thetanorm))
         super().__init__(p1, pc, p2)        
@@ -207,7 +208,7 @@ class BezierSpline(Element):
         n = len(curves)
         curve_num = int(t * n)
         curve_t = t*n - curve_num
-        return cubic_xy(curve_t, *curves[curve_num])
+        return geometry.bezier.cubic_xy(curves[curve_num], curve_t)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -216,12 +217,12 @@ class BezierSpline(Element):
         color = sty.get_color()
 
         canvas.bezier_spline(
-                      self.points,
-                      stroke=sty.stroke,
-                      color=color,
-                      width=sty.stroke_width,
-                      dataview=databox,
-                      zorder=self._zorder)
+            self.points,
+            stroke=sty.stroke,
+            color=color,
+            width=sty.stroke_width,
+            dataview=databox,
+            zorder=self._zorder)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
@@ -323,67 +324,6 @@ class BezierHobby(BezierSpline):
         self.omega = omega
         ctrlpoints = hobby_curve(points, omega)
         super().__init__(*ctrlpoints)
-
-
-
-def cubic_xy(t: float, *p: PointType) -> PointType:
-    ''' Calculate (x, y) point at parameter t on a cubic bezier with
-        control points p
-    '''
-    p1, p2, p3, p4 = p
-    x = (p1[0]*(1-t)**3 + p2[0]*3*t*(1-t)**2 + p3[0]*3*(1-t)*t**2 + p4[0]*t**3)
-    y = (p1[1]*(1-t)**3 + p2[1]*3*t*(1-t)**2 + p3[1]*3*(1-t)*t**2 + p4[1]*t**3)
-    return (x, y)
-
-
-def bezier_length(bezier: BezierQuad | BezierCubic, n: int = 50) -> float:
-    ''' Compute approximate length of Bezier curve
-
-        Args:
-            n: Number of points used to approximate curve
-    '''
-    t = util.linspace(0, 1, num=50)
-    xy = [bezier.xy(tt) for tt in t]
-    dists = [util.distance(xy[i], xy[i+1]) for i in range(n-1)]
-    return sum(dists)
-
-
-def bezier_equal_spaced_t(
-        bezier: BezierQuad | BezierCubic,
-        nsegments: int = 2,
-        n: int = 100) -> list[float]:
-    ''' Find t values that approximately split the curve into
-        equal-length segments.
-
-        Args:
-            bezier: The curve to split
-            nsegments: Number of segments to split curve into
-            n: Number of points used to approximate curve
-    '''
-    t = util.linspace(0, 1, num=n)
-    xy = [bezier.xy(tt) for tt in t]
-    dists = [util.distance(xy[i], xy[i+1]) for i in range(n-1)]
-    length = sum(dists)
-    delta = length / nsegments
-    seg_points = [delta*i for i in range(nsegments+1)]
-    cumsum = list(accumulate(dists))
-    t_points = [bisect.bisect_left(cumsum, seg_points[i]) for i in range(1, nsegments)]
-    return [t[0]] + [t[tp] for tp in t_points] + [t[n-1]]
-
-
-def bezier_equal_spaced_points(
-        bezier: BezierQuad | BezierCubic,
-        nsegments: int = 2,
-        n: int = 100) -> list[PointType]:
-    ''' Find (x, y) points spaced equally along a Bezier curve
-
-        Args:
-            bezier: The curve to split
-            nsegments: Number of segments to split curve into
-            n: Number of points used to approximate curve
-    '''
-    t = bezier_equal_spaced_t(bezier, nsegments, n)
-    return [bezier.xy(tt) for tt in t]
 
 
 def spline_equal_spaced_t(

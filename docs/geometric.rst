@@ -333,77 +333,54 @@ Draw a rectangle at (x, y) with a width and height.
 Tangents and Normals
 --------------------
 
-Tangent is a helper class that creates Lines tangent to
-Functions, Circles, or Curves.
-
-
-:py:class:`ziaplot.geo.tangents.Tangent`
-
-
-TangentSegment creates Segments tangent to Functions, Circles, or Curves.
-
-:py:class:`ziaplot.geo.tangents.TangentSegment`
-
-Normal is a helper class that creates Lines normal (perpendicular) to
-Functions, Circles, or Curves.
-
-
-:py:class:`ziaplot.geo.tangents.Normal`
-
-
-NormalSegment creates Segments normal to Functions, Circles, or Curves.
-
-:py:class:`ziaplot.geo.tangents.NormalSegment`
-
-
-.. note::
-
-    The `d1` and `d2` parameters to `TangentSegment` and `NormalSegment`
-    specify how far to extend the segment in each direction.
-
-    The Segment's `.trim()` method changes its endpoints, which is useful for
-    stopping it at a desired x value without calculating the exact `d1` and `d2`.
+Circles, Functions, and Curves have methods for creating tangent and normal lines.
 
 
 to Circles and Ellipses
 ***********************
 
-Use `.to_circle`. Specify the angle theta around the circle.
+Use `.tangent` to draw the tangent to the circle passing through a specific point (on or outside the circle).
+Use `.tangent_at` to draw the tangent at a specific angle theta around the circle.
 
 .. jupyter-execute::
 
     with zp.Graph().equal_aspect().xrange(-4, 4).yrange(-4, 4):
         circ = zp.Circle(1, 1, 2)
-        zp.TangentSegment.to_circle(circ, theta=45).color('red')
-        zp.NormalSegment.to_circle(circ, theta=160).color('blue')
+        circ.tangent_at(theta=45).color('red')
+        circ.normal_at(angle=160).color('blue')
+
+
+.. note::
+
+    Tangent lines may be turned into segments using `.trim` or `.trimd` methods.
+    The `d1` and `d2` parameters to `trimd` specify how far to extend the segment in each direction.
 
 
 to Functions
 ************
 
-Use `.to`. Specify the x value.
+On Functions, the `.tangent` method requires the x value at which to draw the tangent or normal.
 
 .. jupyter-execute::
 
     with zp.Graph().equal_aspect().xrange(-10, 5).yrange(-2, 10):
         ff = zp.Function(lambda x: x**3/20 + x**2 /2, xrange=(-10, 5))
-        zp.Tangent.to(ff, x=-8).color('orange')
-        zp.TangentSegment.to(ff, x=1, d1=2, d2=2).color('blue')
-        zp.NormalSegment.to(ff, x=1).trim(0, 4).color('green')
+        ff.tangent(x=-8).color('orange')
+        ff.tangent(x=1).trimd(1, 2, 2).color('blue')
+        ff.normal(x=1).trim(0, 4).color('green')
+
 
 to Bézier Curves
 ****************
 
-Use `.to_bezier`. Specify the parameter t (from 0-1) along the curve.
+The tangent and normal functions require the parameter t (from 0-1) along the curve.
 
 .. jupyter-execute::
 
     with zp.Graph().equal_aspect().xrange(-5, 5).yrange(-5, 5):
         b = zp.Curve((-2, 0), (3, 1), k=1)
-        zp.Tangent.to_bezier(b, t=.4).color('orange')
-        zp.Normal.to_bezier(b, t=.4).color('blue')
-
-
+        b.tangent(t=.4).color('orange')
+        b.normal(t=.4).color('blue')
 
 
 Placing Points
@@ -464,20 +441,19 @@ Draw the arc of an angle between two lines.
 Lines on a Circle
 -----------------
 
-Draw Segments associated with a circle.
-`Diameter`, `Radius`, `Chord`, `Secant`, `Sagitta` (the line perpendicular to a chord)
-subclasss from `Segment`.
+Draw Segments associated with a circle with
+`.diameger_segment`, `radius_segment`, `chord`, `secant`, `sagitta` (the line perpendicular to a chord).
 
 .. jupyter-execute::
 
     with zp.Diagram().css(zp.CSS_BLACKWHITE).equal_aspect() as g:
         zp.Point(0, 0)
         circ = zp.Circle(0, 0, 2)
-        ch = zp.Chord(circ, 10, 135).label('A', 0, 'E').label('B', 1, 'NW').label('Chord', .8, rotate=True)
-        sg = zp.Sagitta(circ, 10, 135).label('C', 0, 'N').label('Sagitta', .6, 'E')
+        ch = circ.chord(10, 135).label('A', 0, 'E').label('B', 1, 'NW').label('Chord', .8, rotate=True)
+        sg = circ.sagitta(10, 135).label('C', 0, 'N').label('Sagitta', .6, 'E')
         zp.Angle(ch, sg, quad=4)
-        zp.Diameter(circ, 0).label('Diameter', .8)
-        zp.Radius(circ, -30).label('Radius', .6, rotate=True)
+        circ.diameter_segment(0).label('Diameter', .8)
+        circ.radius_segment(-30).label('Radius', .6, rotate=True)
 
 
 

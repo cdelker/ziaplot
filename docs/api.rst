@@ -128,30 +128,6 @@ Geometric
 .. autoclass:: ziaplot.geo.bezier.Curve
     :members:
 
-.. autoclass:: ziaplot.geo.tangents.Tangent
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.TangentSegment
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.Normal
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.NormalSegment
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.Diameter
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.Secant
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.Chord
-    :members:
-
-.. autoclass:: ziaplot.geo.tangents.Sagitta
-    :members:
-
 .. autoclass:: ziaplot.geo.integral.IntegralFill
     :members:
 
@@ -238,23 +214,97 @@ General Functions
 .. autofunction:: ziaplot.container.save
 
 
-Tools
------
+Geometric Calculations
+----------------------
 
 A few calculation functions are made available to the user.
 
-.. autofunction:: ziaplot.calcs.line_intersection
+.. autofunction:: ziaplot.geometry.distance
 
-.. autofunction:: ziaplot.calcs.angle_of_intersection
+.. autofunction:: ziaplot.geometry.isclose
 
-.. autofunction:: ziaplot.calcs.y_intercept
+.. autofunction:: ziaplot.geometry.midpoint
 
-.. autofunction:: ziaplot.calcs.x_intercept
+.. autofunction:: ziaplot.geometry.translate
 
-.. autofunction:: ziaplot.calcs.func_intersection
+.. autofunction:: ziaplot.geometry.reflect
 
-.. autofunction:: ziaplot.calcs.local_max
+.. autofunction:: ziaplot.geometry.rotate
 
-.. autofunction:: ziaplot.calcs.local_min
+.. autofunction:: ziaplot.geometry.image
+
+.. autofunction:: ziaplot.geometry.angle_mean
+
+.. autofunction:: ziaplot.geometry.angle_diff
+
+.. autofunction:: ziaplot.geometry.angle_isbetween
+
+.. autofunction:: ziaplot.geometry.line.slope
+
+.. autofunction:: ziaplot.geometry.line.intercept
+
+.. autofunction:: ziaplot.geometry.line.xintercept
+
+.. autofunction:: ziaplot.geometry.line.yvalue
+
+.. autofunction:: ziaplot.geometry.line.xvalue
+
+.. autofunction:: ziaplot.geometry.line.normal_distance
+
+.. autofunction:: ziaplot.geometry.line.bisect
+
+.. autofunction:: ziaplot.geometry.line.bisect_points
+
+.. autofunction:: ziaplot.geometry.circle.point
+
+.. autofunction:: ziaplot.geometry.circle.tangent_angle
+
+.. autofunction:: ziaplot.geometry.circle.tangent_at
+
+.. autofunction:: ziaplot.geometry.circle.tangent_points
+
+.. autofunction:: ziaplot.geometry.circle.tangent
+
+.. autofunction:: ziaplot.geometry.ellipse.point
+
+.. autofunction:: ziaplot.geometry.ellipse.tangent_points
+
+.. autofunction:: ziaplot.geometry.ellipse.tangent_angle
+
+.. autofunction:: ziaplot.geometry.function.local_max
+
+.. autofunction:: ziaplot.geometry.function.local_min
+
+.. autofunction:: ziaplot.geometry.function.tangent
+
+.. autofunction:: ziaplot.geometry.function.normal
+
+.. autofunction:: ziaplot.geometry.bezier.xy
+
+.. autofunction:: ziaplot.geometry.bezier.tangent_slope
+
+.. autofunction:: ziaplot.geometry.bezier.tangent_angle
+
+.. autofunction:: ziaplot.geometry.bezier.length
+
+.. autofunction:: ziaplot.geometry.bezier.equal_spaced_points
+
+.. autofunction:: ziaplot.geometry.intersect.lines
+
+.. autofunction:: ziaplot.geometry.intersect.line_angle
+
+.. autofunction:: ziaplot.geometry.intersect.line_circle
+
+.. autofunction:: ziaplot.geometry.intersect.circles
+
+.. autofunction:: ziaplot.geometry.intersect.line_arc
+
+.. autofunction:: ziaplot.geometry.intersect.functions
+
+
+
+
+
+
 
 .. autofunction:: ziaplot.util.linspace

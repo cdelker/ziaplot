@@ -51,15 +51,15 @@ Functional Plots
           .xrange(0, 10)
           .yrange(0, 16)):
         f = zp.Function(lambda x: -(x-6)**2 + 12).color('teal')
-        zp.Secant.to_function(f, 4, 8).color('orange')
-        zp.Secant.to_function(f, 3, 6).color('red')
+        f.secant(4, 8).color('orange')
+        f.secant(3, 6).color('red')
         m = zp.Point.at(f, 6).label('M', 'NW').color('black')
         d = zp.Point.at(f, 4).label('D', 'NW').color('black')
         e = zp.Point.at(f, 8).label('E', 'NE').color('black')
         l = zp.Point.at(f, 3).label('L', 'SE').color('black')
         zp.Segment((8, f.y(8)), (8, 0)).color('blue')
         zp.IntegralFill(f, x1=8, x2=9.5).color('red 20%')
-        zp.TangentSegment.to(f, 5).trim(3, 7).color('plum')
+        f.tangent(x=5).trim(3, 7).color('plum')
         zp.Point.at(f, 5).color('yellow')
 
 |
@@ -162,11 +162,11 @@ Geometric
 
     with zp.Diagram().css(zp.CSS_BLACKWHITE).xrange(-1, 1.1).yrange(-1., 1):
         c = zp.Circle(0, 0, 1)
-        zp.Diameter(c, -15).color('maroon').label('Diameter', .2, 'N', rotate=True, color='maroon')
-        zp.Radius(c, 40).color('teal').label('Radius', .5, rotate=True, color='teal')  
-        zp.Chord(c, 160, 80).color('steelblue').label('Chord', .5, rotate=True, color='steelblue')
-        zp.Secant(c, 180, 280).color('olivedrab').label('Secant', .25, rotate=True, color='olivedrab')
-        zp.Tangent.to_circle(c, -15).color('darkviolet').label('Tangent', .4, 'SE', rotate=True, color='darkviolet')
+        c.diameter_segment(angle=-15).color('maroon').label('Diameter', .2, 'N', rotate=True, color='maroon')
+        c.radius_segment(angle=40).color('teal').label('Radius', .5, rotate=True, color='teal')  
+        c.chord(160, 80).color('steelblue').label('Chord', .5, rotate=True, color='steelblue')
+        c.secant(180, 280).color('olivedrab').label('Secant', .25, rotate=True, color='olivedrab')
+        c.tangent(c.xy(-15)).color('darkviolet').label('Tangent', .4, 'SE', rotate=True, color='darkviolet')
         zp.Point(0, 0)
 
 |
@@ -184,8 +184,8 @@ Geometric
         x1 = zp.VLine(1).stroke('--').label('x=1', .25, 'E')
         y1 = zp.HLine(1).stroke('--').label('y=1', .25, 'N')
         hyp = zp.Line((0,0), math.tan(math.radians(theta)))
-        tan = zp.Tangent.to_circle(circ, theta)
-        
+        tan = circ.tangent_at(theta)
+
         zp.Point(0, 0).label('O', 'SE').color('red')
         A = zp.Point.at_intersection(hyp, tan).label('A', 'E').color('red')
         B = zp.Point.at_intersection(x1, hyp).label('B', 'W').color('red')
@@ -211,9 +211,9 @@ Geometric
     with zp.Diagram().css(zp.CSS_BLACKWHITE):
         circle = zp.Circle(0, 0, 1)
         theta = 56  # Angle for point B
-        zp.Diameter(circle)
-        side1 = zp.Chord(circle, 180, theta)
-        side2 = zp.Chord(circle, 0, theta)
+        circle.diameter_segment()
+        side1 = circle.chord(180, theta)
+        side2 = circle.chord(0, theta)
         a = zp.Point.on_circle(circle, 180).label('A', 'W')
         c = zp.Point.on_circle(circle, 0).label('C', 'E')
         b = zp.Point.on_circle(circle, theta).label('B', 'NE')
@@ -221,7 +221,7 @@ Geometric
         zp.Angle(side1, side2, quad=3)
 
     # Test Thales's Theorem!
-    math.isclose(zp.angle_of_intersection(side1, side2), 90)
+    math.isclose(zp.geometry.intersect.line_angle(side1, side2), math.radians(90))
 
 |
 
@@ -267,7 +267,7 @@ Geometric
         circ = zp.Circle(0, 0, 1).color('gray').fill('whitesmoke')
         zp.Arrow((1.1, 0), (-1.1, 0)).zorder(2)
         zp.Arrow((0, 1.1), (0, -1.1))
-        rad = zp.Radius(circ, theta=65)
+        rad = circ.radius_segment(65)
         pt = zp.Point.on_circle(circ, theta=65).label(r'$e^{iθ}$')
         sin = zp.Segment.vertical(pt.point, 0).color('green').label(r'sin(θ)', .7, 'E')
         cos = zp.Segment.horizontal(sin.p2, 0).color('steelblue').label(r'cos(θ)', .5, 'S')

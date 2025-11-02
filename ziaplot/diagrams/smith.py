@@ -5,7 +5,7 @@ import math
 from functools import lru_cache
 from collections import namedtuple
 
-from ..calcs import _circle_intersection
+from .. import geometry
 from ..canvas import Canvas, Borders, ViewBox
 from ..element import Element
 from .polar import GraphPolar
@@ -20,7 +20,7 @@ def circle_intersect_theta(c1: tuple[float, float], c2: tuple[float, float],
                            r1: float, r2: float) -> Optional[float]:
     ''' Get end angle of arc for reactance lines '''
     x1, y1 = c1
-    (xs1, ys1), (xs2, ys2) = _circle_intersection(c1, c2, r1, r2)  # type: ignore
+    (xs1, ys1), (xs2, ys2) = geometry.intersect.circles((c1, r1), (c2, r2))
 
     if not math.isfinite(xs1) or not math.isfinite(xs2):
         return None

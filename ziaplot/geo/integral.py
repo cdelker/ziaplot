@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from .. import util
-from ..calcs import func_intersection
+from .. import geometry
 from ..canvas import Canvas, Borders, ViewBox
 from ..element import Element
 from .function import Function
@@ -76,6 +76,6 @@ class IntegralFill(Element):
             x1 and x2 are points outside the intersection
         '''
         mid = (x1+x2)/2
-        a, _ = func_intersection(f, f2, x1, mid)
-        b, _ = func_intersection(f, f2, mid, x2)
+        a, _ = geometry.intersect.functions(f.y, f2.y, x1, mid)
+        b, _ = geometry.intersect.functions(f.y, f2.y, mid, x2)
         return cls(f, f2, a, b)
