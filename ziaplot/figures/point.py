@@ -9,7 +9,7 @@ from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..element import Element
-from ..shapes import Circle, Arc
+from .shapes import Circle, Arc
 from .function import Function
 from .line import Line
 from .bezier import BezierQuad

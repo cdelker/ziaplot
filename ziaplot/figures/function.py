@@ -5,11 +5,11 @@ from xml.etree import ElementTree as ET
 import math
 
 from .. import util
-from ..geo.line import Line, Segment
 from ..element import Element
 from ..style import MarkerTypes
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..diagrams import Graph
+from .line import Line, Segment
 
 
 class Function(Element):

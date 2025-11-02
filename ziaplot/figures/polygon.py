@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Optional, Sequence
 
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from .shapes import Shape
 from ..geometry import PointType
+from .shapes import Shape
 
 
 class Polygon(Shape):

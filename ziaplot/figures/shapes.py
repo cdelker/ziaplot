@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Optional
 import math
 
+from .. import diagram_stack
 from .. import geometry
 from ..geometry import PointType
 from ..element import Element
-from ..geo.line import Line, Segment
 from ..canvas import Canvas, Borders, ViewBox, DataRange
-from .. import diagram_stack
+from .line import Line, Segment
 
 
 class Shape(Element):

@@ -12,7 +12,7 @@ from .discrete import (
     LineFill,
     Contour
 )
-from .geo import (
+from .figures import (
     Function,
     Line,
     HLine,
@@ -27,7 +27,13 @@ from .geo import (
     BezierHobby,
     Curve,
     CurveThreePoint,
-    Implicit
+    Implicit,
+    Circle,
+    Ellipse,
+    Rectangle,
+    Polygon,
+    Arc,
+    CompassArc
 )
 from .diagrams import (
     Diagram,
@@ -47,7 +53,6 @@ from .diagrams import (
 from .annotations import Text, Angle, Arrow
 from .charts import Pie, PieSlice, BarChart, Bar, BarChartGrouped, BarSeries, BarChartHoriz, BarChartGroupedHoriz
 from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
-from .shapes import Circle, Ellipse, Rectangle, Polygon, Arc, CompassArc
 from .config import config
 from .util import linspace
 from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND

@@ -8,7 +8,7 @@ from ..style import MarkerTypes
 from ..text import TextPosition, Halign, Valign, text_align_ofst
 from ..canvas import Canvas, Borders, ViewBox
 from ..element import Component
-from ..geo.line import Line, LineLabel
+from ..figures.line import Line, LineLabel
 
 
 class Annotation(Component):

@@ -1,3 +1,5 @@
+from .shapes import Circle, Ellipse, Rectangle, Arc, CompassArc
+from .polygon import Polygon
 from .function import Function
 from .point import Point
 from .line import Line, HLine, VLine, Segment, Vector
