@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 diagram_stack: dict[Drawable, Optional[Drawable]] = {}
 pause: bool = False
+apply_style: list[str] = []
 
 
 def push_diagram(diagram: Drawable) -> None:
@@ -23,7 +24,10 @@ def push_component(comp: Optional[Drawable]) -> None:
         diagram, prev_comp = list(diagram_stack.items())[-1]
         if prev_comp is not None and prev_comp not in diagram:
             diagram.add(prev_comp)  # type: ignore
+            for sty in apply_style:
+                prev_comp.style(sty)
         diagram_stack[diagram] = comp
+
 
 def current_diagram() -> Optional[Drawable]:
     try:

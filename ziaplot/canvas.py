@@ -291,7 +291,7 @@ class Canvas:
             Args:
                 x: X-values of the path
                 y: Y-values of the path
-                stroke: Stroke/linestyle of hte path
+                stroke: Stroke/linestyle of the path
                 color: Path color
                 width: Width of path line
                 markerid: ID name of marker (defined using `definemarker`)
@@ -328,7 +328,7 @@ class Canvas:
         self.add_element(path, zorder)
 
     def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
-             strokecolor: str = 'black', strokewidth: float = 2,
+             strokecolor: str = 'black', strokewidth: float = 2, stroke: DashTypes = '-',
              rcorner: float = 0, dataview: Optional[ViewBox] = None,
              zorder: int = 1) -> None:
         ''' Add a rectangle to the canvas
@@ -341,6 +341,7 @@ class Canvas:
                 fill: Fill color of rectangle
                 strokecolor: Border color of rectangle
                 strokewidth: Line width of rectangle border
+                stroke: Stroke/linestyle of the path
                 rcorner: Radius of rectangle corners
                 dataview: ViewBox for transforming x, y data into SVG coordinates
         '''
@@ -368,6 +369,9 @@ class Canvas:
                     'stroke-width': str(strokewidth)})
         set_color(fill, rect, 'fill')
         set_color(strokecolor, rect, 'stroke')
+        if stroke not in ['-', None, 'none', '']:
+            rect.set('stroke-dasharray', getdash(stroke, strokewidth))
+
         if rcorner:
             rect.set('rx', str(rcorner))
         set_clip(rect, self.clip)
@@ -449,7 +453,9 @@ class Canvas:
             zorder=zorder)
 
     def poly(self, points: Sequence[PointType], color: str = 'black',
-             strokecolor: str = 'red', strokewidth: float = 1,
+             strokecolor: str = 'red',
+             strokewidth: float = 1,
+             stroke: DashTypes = '-',
              dataview: Optional[ViewBox] = None,
              zorder: int = 1) -> None:
         ''' Add a polygon to the canvas
@@ -459,6 +465,7 @@ class Canvas:
                 color: Fill color
                 strokecolor: Border color
                 strokewidth: Width of border
+                stroke: Stroke/linestyle of the path
         '''
         x = [p[0] for p in points]
         y = [p[1] for p in points]
@@ -477,6 +484,9 @@ class Canvas:
                     'stroke-width': str(strokewidth)})
         set_color(strokecolor, poly, 'stroke')
         set_color(color, poly, 'fill')
+        if stroke not in ['-', None, 'none', '']:
+            poly.set('stroke-dasharray', getdash(stroke, strokewidth))
+
         set_clip(poly, self.clip)
         self.add_element(poly, zorder)
 
@@ -495,6 +505,7 @@ class Canvas:
                 color: Fill color of arc/wedge
                 strokecolor: Border color
                 strokewidth: Border width
+                stroke: Stroke/linestyle of the path
         '''
         cy = self.flipy(cy)
         x1 = cx + radius * math.cos(starttheta)
@@ -515,7 +526,9 @@ class Canvas:
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
             theta2: float = 180, strokecolor: str = 'black',
-            strokewidth: float = 1, dataview: Optional[ViewBox] = None,
+            strokewidth: float = 1,
+            stroke: DashTypes = '-',
+            dataview: Optional[ViewBox] = None,
             zorder: int  = 1) -> None:
         ''' Add an open arc
 
@@ -527,6 +540,7 @@ class Canvas:
                 stoptheta: End angle of arc (degrees)
                 strokecolor: Border color
                 strokewidth: Border width
+                stroke: Stroke/linestyle of the path
         '''
         if dataview:
             xform = Transform(dataview, self.viewbox)
@@ -555,13 +569,18 @@ class Canvas:
         path.set('d', pointstr)
         path.set('stroke-width', str(strokewidth))
         path.set('fill', 'none')
+        if stroke not in ['-', None, 'none', '']:
+            path.set('stroke-dasharray', getdash(stroke, strokewidth))
         set_color(strokecolor, path, 'stroke')
         set_clip(path, self.clip)
         self.add_element(path, zorder)
 
     def ellipse(self, cx: float, cy: float, r1: float, r2: float,
-                theta: float = 0, color: str = 'black',
-                strokecolor: str = 'black', strokewidth: float = 1,
+                theta: float = 0,
+                color: str = 'black',
+                strokecolor: str = 'black',
+                stroke: DashTypes = '-',
+                strokewidth: float = 1,
                 dataview: Optional[ViewBox] = None,
                 zorder: int = 1) -> None:
         ''' Add an ellipse
@@ -590,6 +609,8 @@ class Canvas:
         ellipse.set('stroke-width', str(strokewidth))
         set_color(strokecolor, ellipse, 'stroke')
         set_color(color, ellipse, 'fill')
+        if stroke not in ['-', None, 'none', '']:
+            ellipse.set('stroke-dasharray', getdash(stroke, strokewidth))
 
         if theta:
             ellipse.set('transform', f'rotate({-theta} {cx} {cy})')
@@ -609,7 +630,7 @@ class Canvas:
             Args:
                 p1, p2, p3: Control Points
                 p4: Optional control point for Cubic curve
-                stroke: Stroke/linestyle of hte path
+                stroke: Stroke/linestyle of the path
                 color: Path color
                 width: Width of path line
                 startmarker: ID name of marker for start point of path
@@ -661,7 +682,7 @@ class Canvas:
 
             Args:
                 points: Control Points
-                stroke: Stroke/linestyle of hte path
+                stroke: Stroke/linestyle of the path
                 color: Path color
                 width: Width of path line
                 startmarker: ID name of marker for start point of path

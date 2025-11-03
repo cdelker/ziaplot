@@ -97,6 +97,7 @@ class Ellipse(Shape):
                        color=sty.color,
                        strokecolor=sty.edge_color,
                        strokewidth=sty.stroke_width,
+                       stroke=sty.stroke,
                        dataview=databox,
                        zorder=self._zorder)
 
@@ -284,6 +285,7 @@ class Rectangle(Shape):
                     fill=sty.color,
                     strokecolor=sty.edge_color,
                     strokewidth=sty.stroke_width,
+                    stroke=sty.stroke,
                     rcorner=self.cornerradius,
                     dataview=databox,
                     zorder=self._zorder)
@@ -331,6 +333,7 @@ class Arc(Circle):
                    theta1=self.theta1, theta2=self.theta2,
                    strokecolor=sty.edge_color,
                    strokewidth=sty.stroke_width,
+                   stroke=sty.stroke,
                    dataview=databox,
                    zorder=self._zorder)
 

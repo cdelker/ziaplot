@@ -55,7 +55,7 @@ from .charts import Pie, PieSlice, BarChart, Bar, BarChartGrouped, BarSeries, Ba
 from .layout import LayoutH, LayoutV, LayoutGrid, LayoutEmpty
 from .config import config
 from .util import linspace
-from .style import theme, theme_list, css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND
+from .style import theme, theme_list, css, Css, CSS_BLACKWHITE, CSS_NOGRID, CSS_NOBACKGROUND
 from .container import save
 from . import geometry
 
