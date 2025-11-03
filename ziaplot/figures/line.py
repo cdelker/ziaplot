@@ -126,10 +126,18 @@ class Line(Element):
         ''' Create normal Line passing through p '''
         return Line.from_standard(*geometry.line.normal(self, p))
 
-    def bisect_angle(self, other: 'Line', which: int = 0) -> 'Line':
-        ''' Create new line bisecting the two Lines '''
-        b = geometry.line.bisect(self, other)[which]
-        return Line.from_standard(*b)
+    def bisect_angle(self, other: 'Line', which: str = '+') -> 'Line':
+        ''' Create new line bisecting the two Lines.
+
+            The `which` parameter specifies which of the two bisectors
+            to return. It may be `+` to return the bisector with positive or 0 slope,
+            or `-` to return the bisector with negative or vertical slope.
+        '''
+        lines = geometry.line.bisect(self, other)
+        lines = sorted(lines, key=lambda x: geometry.line.slope(x))
+        if which == '+':
+            return Line.from_standard(*lines[1])
+        return Line.from_standard(*lines[0])
 
     def parallel(self, distance: float) -> 'Line':
         ''' Create a line parallel to another line '''

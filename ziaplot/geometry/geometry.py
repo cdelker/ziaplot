@@ -15,6 +15,30 @@ BezierQuadType = Tuple[PointType, PointType, PointType]
 BezierCubicType = Tuple[PointType, PointType, PointType, PointType]
 
 
+def select_which(points: list, which: str) -> PointType:
+    ''' Choose point from the list with the top-most or bottom-most
+        y ccoordinate, or left-most or right-most x coordinate
+    '''
+    if which.startswith('y'):
+        pt = sorted(points, key=lambda x: x[1])
+        idx = int(which[1:])
+        return pt[idx]
+    if which.startswith('x'):
+        pt = sorted(points, key=lambda x: x[0])
+        idx = int(which[1:])
+        return pt[idx]
+
+    if which.startswith('b'):
+        return min(points, key=lambda x: x[1])
+    if which.startswith('t'):
+        return max(points, key=lambda x: x[1])
+    if which.startswith('l'):
+        return min(points, key=lambda x: x[0])
+    if which.startswith('r'):
+        return max(points, key=lambda x: x[0])
+    raise ValueError(f'Unknown `which` parameter {which}')
+
+
 def distance(p1: PointType, p2: PointType) -> float:
     ''' Distance between two points '''
     return math.sqrt((p1[0]- p2[0])**2 + (p1[1] - p2[1])**2)

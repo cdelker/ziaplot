@@ -3,6 +3,10 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+.ipynb_checkpoints
+_build/
+*.egg-info
+
 # Node artifact files
 node_modules/
 dist/

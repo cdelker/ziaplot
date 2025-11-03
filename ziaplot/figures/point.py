@@ -191,7 +191,7 @@ class Point(Element):
     @classmethod
     def at_intersection(cls, f1: Function|Line|Circle|Arc, f2: Function|Line|Circle|Arc,
                         bounds: Optional[tuple[float, float]] = None,
-                        index: int = 0,
+                        which: str = 'top',
                         offarc: bool = False
                         ) -> 'Point':
         ''' Draw a Point at the intersection of two functions, lines, circles, or arcs.
@@ -201,28 +201,28 @@ class Point(Element):
                 f2: Second function
                 bounds: tuple of x values to bound the search. Only used for intersection
                     of two Functions
-                index: in cases that may intersect multiple times (such as two circles),
-                    index of the intersection to return.
+                which: in cases where more than one intersection occurs, return the
+                    `top`, `bottom`, `left` or `right`-most point.
         '''
         if isinstance(f1, Line) and isinstance(f2, Line):
             x, y = geometry.intersect.lines(f1, f2)
 
         elif isinstance(f1, (Arc, Circle)) and isinstance(f2, (Arc, Circle)):
-            p1, p2 = geometry.intersect.circles(f1, f2)
-            x, y = p1 if index == 0 else p2
+            points = geometry.intersect.circles(f1, f2)
+            x, y = geometry.select_which(points, which)
 
         elif isinstance(f1, Line) and isinstance(f2, Arc) and not offarc:
-            p1, p2 = geometry.intersect.line_arc(f1, f2)
-            x, y = p1 if index == 0 else p2
+            points = geometry.intersect.line_arc(f1, f2)
+            x, y = geometry.select_which(points, which)
         elif isinstance(f1, Arc) and isinstance(f2, Line) and not offarc:
-            p1, p2 = geometry.intersect.line_arc(f2, f1)
-            x, y = p1 if index == 0 else p2
+            points = geometry.intersect.line_arc(f2, f1)
+            x, y = geometry.select_which(points, which)
         elif isinstance(f1, Line) and isinstance(f2, Circle):
-            p1, p2 = geometry.intersect.line_circle(f1, f2)
-            x, y = p1 if index == 0 else p2
+            points = geometry.intersect.line_circle(f1, f2)
+            x, y = geometry.select_which(points, which)
         elif isinstance(f1, Circle) and isinstance(f2, Line):
-            p1, p2 = geometry.intersect.line_circle(f2, f1)
-            x, y = p1 if index == 0 else p2
+            points = geometry.intersect.line_circle(f2, f1)
+            x, y = geometry.select_which(points, which)
 
         else:
             if bounds is None:

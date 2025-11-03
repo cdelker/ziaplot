@@ -14,6 +14,8 @@ from .geometry import (
     angle_mean,
     angle_diff,
     angle_isbetween,
+    select_which
+
     )
 from . import circle
 from . import ellipse

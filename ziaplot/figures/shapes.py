@@ -47,9 +47,17 @@ class Ellipse(Shape):
     def __getitem__(self, idx):
         return [(self.x, self.y), self.r1, self.r2, self.theta][idx]
 
-    def tangent(self, p: PointType, which: int = 0) -> Line:
-        ''' '''
-        t = geometry.ellipse.tangent_points(self, p)[which]
+    def tangent(self, p: PointType, which: str = 'top') -> Line:
+        ''' Create a tangent line passing through p.
+
+            Args:
+                p: Point the tangent passees through, on or outside the circle
+                which: Determines which of the two possible tangents to return.
+                    may be `top`, `bottom`, `left`, or `right` based on the
+                    position ot the tangent point on the circle.
+        '''
+        t = geometry.ellipse.tangent_points(self, p)
+        t = geometry.select_which(t, which)
         return Line.from_points(t, p)
 
     def datarange(self) -> DataRange:
@@ -123,10 +131,20 @@ class Circle(Ellipse):
         ''' Is the angle theta (in degrees) on the circle '''
         return True
 
-    def tangent(self, p: PointType, which: int = 0) -> Line:
-        ''' Create a tangent line passing through p '''
-        t, m = geometry.circle.tangent(self, p)[which]
-        return Line(t, m)
+    def tangent(self, p: PointType, which: str = 'top') -> Line:
+        ''' Create a tangent line passing through p.
+
+            Args:
+                p: Point the tangent passees through, on or outside the circle
+                which: Determines which of the two possible tangents to return.
+                    may be `top`, `bottom`, `left`, or `right` based on the
+                    position ot the tangent point on the circle.
+    '''
+        tangents = geometry.circle.tangent(self, p)  # ((x,y), slope) list
+        tandict = dict(tangents)
+        tanpoints = [t[0] for t in tangents]
+        t = geometry.select_which(tanpoints, which)
+        return Line(t, tandict[t])
 
     def tangent_at(self, theta: float) -> Line:
         ''' Create a tangent line at the angle theta '''
@@ -206,7 +224,18 @@ class Circle(Ellipse):
         return cls(c.real, c.imag, r)
 
     @classmethod
-    def from_lll(cls, line1: 'Line', line2: 'Line', line3: 'Line', index: int = 0) -> 'Circle':
+    def from_lll(cls, line1: 'Line', line2: 'Line', line3: 'Line', which: str = 'top') -> 'Circle':
+        ''' Create a circle tangent to all three lines.
+
+            The `which` paremeter specifies which of the 4 possible solutions
+            to return, based on its center point. Options:
+                top: return the circle with the top-most center
+                bottom: return the circle with the bottom-most center
+                left: return the circle with the left-most center
+                right: return the circle with the right-most center
+                y0, y1, y2, y3: sort the circles by y value and return the Nth
+                x0, x1, x2, x3: sort the circles by x value and return the Nth
+        '''
         bisect12a, bisect12b = geometry.line.bisect(line1, line2)
         bisect13a, bisect13b = geometry.line.bisect(line1, line3)
         bisect23a, bisect23b = geometry.line.bisect(line2, line3)
@@ -225,7 +254,7 @@ class Circle(Ellipse):
             geometry.intersect.lines(bisect12b, bisect23a),
             geometry.intersect.lines(bisect13b, bisect23a),
         ])
-        center = intersections[index]
+        center = geometry.select_which(intersections, which)
         radius = geometry.line.normal_distance(line1, center)
         return Circle(*center, radius)
 
