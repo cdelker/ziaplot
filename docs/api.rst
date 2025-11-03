@@ -92,52 +92,52 @@ Discrete Plot Types
 
 |
 
-Geometric
----------
+Geometric Figures
+-----------------
 
-.. autoclass:: ziaplot.geo.Function
+.. autoclass:: ziaplot.figures.Function
     :members:
 
-.. autoclass:: ziaplot.geo.implicit.Implicit
+.. autoclass:: ziaplot.figures.implicit.Implicit
     :members:
 
-.. autoclass:: ziaplot.geo.line.Line
+.. autoclass:: ziaplot.figures.line.Line
     :members:
 
-.. autoclass:: ziaplot.geo.line.VLine
+.. autoclass:: ziaplot.figures.line.VLine
     :members:
 
-.. autoclass:: ziaplot.geo.line.HLine
+.. autoclass:: ziaplot.figures.line.HLine
     :members:
 
-.. autoclass:: ziaplot.geo.line.Segment
+.. autoclass:: ziaplot.figures.line.Segment
     :members:
 
-.. autoclass:: ziaplot.geo.line.Vector
+.. autoclass:: ziaplot.figures.line.Vector
     :members:
 
-.. autoclass:: ziaplot.geo.point.Point
+.. autoclass:: ziaplot.figures.point.Point
     :members:
 
-.. autoclass:: ziaplot.geo.bezier.BezierQuad
+.. autoclass:: ziaplot.figures.bezier.BezierQuad
     :members:
 
-.. autoclass:: ziaplot.geo.bezier.BezierCubic
+.. autoclass:: ziaplot.figures.bezier.BezierCubic
     :members:
 
-.. autoclass:: ziaplot.geo.bezier.Curve
+.. autoclass:: ziaplot.figures.bezier.Curve
     :members:
 
-.. autoclass:: ziaplot.geo.integral.IntegralFill
+.. autoclass:: ziaplot.figures.integral.IntegralFill
     :members:
 
-.. autoclass:: ziaplot.shapes.shapes.Circle
+.. autoclass:: ziaplot.figures.shapes.Circle
     :members:
 
-.. autoclass:: ziaplot.shapes.shapes.Ellipse
+.. autoclass:: ziaplot.figures.shapes.Ellipse
     :members:
 
-.. autoclass:: ziaplot.shapes.shapes.Rectangle
+.. autoclass:: ziaplot.figures.shapes.Rectangle
     :members:
 
 |

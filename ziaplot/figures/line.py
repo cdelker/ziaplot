@@ -232,7 +232,6 @@ class Line(Element):
             intercept = c/b
             return cls.from_slopeintercept(slope, intercept)
         except ZeroDivisionError:
-            print(a, b, c)
             return cls((c/a, 0), math.inf)  # Vertical
 
     def _place_labels(self, x0: PointType, y0: PointType,

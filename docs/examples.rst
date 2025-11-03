@@ -161,13 +161,13 @@ Geometric
 .. jupyter-execute::
 
     with zp.Diagram().css(zp.CSS_BLACKWHITE).xrange(-1, 1.1).yrange(-1., 1):
-        c = zp.Circle(0, 0, 1)
+        c = zp.Circle((0, 0), 1)
         c.diameter_segment(angle=-15).color('maroon').label('Diameter', .2, 'N', rotate=True, color='maroon')
         c.radius_segment(angle=40).color('teal').label('Radius', .5, rotate=True, color='teal')  
         c.chord(160, 80).color('steelblue').label('Chord', .5, rotate=True, color='steelblue')
         c.secant(180, 280).color('olivedrab').label('Secant', .25, rotate=True, color='olivedrab')
         c.tangent(c.xy(-15)).color('darkviolet').label('Tangent', .4, 'SE', rotate=True, color='darkviolet')
-        zp.Point(0, 0)
+        zp.Point((0, 0))
 
 |
 
@@ -179,14 +179,14 @@ Geometric
             .xrange(-2, 2).xticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])
             .yrange(-2, 2).yticks(zp.ticker[-2:2:1], minor=zp.ticker[-2:2:.1])) as d:
         theta = 40
-        circ = zp.Circle(0, 0, 1)
+        circ = zp.Circle((0, 0), 1)
         xaxis = zp.HLine(0)
         x1 = zp.VLine(1).stroke('--').label('x=1', .25, 'E')
         y1 = zp.HLine(1).stroke('--').label('y=1', .25, 'N')
         hyp = zp.Line((0,0), math.tan(math.radians(theta)))
         tan = circ.tangent_at(theta)
 
-        zp.Point(0, 0).label('O', 'SE').color('red')
+        zp.Point((0, 0)).label('O', 'SE').color('red')
         A = zp.Point.at_intersection(hyp, tan).label('A', 'E').color('red')
         B = zp.Point.at_intersection(x1, hyp).label('B', 'W').color('red')
         C = zp.Point.at_intersection(y1, hyp).label('C', 'N').color('red')
@@ -209,7 +209,7 @@ Geometric
 .. jupyter-execute::
 
     with zp.Diagram().css(zp.CSS_BLACKWHITE):
-        circle = zp.Circle(0, 0, 1)
+        circle = zp.Circle((0, 0), 1)
         theta = 56  # Angle for point B
         circle.diameter_segment()
         side1 = circle.chord(180, theta)
@@ -217,7 +217,7 @@ Geometric
         a = zp.Point.on_circle(circle, 180).label('A', 'W')
         c = zp.Point.on_circle(circle, 0).label('C', 'E')
         b = zp.Point.on_circle(circle, theta).label('B', 'NE')
-        zp.Point(0, 0).label('O', 'S')
+        zp.Point((0, 0)).label('O', 'S')
         zp.Angle(side1, side2, quad=3)
 
     # Test Thales's Theorem!
@@ -233,10 +233,10 @@ Geometric
             .xrange(0, 1).yrange(0, 1)
             .noxticks().noyticks()
             .equal_aspect()):
-        p1 = zp.Point(.1, .9).label('1', 'NW')
-        p2 = zp.Point(.6, .6).label('2', 'NE')
-        p3 = zp.Point(.8, .1).label('3', 'E')
-        p4 = zp.Point(.3, .3).label('4', 'SW')
+        p1 = zp.Point((.1, .9)).label('1', 'NW')
+        p2 = zp.Point((.6, .6)).label('2', 'NE')
+        p3 = zp.Point((.8, .1)).label('3', 'E')
+        p4 = zp.Point((.3, .3)).label('4', 'SW')
         zp.Curve(p2.point, p1.point).midmarker('>')
         zp.Curve(p3.point, p2.point).midmarker('>')
         zp.Curve(p3.point, p4.point).midmarker('<')
@@ -264,7 +264,7 @@ Geometric
             }
         '''
     with zp.Diagram().css(css):
-        circ = zp.Circle(0, 0, 1).color('gray').fill('whitesmoke')
+        circ = zp.Circle((0, 0), 1).color('gray').fill('whitesmoke')
         zp.Arrow((1.1, 0), (-1.1, 0)).zorder(2)
         zp.Arrow((0, 1.1), (0, -1.1))
         rad = circ.radius_segment(65)

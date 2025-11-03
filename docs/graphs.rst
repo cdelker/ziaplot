@@ -25,14 +25,14 @@ The following:
 .. jupyter-input::
 
     with zp.Graph():
-        zp.Point(0, 0)
+        zp.Point((0, 0))
 
 is equivalent to:
 
 .. jupyter-input::
 
     p = zp.Graph()
-    p += zp.Point(0, 0)
+    p += zp.Point((0, 0))
 
 
 Diagram
@@ -46,10 +46,10 @@ was drawn on a `Diagram`.
     :hide-code:
 
     with zp.Diagram().size(150, 150).equal_aspect():
-        circle = zp.Circle(0, 0, .9)
+        circle = zp.Circle((0, 0), .9)
         circle.diameter_segment().color('black')
         circle.radius_segment(45).color('black')
-        zp.Point(0,0).color('black')
+        zp.Point((0, 0)).color('black')
 
 
 Graph Types
@@ -105,13 +105,13 @@ scales to be equal, such that circles are drawn as circles and not ellipses.
 .. jupyter-execute::
 
     with zp.Graph().size(500, 250):  # No equal aspect
-        zp.Circle(0, 0, .85)
+        zp.Circle((0, 0), .85)
 
 
 .. jupyter-execute::
 
     with zp.Graph().size(500, 250).equal_aspect():
-        zp.Circle(0, 0, .85)
+        zp.Circle((0, 0), .85)
 
 
 Data Range and Ticks

@@ -34,18 +34,18 @@ class Ellipse(Shape):
             r2: Radius 2
             theta: Angle of rotation (degrees)
     '''
-    def __init__(self, x: float, y: float,
+    def __init__(self, center: PointType,
                  r1: float, r2: float,
                  theta: float = 0):
         super().__init__()
-        self.x = x
-        self.y = y
+        self.center = center
+        self.x, self.y = center
         self.r1 = r1
         self.r2 = r2
         self.theta = theta
 
     def __getitem__(self, idx):
-        return [(self.x, self.y), self.r1, self.r2, self.theta][idx]
+        return [self.center, self.r1, self.r2, self.theta][idx]
 
     def tangent(self, p: PointType, which: str = 'top') -> Line:
         ''' Create a tangent line passing through p.
@@ -110,16 +110,12 @@ class Circle(Ellipse):
             radius: Radius of circle
     '''
     # Drawn as ellipse because aspect may not always be square
-    def __init__(self, x: float, y: float, radius: float):
-        super().__init__(x, y, radius, radius)
+    def __init__(self, center: PointType, radius: float):
+        super().__init__(center, radius, radius)
         self.radius = radius
 
     def __getitem__(self, idx):
-        return [(self.x, self.y), self.radius][idx]
-
-    @property
-    def center(self) -> PointType:
-        return (self.x, self.y)
+        return [self.center, self.radius][idx]
 
     def _xy(self, theta: float) -> PointType:
         ''' Get x, y coordinate on the circle at the angle theta (radians) '''
@@ -229,12 +225,13 @@ class Circle(Ellipse):
 
             The `which` paremeter specifies which of the 4 possible solutions
             to return, based on its center point. Options:
-                top: return the circle with the top-most center
-                bottom: return the circle with the bottom-most center
-                left: return the circle with the left-most center
-                right: return the circle with the right-most center
-                y0, y1, y2, y3: sort the circles by y value and return the Nth
-                x0, x1, x2, x3: sort the circles by x value and return the Nth
+
+                - top: return the circle with the top-most center
+                - bottom: return the circle with the bottom-most center
+                - left: return the circle with the left-most center
+                - right: return the circle with the right-most center
+                - y0, y1, y2, y3: sort the circles by y value and return the Nth
+                - x0, x1, x2, x3: sort the circles by x value and return the Nth
         '''
         bisect12a, bisect12b = geometry.line.bisect(line1, line2)
         bisect13a, bisect13b = geometry.line.bisect(line1, line3)
@@ -303,9 +300,9 @@ class Arc(Circle):
             theta1: Start angle (degrees)
             theta2: End angle (degrees)
     '''
-    def __init__(self, x: float, y: float,
+    def __init__(self, center: PointType,
                  radius: float, theta1: float, theta2: float=0):
-        super().__init__(x, y, radius)
+        super().__init__(center, radius)
         self.theta1 = theta1
         self.theta2 = theta2
         self.theta1_rad = math.radians(self.theta1)
@@ -313,7 +310,7 @@ class Arc(Circle):
         self.arc_length_rad = geometry.angle_diff(self.theta1_rad, self.theta2_rad)
 
     def __getitem__(self, idx):
-        return [(self.x, self.y), self.radius, self.theta1_rad, self.theta2_rad][idx]
+        return [self.center, self.radius, self.theta1_rad, self.theta2_rad][idx]
 
     def on_arc(self, theta: float) -> bool:
         ''' Determine whether angle theta (degrees) falls within the arc '''
@@ -339,10 +336,11 @@ class Arc(Circle):
 
 
 class CompassArc(Arc):
-    def __init__(self, x: float, y: float,
+    def __init__(self, center: PointType,
                  radius: float, theta: float,
                  thetawidth: float):
         super().__init__(
-            x, y, radius,
+            center,
+            radius,
             theta,
             theta+thetawidth)

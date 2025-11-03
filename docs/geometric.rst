@@ -22,9 +22,9 @@ Place a single marker point in the coordinate plane.
 .. jupyter-execute::
 
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
-        zp.Point(3, 2).label('(3, 2)')
-        zp.Point(1, 4).guidex().guidey().label('A')
-        zp.Point(-4, 3).label('(-4, 3)').color('red').marker('square')
+        zp.Point((3, 2)).label('(3, 2)')
+        zp.Point((1, 4)).guidex().guidey().label('A')
+        zp.Point((-4, 3)).label('(-4, 3)').color('red').marker('square')
 
 :py:class:`ziaplot.geo.point.Point`.
 
@@ -225,9 +225,9 @@ A quadratic Bézier curve passing through three defined points.
     a3 = (4, 1)
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
         zp.CurveThreePoint(a1, a3, a2)
-        zp.Point(*a1)
-        zp.Point(*a2)
-        zp.Point(*a3)
+        zp.Point(a1)
+        zp.Point(a2)
+        zp.Point(a3)
 
 :py:class:`ziaplot.geo.bezier.CurveThreePoint`
 
@@ -289,7 +289,7 @@ Draw a circle.
 .. jupyter-execute::
 
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
-        zp.Circle(0, 0, radius=2)
+        zp.Circle((0, 0), radius=2)
 
 :py:class:`ziaplot.shapes.shapes.Circle`
 
@@ -307,7 +307,7 @@ Draw an ellipse.
 .. jupyter-execute::
 
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
-        zp.Ellipse(3, 3, r1=1, r2=2, theta=30)
+        zp.Ellipse((3, 3), r1=1, r2=2, theta=30)
 
 
 :py:class:`ziaplot.shapes.shapes.Ellipse`
@@ -345,7 +345,7 @@ Use `.tangent_at` to draw the tangent at a specific angle theta around the circl
 .. jupyter-execute::
 
     with zp.Graph().equal_aspect().xrange(-4, 4).yrange(-4, 4):
-        circ = zp.Circle(1, 1, 2)
+        circ = zp.Circle((1, 1), 2)
         circ.tangent_at(theta=45).color('red')
         circ.normal_at(angle=160).color('blue')
 
@@ -400,7 +400,7 @@ Placing Points
     with zp.Graph().equal_aspect().xrange(-5, 5).yrange(-5, 5):
         func = zp.Function(lambda x: x*math.sin(x), (-2, 6)).color('red')
         curve = zp.CurveThreePoint((1, 6), (2, 3), (4, 3)).color('blue')
-        circle = zp.Circle(-2, 4, 1)
+        circle = zp.Circle((-2, 4), 1)
         line = zp.Line((-4, -2), .1)
         zp.Point.at(func, x=3).label('A')
         zp.Point.at(line, x=-2).label('B')
@@ -447,8 +447,8 @@ Draw Segments associated with a circle with
 .. jupyter-execute::
 
     with zp.Diagram().css(zp.CSS_BLACKWHITE).equal_aspect() as g:
-        zp.Point(0, 0)
-        circ = zp.Circle(0, 0, 2)
+        zp.Point((0, 0))
+        circ = zp.Circle((0, 0), 2)
         ch = circ.chord(10, 135).label('A', 0, 'E').label('B', 1, 'NW').label('Chord', .8, rotate=True)
         sg = circ.sagitta(10, 135).label('C', 0, 'N').label('Sagitta', .6, 'E')
         zp.Angle(ch, sg, quad=4)

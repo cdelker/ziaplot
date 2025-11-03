@@ -102,8 +102,8 @@ Geometric diagrams without axes can also be created:
 .. jupyter-execute::
 
     with zp.Diagram().css(zp.CSS_BLACKWHITE):
-        circle = zp.Circle(0, 0, 1)
-        zp.Point(0, 0)
+        circle = zp.Circle((0, 0), 1)
+        zp.Point((0, 0))
         r1 = circle.radius_segment(0)
         r2 = circle.radius_segment(45)
         zp.Angle(r1, r2, quad=4).label('α')

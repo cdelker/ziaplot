@@ -43,10 +43,10 @@ histograms, and pie and bar charts.
                 .xrange(0, .9).yrange(0, 1)
                 .noxticks().noyticks()
                 .equal_aspect()):
-            p1 = zp.Point(.1, .9).label('1', 'NE')
-            p2 = zp.Point(.6, .6).label('2', 'NE')
-            p3 = zp.Point(.8, .1).label('3', 'E')
-            p4 = zp.Point(.3, .3).label('4', 'SW')
+            p1 = zp.Point((.1, .9)).label('1', 'NE')
+            p2 = zp.Point((.6, .6)).label('2', 'NE')
+            p3 = zp.Point((.8, .1)).label('3', 'E')
+            p4 = zp.Point((.3, .3)).label('4', 'SW')
             zp.Curve(p2.point, p1.point).midmarker('>')
             zp.Curve(p3.point, p2.point).midmarker('>')
             zp.Curve(p3.point, p4.point).midmarker('<')
@@ -56,7 +56,7 @@ histograms, and pie and bar charts.
                 .equal_aspect()
                 .xticks((-1.2, 1.2)).yticks((-1.2, 1.2))
                 .noxticks().noyticks()):
-            c = zp.Circle(0, 0, 1)
+            c = zp.Circle((0, 0), 1)
             r = c.radius_segment(65).label('1', 0.6, 'NW').color('blue')
             b = zp.Segment((0, 0), (r.p2[0], 0)).label('cos(θ)', .6, 'S')
             zp.Segment(r.p2, (r.p2[0], 0)).label('sin(θ)', .75, 'E').color('blue')

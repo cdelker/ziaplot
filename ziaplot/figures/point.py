@@ -19,15 +19,13 @@ class Point(Element):
     ''' Point with optional text label
 
         Args:
-            x: X-value
-            y: Y-value
+            p: x, y tuple
     '''
     _step_color = False
 
-    def __init__(self, x: float, y: float):
+    def __init__(self, p: PointType):
         super().__init__()
-        self.x = x
-        self.y = y
+        self.x, self.y = p
         self._text: Optional[str] = None
         self._text_pos: Optional[TextPosition] = None
         self._guidex: Optional[float] = None
@@ -138,14 +136,14 @@ class Point(Element):
     def reflect(self, line: LineType) -> 'Point':
         ''' Create a new point reflected over line '''
         x, y = geometry.reflect(self, line)
-        return Point(x, y)
+        return Point((x, y))
 
     def image(self, line: LineType) -> 'Point':
         ''' Create a new point imaged onto the line (point on line at
             shortest distance to point)
         '''
         x, y = geometry.image(self, line)
-        return Point(x, y)
+        return Point((x, y))
 
     def bisect(self, point: PointType) -> 'Line':
         ''' Create a new line bisecting the two points '''
@@ -155,38 +153,38 @@ class Point(Element):
     def at(cls, f: Function, x: float) -> 'Point':
         ''' Draw a Point at y = f(x) '''
         y = f.y(x)
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod
     def at_y(cls, f: Function, y: float) -> 'Point':
         ''' Draw a Point at y = f(x) '''
         x = f.x(y)
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod
     def at_minimum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local minimum of f between x1 and x2 '''
         x, y = geometry.function.local_min(f.y, x1, x2)
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod    
     def at_maximum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local maximum of f between x1 and x2 '''
         x, y = geometry.function.local_max(f.y, x1, x2)
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod
     def at_midpoint(cls, a: PointType, b: PointType) -> 'Point':
         #x = (a[0] + b[0])/2
         #y = (a[1] + b[1])/2
         x, y = geometry.midpoint(a, b)
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod
     def on_circle(cls, circle: Circle, theta: float) -> 'Point':
         ''' Draw a Point on the circle at angle theta (degrees) '''
         x, y = geometry.circle.point(circle, math.radians(theta))
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod
     def at_intersection(cls, f1: Function|Line|Circle|Arc, f2: Function|Line|Circle|Arc,
@@ -232,9 +230,9 @@ class Point(Element):
         if not math.isfinite(x) or not math.isfinite(y):
             raise ValueError('No intersection found')
 
-        return cls(x, y)
+        return cls((x, y))
 
     @classmethod
     def on_bezier(cls, b: BezierQuad, t: float) -> 'Point':
         x, y = b.xy(t)
-        return cls(x, y)
+        return cls((x, y))

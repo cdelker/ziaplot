@@ -35,7 +35,7 @@ Anything created inside the with block is added to the `Graph`, such as this `Po
 .. jupyter-execute::
 
     with zp.Graph():
-        zp.Point(1, 1)
+        zp.Point((1, 1))
 
 .. tip::
 
@@ -47,7 +47,7 @@ To save the drawing to a file, use `.save()` with the name of an image file to w
 .. jupyter-input::
 
     with zp.Graph():
-        zp.Point(1, 1)
+        zp.Point((1, 1))
         zp.save('my_point.svg')
 
 Items may also be added using the += operator, with the same results:
@@ -55,7 +55,7 @@ Items may also be added using the += operator, with the same results:
 .. jupyter-input::
 
     p = zp.Graph()
-    p += zp.Point(1, 1)
+    p += zp.Point((1, 1))
     p.save('my_point.svg')
 
 .. note::
@@ -72,8 +72,8 @@ A `Circle` is made given an x, y, and radius. A Line is added from a (x,y) point
 .. jupyter-execute::
 
     with zp.Graph():
-        zp.Point(1, 1)
-        zp.Circle(1, 1, .5)
+        zp.Point((1, 1))
+        zp.Circle((1, 1), .5)
         zp.Line(point=(1, 1), slope=1)
 
 .. tip::
@@ -87,8 +87,8 @@ To fix the issue, use `.equal_aspect()` on the `Graph`:
 .. jupyter-execute::
 
     with zp.Graph().equal_aspect():
-        zp.Point(1, 1)
-        zp.Circle(1, 1, .5)
+        zp.Point((1, 1))
+        zp.Circle((1, 1), .5)
         zp.Line(point=(1, 1), slope=1)
 
 A `Diagram` assumes equal aspect and doesn't have this problem, but there are no axes.
@@ -96,8 +96,8 @@ A `Diagram` assumes equal aspect and doesn't have this problem, but there are no
 .. jupyter-execute::
 
         with zp.Diagram():
-            zp.Point(1, 1)
-            zp.Circle(1, 1, .5)
+            zp.Point((1, 1))
+            zp.Circle((1, 1), .5)
             zp.Line(point=(1, 1), slope=1)
 
 Now notice the domain and range of the axes. Both axis are shown on the interval
@@ -107,8 +107,8 @@ To expand (or shrink) the range, use methods `xrange` and `yrange`.
 .. jupyter-execute::
 
     with zp.Graph().equal_aspect().xrange(-4, 4).yrange(-4, 4):
-        zp.Point(1, 1)
-        zp.Circle(1, 1, .5)
+        zp.Point((1, 1))
+        zp.Circle((1, 1), .5)
         zp.Line(point=(1, 1), slope=1)
 
 

@@ -235,7 +235,7 @@ to elements with the same name set on the element using the `cssclass` method.
     }
     '''
     with zp.Diagram().css(css):
-        c = zp.Circle(0, 0, 1)
+        c = zp.Circle((0, 0), 1)
         zp.Point.on_circle(c, 0).cssclass('reddot')
         zp.Point.on_circle(c, 15).cssclass('reddot')
         zp.Point.on_circle(c, 30).cssclass('reddot')
