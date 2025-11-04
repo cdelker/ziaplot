@@ -209,6 +209,7 @@ class LineFill(Discrete):
     def color(self, color: str) -> 'LineFill':
         ''' Sets the edge color '''
         self._style.edge_color = color
+        self._style.color = color
         return self
 
     def fill(self, color: str) -> 'LineFill':
@@ -217,7 +218,7 @@ class LineFill(Discrete):
             Args:
                 color: Fill color
         '''
-        self._style.color = color
+        self._style.fill_color = color
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -231,20 +232,20 @@ class LineFill(Discrete):
         xy = xy + list(reversed(list(zip(self.x, self.ymin))))
 
         sty = self._build_style()
-        canvas.poly(xy, color=sty.get_color(),
+        canvas.poly(xy, color=sty.fill_color,
                     strokecolor='none',
                     dataview=databox,
                     zorder=self._zorder)
 
         canvas.path(self.x, self.ymax,
                     stroke=sty.stroke,
-                    color=sty.edge_color,
+                    color=sty.get_color(),
                     width=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder)
         canvas.path(self.x, self.ymin,
                     stroke=sty.stroke,
-                    color=sty.edge_color,
+                    color=sty.get_color(),
                     width=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder)

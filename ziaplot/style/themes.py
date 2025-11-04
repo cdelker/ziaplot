@@ -8,6 +8,7 @@ from .style import Style, AppliedStyle
 THEME_BASE = ''' * {
         color: black;
         edge_color: black;
+        fill_color: none;
         stroke: solid;
         stroke_width: 2;
         shape: none;
@@ -178,7 +179,7 @@ THEME_BASE = ''' * {
         radius: 7;
     }
     LineFill {
-        color: blue 30%;
+        fill_color: blue 30%;
     }
     Arrow {
         radius: 6;
@@ -232,7 +233,7 @@ THEME_BASE = ''' * {
         stroke_width: 1;
     }
     Shape {
-        color: none;
+        color: black;
         edge_color: black;
         stroke: solid;
     }

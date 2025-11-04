@@ -16,11 +16,12 @@ class Shape(Element):
     def color(self, color: str) -> 'Shape':
         ''' Sets the fill color '''
         self._style.edge_color = color
+        self._style.color = color
         return self
 
     def fill(self, color: str) -> 'Shape':
         ''' Sets the fill color '''
-        self._style.color = color
+        self._style.fill_color = color
         return self
 
 
@@ -94,8 +95,8 @@ class Ellipse(Shape):
         sty = self._build_style()
         canvas.ellipse(self.x, self.y, self.r1, self.r2,
                        theta=self.theta,
-                       color=sty.color,
-                       strokecolor=sty.edge_color,
+                       color=sty.fill_color,
+                       strokecolor=sty.get_color(),
                        strokewidth=sty.stroke_width,
                        stroke=sty.stroke,
                        dataview=databox,
@@ -218,7 +219,7 @@ class Circle(Ellipse):
             raise ValueError('Points are colinear')
         c = (p2-p1)*(w-abs(w)**2)/(2j*w.imag) + p1
         r = abs(p1 - c)
-        return cls(c.real, c.imag, r)
+        return cls((c.real, c.imag), r)
 
     @classmethod
     def from_lll(cls, line1: 'Line', line2: 'Line', line3: 'Line', which: str = 'top') -> 'Circle':
@@ -254,7 +255,7 @@ class Circle(Ellipse):
         ])
         center = geometry.select_which(intersections, which)
         radius = geometry.line.normal_distance(line1, center)
-        return Circle(*center, radius)
+        return Circle(center, radius)
 
 
 class Rectangle(Shape):
@@ -282,8 +283,8 @@ class Rectangle(Shape):
         ''' Add XML elements to the canvas '''
         sty = self._build_style()
         canvas.rect(self.x, self.y, self.width, self.height,
-                    fill=sty.color,
-                    strokecolor=sty.edge_color,
+                    fill=sty.fill_color,
+                    strokecolor=sty.get_color(),
                     strokewidth=sty.stroke_width,
                     stroke=sty.stroke,
                     rcorner=self.cornerradius,
@@ -331,7 +332,7 @@ class Arc(Circle):
         sty = self._build_style()
         canvas.arc(self.x, self.y, self.radius,
                    theta1=self.theta1, theta2=self.theta2,
-                   strokecolor=sty.edge_color,
+                   strokecolor=sty.get_color(),
                    strokewidth=sty.stroke_width,
                    stroke=sty.stroke,
                    dataview=databox,

@@ -22,6 +22,7 @@ class Style:
     '''
     color: ColorType | None = None
     edge_color: ColorType | None = None
+    fill_color: ColorType | None = None
     stroke: DashTypes | None = None
     stroke_width: float | None = None
 
@@ -61,6 +62,7 @@ class AppliedStyle:
     '''
     color: ColorType
     edge_color: ColorType
+    fill_color: ColorType
     stroke: DashTypes
     stroke_width: float
 

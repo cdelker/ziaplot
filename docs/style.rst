@@ -22,13 +22,14 @@ Not all items use every attribute when being drawn.
 Style Attributes
 ----------------
 
-* color: color of the line or fill-color of a shape. May be:
+* color: color of the line or marker. May be:
     - A hex color `"#FFFFFF"`
     - A hex color with alpha `"#FFFFFFFF"`
     - A rgb or rgba color `"rgba(255, 0, 255, .5)"`
     - A `CSS named color <https://developer.mozilla.org/en-US/docs/Web/CSS/named-color>`_, such as `"red"` or `"lightsalmon"`
     - A CSS named color with transpacency as percent `"red 50%"`
 * edge_color: edge color of shapes and markers. Same format as `color`.
+* fill_color: fill color of geometric shapes (circles, ellipses, polygons, etc.). Same format as `color`.
 * stroke: The stroke style of lines. Options are:
     - `-` (solid line)
     - `dotted` (or `:`)

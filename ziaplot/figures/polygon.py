@@ -37,7 +37,7 @@ class Polygon(Shape):
             Args:
                 color: Fill color
         '''
-        self._style.color = color
+        self._style.fill_color = color
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
@@ -45,8 +45,8 @@ class Polygon(Shape):
         ''' Add XML elements to the canvas '''
         sty = self._build_style()
         canvas.poly(self.verts,
-                    color=sty.get_color(),
-                    strokecolor=sty.edge_color,
+                    color=sty.fill_color,
+                    strokecolor=sty.get_color(),
                     strokewidth=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder)
