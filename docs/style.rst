@@ -28,7 +28,7 @@ Style Attributes
     - A rgb or rgba color `"rgba(255, 0, 255, .5)"`
     - A `CSS named color <https://developer.mozilla.org/en-US/docs/Web/CSS/named-color>`_, such as `"red"` or `"lightsalmon"`
     - A CSS named color with transpacency as percent `"red 50%"`
-* edge_color: edge color of shapes and markers. Same format as `color`.
+* edge_color: edge color of markers, bars, pie wedges, etc. Same format as `color`.
 * fill_color: fill color of geometric shapes (circles, ellipses, polygons, etc.). Same format as `color`.
 * stroke: The stroke style of lines. Options are:
     - `-` (solid line)
@@ -220,7 +220,7 @@ a name or "class" (not to be confused with a Python class).
 Selectors in the CSS string starting with `#` will apply
 to elements with the same name set on the element using the `cssid` method.
 Selectors in the CSS string starting with `.` will apply
-to elements with the same name set on the element using the `cssclass` method.
+to elements with the same name set on the element using the `cls` method.
 
 .. jupyter-execute::
 
@@ -237,9 +237,9 @@ to elements with the same name set on the element using the `cssclass` method.
     '''
     with zp.Diagram().css(css):
         c = zp.Circle((0, 0), 1)
-        zp.Point.on_circle(c, 0).cssclass('reddot')
-        zp.Point.on_circle(c, 15).cssclass('reddot')
-        zp.Point.on_circle(c, 30).cssclass('reddot')
+        zp.Point.on_circle(c, 0).cls('reddot')
+        zp.Point.on_circle(c, 15).cls('reddot')
+        zp.Point.on_circle(c, 30).cls('reddot')
         zp.Point.on_circle(c, 45)
         zp.Point.on_circle(c, 60)
         zp.Point.on_circle(c, 75)

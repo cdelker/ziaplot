@@ -29,7 +29,7 @@ class Drawable:
         self._cssid = idn
         return self
 
-    def cssclass(self, cls: str) -> 'Drawable':
+    def cls(self, cls: str) -> 'Drawable':
         ''' Set the CSS class name for the item. Matches items in CSS with .name selector '''
         self._csscls = cls
         return self
