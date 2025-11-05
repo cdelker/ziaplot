@@ -175,8 +175,7 @@ class Point(Element):
 
     @classmethod
     def at_midpoint(cls, a: PointType, b: PointType) -> 'Point':
-        #x = (a[0] + b[0])/2
-        #y = (a[1] + b[1])/2
+        ''' Draw a point at the midpoint between the two given points '''
         x, y = geometry.midpoint(a, b)
         return cls((x, y))
 

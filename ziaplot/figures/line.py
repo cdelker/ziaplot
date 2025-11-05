@@ -46,7 +46,6 @@ class Line(Element):
         self.slope = slope
         self.point = point
         intercept = -slope * point[0] + point[1]
-#        super().__init__(lambda x: intercept + slope * x)
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
         self.midmark: Optional[MarkerTypes] = None

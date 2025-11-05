@@ -95,7 +95,7 @@ Discrete Plot Types
 Geometric Figures
 -----------------
 
-.. autoclass:: ziaplot.figures.Function
+.. autoclass:: ziaplot.figures.function.Function
     :members:
 
 .. autoclass:: ziaplot.figures.implicit.Implicit
@@ -126,6 +126,9 @@ Geometric Figures
     :members:
 
 .. autoclass:: ziaplot.figures.bezier.Curve
+    :members:
+
+.. autoclass:: ziaplot.figures.bezier.CurveThreePoint
     :members:
 
 .. autoclass:: ziaplot.figures.integral.IntegralFill

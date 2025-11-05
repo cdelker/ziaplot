@@ -26,7 +26,7 @@ Place a single marker point in the coordinate plane.
         zp.Point((1, 4)).guidex().guidey().label('A')
         zp.Point((-4, 3)).label('(-4, 3)').color('red').marker('square')
 
-:py:class:`ziaplot.geo.point.Point`.
+:py:class:`ziaplot.figures.point.Point`.
 
 
  .. tip::
@@ -62,7 +62,7 @@ Lines may be created from:
         zp.Line.from_points((-2, 2), (-1, -4)).color('blue')
         zp.Line.from_slopeintercept(-.75, 3).color('orange')
 
-:py:class:`ziaplot.geo.line.Line`
+:py:class:`ziaplot.figures.line.Line`
 
 .. note::
 
@@ -79,7 +79,7 @@ A horizontal line.
     zp.HLine(0)
 
 
-:py:class:`ziaplot.geo.line.HLine`
+:py:class:`ziaplot.figures.line.HLine`
 
 
 VLine
@@ -91,7 +91,7 @@ A vertical line.
 
     zp.VLine(0)
 
-:py:class:`ziaplot.geo.line.VLine`
+:py:class:`ziaplot.figures.line.VLine`
 
 
 Segment
@@ -104,7 +104,7 @@ A line segment, defined by its two endpoints.
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
         zp.Segment((-2, 2), (3, 4))
 
-:py:class:`ziaplot.geo.line.Segment`
+:py:class:`ziaplot.figures.line.Segment`
 
 
 .. tip::
@@ -149,7 +149,7 @@ A line segment starting at the origin and ending with an arrow marker.
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
         zp.Vector(4, 4)
 
-:py:class:`ziaplot.geo.line.Vector` 
+:py:class:`ziaplot.figures.line.Vector`
 
 
 BezierQuad
@@ -165,7 +165,7 @@ Quadratic Bézier curve defined by 3 control points.
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
         zp.BezierQuad(a1, a2, a3)
 
-:py:class:`ziaplot.geo.bezier.BezierQuad`
+:py:class:`ziaplot.figures.bezier.BezierQuad`
 
 
 .. seealso::
@@ -188,7 +188,7 @@ Cubic Bézier curve defined by 4 control points.
         zp.BezierCubic(b1, b2, b3, b4)
 
 
-:py:class:`ziaplot.geo.bezier.BezierQuad`
+:py:class:`ziaplot.figures.bezier.BezierQuad`
 
 
 .. seealso::
@@ -209,7 +209,7 @@ A symmetric quadratic Bézier curve defined by its endpoints and a deflection co
         zp.Curve((-2, 0), (2, 0), k=1)
 
 
-:py:class:`ziaplot.geo.bezier.Curve`
+:py:class:`ziaplot.figures.bezier.Curve`
 
 
 CurveThreePoint
@@ -229,7 +229,7 @@ A quadratic Bézier curve passing through three defined points.
         zp.Point(a2)
         zp.Point(a3)
 
-:py:class:`ziaplot.geo.bezier.CurveThreePoint`
+:py:class:`ziaplot.figures.bezier.CurveThreePoint`
 
 
 |
@@ -246,7 +246,7 @@ one variable (y).
         zp.Function(math.sin, (-2*math.pi, 2*math.pi))
 
 
-:py:class:`ziaplot.geo.function.Function`
+:py:class:`ziaplot.figures.function.Function`
 
 
 .. tip::
@@ -278,7 +278,7 @@ returning a value. Points where the value is found to be zero are plotted.
             ylim=(-1.5, 1.5))
 
 
-:py:class:`ziaplot.geo.implicit.Implicit`
+:py:class:`ziaplot.figures.implicit.Implicit`
 
 
 Circle
@@ -291,12 +291,21 @@ Draw a circle.
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
         zp.Circle((0, 0), radius=2)
 
-:py:class:`ziaplot.shapes.shapes.Circle`
+:py:class:`ziaplot.figures.shapes.Circle`
 
 .. tip::
 
     Use `.equal_aspect()` on the graph to ensure the circle is not
     stretched into an ellipse.
+
+Circles may also be created from three points using
+
+:py:func:`ziaplot.figures.shapes.Circle.from_ppp`
+
+or tangent to three lines using
+
+:py:func:`ziaplot.figures.shapes.Circle.from_lll`.
+
 
 
 Ellipse
@@ -310,7 +319,7 @@ Draw an ellipse.
         zp.Ellipse((3, 3), r1=1, r2=2, theta=30)
 
 
-:py:class:`ziaplot.shapes.shapes.Ellipse`
+:py:class:`ziaplot.figures.shapes.Ellipse`
 
 
 
@@ -325,7 +334,7 @@ Draw a rectangle at (x, y) with a width and height.
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
         zp.Rectangle(-4, 2, width=1, height=2)
 
-:py:class:`ziaplot.shapes.shapes.Rectangle`.
+:py:class:`ziaplot.figures.shapes.Rectangle`.
 
 
 |
@@ -339,8 +348,21 @@ Circles, Functions, and Curves have methods for creating tangent and normal line
 to Circles and Ellipses
 ***********************
 
-Use `.tangent` to draw the tangent to the circle passing through a specific point (on or outside the circle).
-Use `.tangent_at` to draw the tangent at a specific angle theta around the circle.
+Use :py:func:`ziaplot.figures.shapes.Circle.tangent` to draw a tangent to the circle passing through a specific point (on or outside the circle).
+There may be two possible tangents, so use the `which` parameter as `top`, `bottom`, `left`, or `right` to
+specify the tangent point with the top-most or bottom-most y-value, or the left-most or right-most x-value.
+
+.. jupyter-execute::
+
+    with zp.Graph().equal_aspect().xrange(-4, 4).yrange(-4, 4):
+        circ = zp.Circle((0, 0), 1)
+        p = zp.Point((2, 1))
+        t1 = circ.tangent(p, which='top').color('red')
+        t2 = circ.tangent(p, which='bottom').color('blue')
+        zp.Point(t1.point)
+        zp.Point(t2.point)
+
+Use :py:func:`ziaplot.figures.shapes.Circle.tangent_at` to draw the tangent at a specific angle theta around the circle (or ellipse).
 
 .. jupyter-execute::
 
@@ -359,7 +381,7 @@ Use `.tangent_at` to draw the tangent at a specific angle theta around the circl
 to Functions
 ************
 
-On Functions, the `.tangent` method requires the x value at which to draw the tangent or normal.
+On Functions, the :py:func:`ziaplot.figures.function.Function.tangent` method requires the x value at which to draw the tangent or normal.
 
 .. jupyter-execute::
 
@@ -387,13 +409,16 @@ Placing Points
 --------------
 
 
-* **Point.at(f, x)**: Place a point on a Line or Function f at the x value.
-* **Point.at_y(f, y)**: Place a point on a Line or Function f at the y value.
-* **Point.on_circle(c, theta)**: Place a point on Circle or Ellipse c at an angle theta.
-* **Point.on_bezier(c, t)**: Place a point on the Bézier curve at parameter t.
-* **Point.at_intersection(f1, f2)**: Place a point at the intersection of two Functions, Lines, or Circles
-* **Point.at_minimum(f, x1, x2)**: Place a point at the local minimum of f between x1 and x2
-* **Point.at_maximum(f, x1, x2)**: Place a point at the local maximum of f between x1 and x2
+* :py:func:`ziaplot.figures.point.Point.at`: Place a point on a Line or Function f at the x value.
+* :py:func:`ziaplot.figures.point.Point.at_y` Place a point on a Line or Function f at the y value.
+* :py:func:`ziaplot.figures.point.Point.on_circle`: Place a point on Circle or Ellipse c at an angle theta.
+* :py:func:`ziaplot.figures.point.Point.on_bezier`: Place a point on the Bézier curve at parameter t.
+* :py:func:`ziaplot.figures.point.Point.at_intersection`: Place a point at the intersection of two Functions, Lines, or Circles
+* :py:func:`ziaplot.figures.point.Point.at_minimum`: Place a point at the local minimum of f between x1 and x2
+* :py:func:`ziaplot.figures.point.Point.at_maximum`: Place a point at the local maximum of f between x1 and x2
+* :py:func:`ziaplot.figures.point.Point.at_midpoint`: Place a point halfway between two points
+* :py:func:`ziaplot.figures.point.Point.image`: Image the point onto a line
+* :py:func:`ziaplot.figures.point.Point.reflect`: Reflect the point over a line
 
 .. jupyter-execute::
 
@@ -410,7 +435,23 @@ Placing Points
         zp.Point.at_minimum(func, -2, 2).label('min', 'S')
         zp.Point.at_maximum(func, 0, 3).label('max', 'N')
 
+
+The line bisecting two points may be drawn with the point's :py:func:`ziaplot.figures.point.Point.bisect` method.
+
+.. jupyter-execute::
+
+    with zp.Graph().equal_aspect().xrange(-5, 5).yrange(-5, 5):
+        A = zp.Point((0, 0))
+        B = zp.Point((1, 1))
+        line = A.bisect(B)
+
+        C = zp.Point((-2, 5)).label('P')
+        D = C.reflect(line).label('reflect', 'E')
+        E = C.image(line).label('image', 'E')
+
 |
+
+
 
 
 Angles
@@ -436,13 +477,35 @@ Draw the arc of an angle between two lines.
     Use `arcs` to specify the number of arcs to draw
 
 
+An angle bisector may be drawn between two intersecting lines. As there are two bisectors,
+use the `which` parameter to specify the bisector with a positive (or 0) slope `+`, or the
+bisector with a negavie (or infinite) slope `-`.
+
+    .. jupyter-execute::
+
+        with zp.Graph().equal_aspect():
+            line1 = zp.Line((0,0), 0).color('black')
+            line2 = zp.Line((0,0), 1.5).color('black')
+            line1.bisect_angle(line2, which='+').stroke('dashed').color('purple')
+            line1.bisect_angle(line2, which='-').stroke('dashed').color('green')
+
+
 |
+
+
+
 
 Lines on a Circle
 -----------------
 
-Draw Segments associated with a circle with
-`.diameger_segment`, `radius_segment`, `chord`, `secant`, `sagitta` (the line perpendicular to a chord).
+Draw Segments associated with a circle with these circle methods:
+
+:py:func:`ziaplot.figures.shapes.Circle.diameter_segment`,
+:py:func:`ziaplot.figures.shapes.Circle.radius_segment`,
+:py:func:`ziaplot.figures.shapes.Circle.chord`,
+:py:func:`ziaplot.figures.shapes.Circle.secant`,
+:py:func:`ziaplot.figures.shapes.Circle.sagitta`,
+
 
 .. jupyter-execute::
 
@@ -477,4 +540,4 @@ between two Functions.
             zp.IntegralFill(ff, f2).color('lightblue 50%')
 
 
-:py:class:`ziaplot.geo.integral.IntegralFill`
+:py:class:`ziaplot.figures.integral.IntegralFill`

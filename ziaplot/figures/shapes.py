@@ -211,6 +211,7 @@ class Circle(Ellipse):
 
     @classmethod
     def from_ppp(cls, p1: PointType, p2: PointType, p3: PointType) -> 'Circle':
+        ''' Create a circle passing through the three given points '''
         p1 = complex(p1[0], p1[1])
         p2 = complex(p2[0], p2[1])
         p3 = complex(p3[0], p3[1])
