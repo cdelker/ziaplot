@@ -3,6 +3,7 @@ from .geometry import (
     LineType,
     CircleType,
     EllipseType,
+    BezierType,
     distance,
     midpoint,
     isclose,

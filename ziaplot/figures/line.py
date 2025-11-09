@@ -1,8 +1,9 @@
 ''' Euclidean Lines '''
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Sequence, Iterator, TYPE_CHECKING
 from dataclasses import dataclass
 import math
+from xml.etree import ElementTree as ET
 
 from .. import geometry
 from ..geometry import PointType
@@ -11,6 +12,9 @@ from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes
 from ..diagrams import Graph
+
+if TYPE_CHECKING:
+    from .point import Point
 
 
 @dataclass
@@ -41,11 +45,11 @@ class Line(Element):
             slope: Slope of the line
     '''
     _step_color = True
-    def __init__(self, point: PointType, slope: float = 0):
+
+    def __init__(self, point: PointType|'Point', slope: float = 0):
         super().__init__()
         self.slope = slope
         self.point = point
-        intercept = -slope * point[0] + point[1]
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
         self.midmark: Optional[MarkerTypes] = None
@@ -55,6 +59,9 @@ class Line(Element):
     def __getitem__(self, idx):
         ''' Index a, b, c of standard form '''
         return self.standard[idx]
+
+    def __iter__(self) -> Iterator[float]:
+        return iter(self.standard)
 
     @property
     def intercept(self) -> float:
@@ -99,9 +106,10 @@ class Line(Element):
 
     def trim(self, x1: float, x2: float) -> 'Segment':
         ''' Convert the line into a segment '''
+        self.__class__ = Segment
+        assert isinstance(self, Segment)
         self.p1 = self.xy(x1)
         self.p2 = self.xy(x2)
-        self.__class__ = Segment
         return self
 
     def trimd(self, x: float, d1: float, d2: float) -> 'Segment':
@@ -119,9 +127,10 @@ class Line(Element):
         self.p1 = (x1, y1)
         self.p2 = (x2, y2)
         self.__class__ = Segment
+        assert isinstance(self, Segment)
         return self
 
-    def normal(self, p: PointType) -> 'Line':
+    def normal(self, p: PointType|'Point') -> 'Line':
         ''' Create normal Line passing through p '''
         return Line.from_standard(*geometry.line.normal(self, p))
 
@@ -132,8 +141,8 @@ class Line(Element):
             to return. It may be `+` to return the bisector with positive or 0 slope,
             or `-` to return the bisector with negative or vertical slope.
         '''
-        lines = geometry.line.bisect(self, other)
-        lines = sorted(lines, key=lambda x: geometry.line.slope(x))
+        lines = list(geometry.line.bisect(self, other))
+        lines = sorted(lines, key=geometry.line.slope)
         if which == '+':
             return Line.from_standard(*lines[1])
         return Line.from_standard(*lines[0])
@@ -144,8 +153,7 @@ class Line(Element):
         if math.isfinite(slope):
             intercept = distance * math.sqrt(1+slope**2) + self.intercept
             return Line.from_slopeintercept(slope, intercept)
-        else:
-            return Line((self.point[0]+distance, self.point[1]), slope)
+        return Line((self.point[0]+distance, self.point[1]), slope)
 
     def _evaluate(self, x: Sequence[float]) -> tuple[Sequence[float], Sequence[float]]:
         ''' Evaluate and return (x, y) in logscale if needed '''
@@ -207,7 +215,7 @@ class Line(Element):
             x2 = (databox.y + databox.h - intercept) / self.slope
             y1 = x1 * self.slope + intercept
             y2 = x2 * self.slope + intercept
-        return (x1, x2), (y1, y2)        
+        return (x1, x2), (y1, y2)
 
     @classmethod
     def from_slopeintercept(cls, slope: float, intercept: float = 0) -> 'Line':
@@ -215,7 +223,7 @@ class Line(Element):
         return cls((0, intercept), slope)
 
     @classmethod
-    def from_points(cls, p1: PointType, p2: PointType) -> 'Line':
+    def from_points(cls, p1: PointType|'Point', p2: PointType|'Point') -> 'Line':
         ''' Create a line from two points '''
         try:
             slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
@@ -275,19 +283,23 @@ class Line(Element):
         startmark = None
         endmark = None
         if self.startmark:
-            startmark = canvas.definemarker(self.startmark,
-                                            sty.radius,
-                                            sty.get_color(),
-                                            sty.edge_color,
-                                            sty.edge_width,
-                                            orient=True)
+            startmark = canvas.definemarker(
+                self.startmark,
+                sty.radius,
+                sty.get_color(),
+                sty.edge_color,
+                sty.edge_width,
+                orient=True)
+
         if self.endmark:
-            endmark = canvas.definemarker(self.endmark,
-                                            sty.radius,
-                                            sty.get_color(),
-                                            sty.edge_color,
-                                            sty.edge_width,
-                                          orient=True)
+            endmark = canvas.definemarker(
+                self.endmark,
+                sty.radius,
+                sty.get_color(),
+                sty.edge_color,
+                sty.edge_width,
+                orient=True)
+
         canvas.path(x, y,
                     stroke=sty.stroke,
                     color=color,
@@ -339,14 +351,16 @@ class VLine(Line):
 
 class Segment(Line):
     ''' Line segment from p1 to p2 '''
-    def __init__(self, p1: PointType, p2: PointType):
+    def __init__(self, p1: PointType|'Point', p2: PointType|'Point'):
         try:
             slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
         except ZeroDivisionError:
             slope = math.inf
         super().__init__(p1, slope)
-        self.p1 = p1
-        self.p2 = p2
+        self.p1: PointType
+        self.p2: PointType
+        self.p1 = p1[0], p1[1]
+        self.p2 = p2[0], p2[1]
 
     @property
     def length(self) -> float:
@@ -358,7 +372,7 @@ class Segment(Line):
         ''' Second point on the segment '''
         return self.p2
 
-    def bisect(self) -> LineType:
+    def bisect(self) -> Line:
         ''' Perpendicular bisector of the segment '''
         mid = self.midpoint()
         return self.normal(mid)
@@ -378,7 +392,7 @@ class Segment(Line):
             y1 = self.slope * x1 + self.intercept
         else:
             x1 = self.p1[0]
-        
+
         if x2 is not None:
             y2 = self.slope * x2 + self.intercept
         else:
@@ -397,12 +411,12 @@ class Segment(Line):
         return geometry.midpoint(self.p1, self.p2)
 
     @classmethod
-    def horizontal(cls, p: PointType, tox: float = 0) -> 'Segment':
+    def horizontal(cls, p: PointType|'Point', tox: float = 0) -> 'Segment':
         ''' Create a horizontal segment from p to the tox x value '''
         return cls(p, (tox, p[1]))
 
     @classmethod
-    def vertical(cls, p: PointType, toy: float = 0) -> 'Segment':
+    def vertical(cls, p: PointType|'Point', toy: float = 0) -> 'Segment':
         ''' Create a vertical segment from p to the toy y value '''
         return cls(p, (p[0], toy))
 

@@ -170,11 +170,8 @@ class Graph(Diagram):
                 dx = xticks[1]-xticks[0]
             if len(yticks) > 1:
                 dy = yticks[1]-yticks[0]
-        xrange = (xmin - dx*xsty.pad,
-                xmax + dx*xsty.pad)
-        yrange = (ymin - dy*ysty.pad,
-                ymax + dy*ysty.pad)
-
+        xrange = (xmin - dx*xsty.pad, xmax + dx*xsty.pad)
+        yrange = (ymin - dy*ysty.pad, ymax + dy*ysty.pad)
         ticks = Ticks(xticks, yticks, xnames, ynames, ywidth,
                       xrange, yrange, xminor, yminor)
         return ticks
@@ -282,7 +279,7 @@ class Graph(Diagram):
                 canvas.path([x, x], [y1, y2], color=xsty.get_color(),
                             width=xsty.stroke_width,
                             zorder=self._zorder)
-    
+
                 canvas.text(x, y2-xsty.margin, xtickname,
                             color=xsty.get_color(),
                             font=xsty.font,
@@ -326,7 +323,7 @@ class Graph(Diagram):
                             size=ysty.font_size,
                             halign='right', valign='center',
                             zorder=self._zorder)
-    
+
                 if ticks.yminor:
                     ysty_minor = self._build_style('Graph.TickYMinor')
                     for yminor in ticks.yminor:
@@ -436,7 +433,7 @@ class GraphQuad(Graph):
         arrowwidth = sty.edge_width * 3
 
         if databox.xmin == 0:
-            leftborder = ticks.ywidth + ysty.height + ysty.margin        
+            leftborder = ticks.ywidth + ysty.height + ysty.margin
         else:
             leftborder = 1
 
@@ -447,7 +444,7 @@ class GraphQuad(Graph):
 
         rightborder = arrowwidth*2
         topborder = arrowwidth
-        
+
         if self._legend == 'left':
             leftborder += legw + lsty.edge_width
         elif self._legend == 'right':
@@ -545,7 +542,7 @@ class GraphQuad(Graph):
         elif self._legend == 'bottomright':
             ytop = diagbox.y + boxh + sty.pad
             xright = (diagbox.x + diagbox.w - sty.pad)
-        else: # self._legend == 'topleft':
+        else:  # self._legend == 'topleft':
             ytop = diagbox.y + diagbox.h - sty.pad
             xright = (diagbox.x + boxw + sty.pad)
 
@@ -600,7 +597,7 @@ class GraphQuad(Graph):
         else:
             yaxis = [ytop[1]-ysty.width,
                      ybot[1]+ysty.width]
-        
+
         canvas.path(xaxis,
                     [xleft[1], xrght[1]],
                     color=sty.edge_color,
@@ -629,7 +626,7 @@ class GraphQuad(Graph):
                                 stroke=gridx_sty.stroke,
                                 width=gridx_sty.stroke_width,
                                 zorder=self._zorder)
-                    
+
                 if xleft[0] < x < xrght[0]:
                     # Don't draw ticks outside the arrows
                     canvas.path([x, x], [y1, y2], color=xsty.get_color(),
@@ -674,11 +671,12 @@ class GraphQuad(Graph):
                                 width=xsty.stroke_width,
                                 zorder=self._zorder)
 
-                    canvas.text(x2-ysty.margin, y, ytickname,
-                            color=ysty.get_color(),
-                            font=ysty.font,
-                            size=ysty.font_size,
-                                halign='right', valign='center')
+                    canvas.text(
+                        x2-ysty.margin, y, ytickname,
+                        color=ysty.get_color(),
+                        font=ysty.font,
+                        size=ysty.font_size,
+                        halign='right', valign='center')
             if ticks.yminor:
                 ysty_minor = self._build_style('Graph.TickYMinor')
                 for yminor in ticks.yminor:

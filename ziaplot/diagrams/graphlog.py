@@ -7,7 +7,6 @@ import math
 
 from ..canvas import Canvas, ViewBox, DataRange
 from .. import text
-from ..element import Element
 from .graph import Graph, Ticks
 
 
@@ -69,7 +68,7 @@ class GraphLogY(GraphLog):
             ymax = math.log10(drange.ymax)
         except ValueError:
             ymax = 1
-        
+
         return DataRange(drange.xmin, drange.xmax, ymin, ymax)
 
     @lru_cache

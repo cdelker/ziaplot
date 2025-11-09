@@ -36,7 +36,7 @@ class BarChart(Graph):
         self._horiz = False
         self._barwidth = 1.  # Let each bar have data-width = 1
         self._legend = 'none'
-    
+
     def add(self, bar: Component) -> None:
         ''' Add a single bar '''
         assert isinstance(bar, Bar)
@@ -217,7 +217,7 @@ class BarChartGrouped(Graph):
             self.yrange(0, totwidth)
             # Set bar x positions
             for i, bar in enumerate(self.components[::-1]):
-                assert isinstance(bar, (Bars, BarsHoriz))            
+                assert isinstance(bar, (Bars, BarsHoriz))
                 x = [bargap + self._barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x
         else:
@@ -227,7 +227,7 @@ class BarChartGrouped(Graph):
 
             # Set bar x positions
             for i, bar in enumerate(self.components):
-                assert isinstance(bar, (Bars, BarsHoriz))            
+                assert isinstance(bar, (Bars, BarsHoriz))
                 x = [bargap + self._barwidth*i + k*groupwidth for k in range(num_groups)]
                 bar.x = x
         super()._xml(canvas, databox, borders=borders)

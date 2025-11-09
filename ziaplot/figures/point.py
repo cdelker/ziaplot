@@ -1,6 +1,6 @@
 ''' Point with optional text and guide lines'''
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Iterator
 import math
 
 from .. import geometry
@@ -12,7 +12,7 @@ from ..element import Element
 from .shapes import Circle, Arc
 from .function import Function
 from .line import Line
-from .bezier import BezierQuad
+from .bezier import Bezier
 
 
 class Point(Element):
@@ -34,6 +34,9 @@ class Point(Element):
 
     def __getitem__(self, idx):
         return [self.x, self.y][idx]
+
+    def __iter__(self) -> Iterator[float]:
+        return iter(self.point)
 
     @property
     def point(self) -> PointType:
@@ -167,7 +170,7 @@ class Point(Element):
         x, y = geometry.function.local_min(f.y, x1, x2)
         return cls((x, y))
 
-    @classmethod    
+    @classmethod
     def at_maximum(cls, f: Function, x1: float, x2: float) -> 'Point':
         ''' Draw a Point at local maximum of f between x1 and x2 '''
         x, y = geometry.function.local_max(f.y, x1, x2)
@@ -224,6 +227,8 @@ class Point(Element):
         else:
             if bounds is None:
                 raise ValueError('bounds are required for intersection of non-line functions.')
+            assert callable(f1.y)
+            assert callable(f2.y)
             x, y = geometry.intersect.functions(f1.y, f2.y, *bounds)
 
         if not math.isfinite(x) or not math.isfinite(y):
@@ -232,6 +237,7 @@ class Point(Element):
         return cls((x, y))
 
     @classmethod
-    def on_bezier(cls, b: BezierQuad, t: float) -> 'Point':
+    def on_bezier(cls, b: Bezier, t: float) -> 'Point':
+        ''' Create a Point on the Bezier curve '''
         x, y = b.xy(t)
         return cls((x, y))

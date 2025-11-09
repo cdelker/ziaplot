@@ -4,5 +4,5 @@ from .function import Function
 from .point import Point
 from .line import Line, HLine, VLine, Segment, Vector
 from .integral import IntegralFill
-from .bezier import BezierQuad, BezierCubic, Curve, CurveThreePoint, BezierSpline, BezierHobby
+from .bezier import Bezier, Curve, CurveThreePoint, BezierSpline, BezierHobby
 from .implicit import Implicit

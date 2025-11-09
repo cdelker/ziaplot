@@ -92,7 +92,8 @@ class Pie(Diagram):
         diagram_stack.pause = False
         return pie
 
-    def _legendloc(self, diagbox: ViewBox, ticks: Ticks, boxw: float, boxh: float) -> tuple[float, float]:
+    def _legendloc(self, diagbox: ViewBox, ticks: Ticks,
+                   boxw: float, boxh: float) -> tuple[float, float]:
         ''' Calculate legend location
 
             Args:
@@ -110,7 +111,7 @@ class Pie(Diagram):
         elif self._legend == 'bottomleft':
             ytop = diagbox.y + boxh + 1
             xright = diagbox.x + boxw + 1
-        else: ##if self._legend == 'bottomright':
+        else:  # if self._legend == 'bottomright':
             ytop = diagbox.y + boxh + 1
             xright = diagbox.x + diagbox.w - 1
         return ytop, xright

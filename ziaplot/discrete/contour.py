@@ -53,7 +53,7 @@ class Contour(Element):
             return list(sty.colorcycle)
         assert sty.colorfade is not None
         return ColorFade(*sty.colorfade).colors(self.nlevels)
-    
+
     def colors(self, *colors: str, stops: Sequence[float]|None = None) -> 'Contour':
         ''' Set the start and end colors for the contours '''
         self._style.colorcycle = ColorFade(*colors, stops=stops).colors(self.nlevels)
@@ -195,7 +195,7 @@ class Contour(Element):
             if self.colorbar == 'bottom':
                 y = canvas.viewbox.y + cstyle.margin
                 y2 = y+width
-                
+
             for i, (level, color) in enumerate(zip(self.contours, colorfade)):
                 barx = x + barwidth*(i + 0.5)
                 canvas.path([barx, barx], [y, y2],

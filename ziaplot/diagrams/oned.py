@@ -1,13 +1,12 @@
 ''' One-dimensional Graph (Number line) '''
 from __future__ import annotations
-from typing import Sequence, Optional
+from typing import Optional
 from functools import lru_cache
 
 from .graph import Graph
 from .. import text
-from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders, PointType
-from ..util import zrange, linspace
-from .diagram import Diagram, Ticks
+from ..canvas import Canvas, Transform, ViewBox, DataRange, Borders
+from .diagram import Ticks
 
 
 class NumberLine(Graph):
@@ -41,7 +40,7 @@ class NumberLine(Graph):
         arrowwidth = sty.edge_width * 3
 
         if databox.xmin == 0:
-            leftborder = ticks.ywidth + ysty.height + ysty.margin        
+            leftborder = ticks.ywidth + ysty.height + ysty.margin
         else:
             leftborder = 1
 
@@ -52,7 +51,7 @@ class NumberLine(Graph):
 
         rightborder = arrowwidth*2
         topborder = arrowwidth
-        
+
         if self._legend == 'left':
             leftborder += lsty.edge_width
         elif self._legend == 'right':

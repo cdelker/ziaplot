@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Sequence, Literal, Tuple
+from typing import Sequence, Literal
 from dataclasses import dataclass, asdict
 
 
@@ -29,7 +29,7 @@ class Style:
     shape: MarkerTypes | None = None
     radius: float | None = None
     edge_width: float | None = None
-    
+
     font: str | None = None
     font_size: float | str | None = None
     num_format: str | None = None
@@ -52,7 +52,7 @@ class Style:
 
     def values(self):
         ''' Get dict of values that are not None '''
-        return {k:v for k, v in asdict(self).items() if v is not None}
+        return {k: v for k, v in asdict(self).items() if v is not None}
 
 
 @dataclass
@@ -69,7 +69,7 @@ class AppliedStyle:
     shape: MarkerTypes
     radius: float
     edge_width: float
-    
+
     font: str
     font_size: float
     num_format: str
@@ -88,18 +88,17 @@ class AppliedStyle:
 
     def values(self):
         ''' Get dict of values that are not None '''
-        return {k:v for k, v in asdict(self).items() if v is not None}
+        return {k: v for k, v in asdict(self).items() if v is not None}
 
     def get_color(self) -> str:
         ''' Get color, pulling from colorcycle if necessary '''
 
         if self.color in ['auto', None]:
             i = self._cycleindex
-            return self.colorcycle[i%len(self.colorcycle)]
-        
+            return self.colorcycle[i % len(self.colorcycle)]
+
         elif self.color.startswith('C') and self.color[1:].isnumeric():
             i = int(self.color[1:])
-            return self.colorcycle[i%len(self.colorcycle)]
+            return self.colorcycle[i % len(self.colorcycle)]
 
         return self.color
-

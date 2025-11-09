@@ -79,7 +79,7 @@ class Arrow(Annotation):
                                           edgecolor,
                                           sty.edge_width,
                                           orient=True)
-        
+
         x = self.xytail[0], self.xy[0]
         y = self.xytail[1], self.xy[1]
         canvas.path(x, y,
@@ -186,7 +186,7 @@ class Angle(Annotation):
         # Calculate radius of angle arc in data coordinates
         assert databox is not None
         sty = self._build_style()
-    
+
         r = sty.radius * databox.w / canvas.viewbox.w
         dtheta = abs(theta1 - theta2) % math.pi
         if self.square_right and math.isclose(dtheta, math.pi/2):
@@ -207,14 +207,15 @@ class Angle(Annotation):
         else:
             dradius = sty.margin * databox.w / canvas.viewbox.w
             for i in range(self.arcs):
-                canvas.arc(x, y, r - i * dradius,
-                        math.degrees(theta1),
-                        math.degrees(theta2),
-                        strokecolor=sty.color,
-                        strokewidth=sty.stroke_width,
-                        dataview=databox,
-                        zorder=self._zorder
-                        )
+                canvas.arc(
+                    x, y, r - i * dradius,
+                    math.degrees(theta1),
+                    math.degrees(theta2),
+                    strokecolor=sty.color,
+                    strokewidth=sty.stroke_width,
+                    dataview=databox,
+                    zorder=self._zorder
+                    )
 
         if self._label:
             textstyle = self._build_style('Angle.Text')

@@ -10,7 +10,6 @@ from .canvas import Canvas, Borders, ViewBox
 SpanType = Tuple[int, int]
 
 
-
 class Drawable:
     ''' Drawable SVG/XML object. Implements common XML and SVG functions,
         plus _repr_ for Jupyter
@@ -20,9 +19,6 @@ class Drawable:
         self._csscls: str | None = None
         self._span: SpanType = 1, 1
         self._zorder: int = 1
-
-    def __contains__(self, other: 'Drawable'):
-        return None
 
     def cssid(self, idn: str) -> 'Drawable':
         ''' Set the CSS id for the item. Matches items in CSS with #name selector '''

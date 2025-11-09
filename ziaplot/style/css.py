@@ -46,7 +46,7 @@ class CssStyle:
     drawables: dict[str, Style] = field(default_factory=dict)
 
     def extract(self, classnames: Sequence[str],
-                cssclass: str|None = '', cssid: str|None = '') -> Style:
+                cssclass: str | None = '', cssid: str | None = '') -> Style:
         ''' Get styles that match - from most general (classname) to most specific (id) '''
         style = Style()
         for cls in classnames:
@@ -54,7 +54,7 @@ class CssStyle:
 
         if cssclass:
             style = merge(style, self.cssclasses.get(cssclass, Style()))
-        
+
         if cssid:
             style = merge(style, self.cssids.get(cssid, Style()))
         return style
@@ -91,7 +91,7 @@ def parse_style(style: str | None) -> dict[str, Any]:
     for item in style.split(';'):
         item = item.strip()
         if item:
-            key,val = item.split(':', maxsplit=1)
+            key, val = item.split(':', maxsplit=1)
             if key.strip() in ['colorcycle', 'colorfade']:
                 items[key.strip()] = splitcolors(val.strip())
             else:
@@ -102,7 +102,7 @@ def parse_style(style: str | None) -> dict[str, Any]:
 def parse_css(css: str) -> CssStyle:
     ''' Parse full CSS '''
     # Split groups of 'XXX { YYY }'
-    matches = re.findall(r'(.*?)\{(.+?)\}', css, flags=re.MULTILINE|re.DOTALL)
+    matches = re.findall(r'(.*?)\{(.+?)\}', css, flags=re.MULTILINE | re.DOTALL)
     cssitems = [(idn.strip(), val.strip()) for idn, val in matches]
 
     def update(dict, selector, style):

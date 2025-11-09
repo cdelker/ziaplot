@@ -1,13 +1,19 @@
 ''' Calculations on ellipses '''
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import math
 
-from .geometry import PointType, LineType, CircleType, EllipseType, distance, rotate, translate
+from .geometry import PointType, EllipseType, rotate, translate
 from . import line as _line
 
+if TYPE_CHECKING:
+    from ..figures.shapes import Ellipse
+    from ..figures.point import Point
 
-def _dxy(ellipse: EllipseType, theta: float) -> PointType:
+
+def _dxy(ellipse: EllipseType|'Ellipse', theta: float) -> PointType:
     ''' Get distance from center to point on ellipse at angle theta (rad) '''
-    (centerx, centery), r1, r2, angle = ellipse
+    centerx, centery, r1, r2, angle = ellipse
     e = math.sqrt(1 - (r2 / r1)**2)
     phi = math.atan(math.tan(angle) * r1 / r2)
     r = r1 * math.sqrt(1 - e**2 * math.sin(phi)**2)
@@ -16,10 +22,10 @@ def _dxy(ellipse: EllipseType, theta: float) -> PointType:
     return (dx, dy)
 
 
-def point(ellipse: EllipseType, theta: float) -> PointType:
+def point(ellipse: EllipseType|'Ellipse', theta: float) -> PointType:
     ''' Get point on ellipse at angle theta '''
     dx, dy = _dxy(ellipse, theta)
-    (centerx, centery), r1, r2, etheta = ellipse
+    centerx, centery, r1, r2, etheta = ellipse
     if etheta:
         costh = math.cos(math.radians(etheta))
         sinth = math.sin(math.radians(etheta))
@@ -27,11 +33,12 @@ def point(ellipse: EllipseType, theta: float) -> PointType:
     return (centerx + dx, centery + dy)
 
 
-def tangent_points(ellipse: EllipseType, p: PointType) -> tuple[PointType, PointType]:
+def tangent_points(ellipse: EllipseType|'Ellipse',
+                   p: PointType|'Point') -> tuple[PointType, PointType]:
     ''' Find the two points on the Ellipse that form a tangent line through
         the given point
     '''
-    (cx, cy), rx, ry, theta = ellipse
+    cx, cy, rx, ry, theta = ellipse
     px, py = p
     theta = math.radians(theta)
 
@@ -55,7 +62,7 @@ def tangent_points(ellipse: EllipseType, p: PointType) -> tuple[PointType, Point
 
     # Points of tangency on the ellipse
     if math.isclose(px, rx):
-        t1 = rx, 0
+        t1 = rx, 0.
         t2x = rx*(ry**2-py**2)/(py**2+ry**2)
         t2 = t2x, _line.yvalue(tline2, t2x)
     else:
@@ -75,10 +82,10 @@ def tangent_points(ellipse: EllipseType, p: PointType) -> tuple[PointType, Point
     return t1, t2
 
 
-def tangent_angle(ellipse: EllipseType, theta: float) -> float:
+def tangent_angle(ellipse: EllipseType|'Ellipse', theta: float) -> float:
     ''' Angle (radians) tangent to the Ellipse at theta (radians) '''
     dx, dy = _dxy(ellipse, theta)
-    (centerx, centery), r1, r2, etheta = ellipse
+    centerx, centery, r1, r2, etheta = ellipse
     phi = math.atan2(dy * r1**2, dx * r2**2)
     tan = phi + math.pi/2 + math.radians(etheta)
     return (tan + math.tau) % math.tau

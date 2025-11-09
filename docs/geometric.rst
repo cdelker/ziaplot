@@ -152,10 +152,10 @@ A line segment starting at the origin and ending with an arrow marker.
 :py:class:`ziaplot.figures.line.Vector`
 
 
-BezierQuad
+Bezier
 ----------
 
-Quadratic Bézier curve defined by 3 control points.
+Quadratic and Cubic Bézier curves defined by 3 or 4 control points.
 
 .. jupyter-execute::
 
@@ -163,20 +163,8 @@ Quadratic Bézier curve defined by 3 control points.
     a2 = (4.5, 5)
     a3 = (4, 1)
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
-        zp.BezierQuad(a1, a2, a3)
+        zp.Bezier(a1, a2, a3)
 
-:py:class:`ziaplot.figures.bezier.BezierQuad`
-
-
-.. seealso::
-
-    :ref:`curve`
-
-
-BezierCubic
------------
-
-Cubic Bézier curve defined by 4 control points.
 
 .. jupyter-execute::
 
@@ -185,10 +173,9 @@ Cubic Bézier curve defined by 4 control points.
     b3 = (-4, 5)
     b4 = (-1, 3)
     with zp.GraphQuad().xrange(-5, 5).yrange(-5, 5).equal_aspect():
-        zp.BezierCubic(b1, b2, b3, b4)
+        zp.Bezier(b1, b2, b3, b4)
 
-
-:py:class:`ziaplot.figures.bezier.BezierQuad`
+:py:class:`ziaplot.figures.bezier.Bezier`
 
 
 .. seealso::

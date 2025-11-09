@@ -34,7 +34,7 @@ class Bars(Element):
         if width is None:
             self.width = self.x[1]-self.x[0]
             if self.width == 0:
-                    self.width = 1
+                self.width = 1
         else:
             self.width = width
         self.y2 = y2 if y2 is not None else [0] * len(self.x)

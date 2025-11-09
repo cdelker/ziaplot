@@ -154,7 +154,7 @@ THEME_BASE = ''' * {
     }
     PieSlice.Text {
         font_size: normal;
-        margin: 4;    
+        margin: 4;
     }
     Element {
         color: auto;
@@ -296,7 +296,7 @@ THEME_PASTEL = '''
     }
     Graph {
         color: #fafafa;
-    }            
+    }
     Point {
         color: #7589bf;
     }
@@ -568,11 +568,11 @@ class Theme:
         '''
         # Start with base theme to fill everything in
         style = self.theme.extract('*')
-        
+
         classes = tuple(reversed(classes))
 
         # Merge in the theme
-        if len(classes):
+        if classes:
             style = merge(
                 style,
                 self.theme.extract(classes, cssclass=cssclass, cssid=cssid))
@@ -598,7 +598,6 @@ class Theme:
 zptheme = Theme()
 
 
-
 def css(css: str) -> None:
     ''' Set global CSS styling '''
     zptheme.css(css)
@@ -609,6 +608,7 @@ def theme(name: str) -> None:
         theme names.
     '''
     zptheme.use(name)
+
 
 def theme_list() -> list[str]:
     ''' Get a list of available themes '''

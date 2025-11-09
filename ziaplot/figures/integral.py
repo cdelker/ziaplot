@@ -52,7 +52,7 @@ class IntegralFill(Element):
         x1, x2 = self._xlimits(databox)
         xrange = util.linspace(x1, x2, self.func.n)
         x, y = self.func._evaluate(xrange)
-        
+
         if self.func2:
             _, ymin = self.func2._evaluate(xrange)
         else:

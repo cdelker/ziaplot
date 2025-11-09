@@ -19,6 +19,9 @@ class Container(Drawable):
         self.height: float|None = None
         self._zorder: int = 0  # Containers drawn at bottom
 
+    def __contains__(self, comp: Drawable):
+        return False  # Checked in subclasses of Container
+
     def style(self, css: str) -> 'Drawable':
         '''Set the style for this Drawable using CSS elements '''
         self._style = merge_css(self._style, css)

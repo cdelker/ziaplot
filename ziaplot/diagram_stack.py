@@ -3,21 +3,26 @@
 from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from .drawable import Drawable
+    from .container import Container
 
-diagram_stack: dict[Drawable, Optional[Drawable]] = {}
+
+diagram_stack: dict[Container, Optional[Drawable]] = {}
 pause: bool = False
 apply_style: list[str] = []
 
 
-def push_diagram(diagram: Drawable) -> None:
+def push_diagram(diagram: Container) -> None:
     ''' Add a plot to the stack '''
     diagram_stack[diagram] = None
 
-def pop_diagram(diagram: Drawable) -> None:
+
+def pop_diagram(diagram: Container) -> None:
     ''' Remove the drawing from the stack '''
     diagram_stack.pop(diagram)
+
 
 def push_component(comp: Optional[Drawable]) -> None:
     if not pause and len(diagram_stack) > 0:
@@ -25,7 +30,8 @@ def push_component(comp: Optional[Drawable]) -> None:
         if prev_comp is not None and prev_comp not in diagram:
             diagram.add(prev_comp)  # type: ignore
             for sty in apply_style:
-                prev_comp.style(sty)
+                if hasattr(prev_comp, 'style'):
+                    prev_comp.style(sty)
         diagram_stack[diagram] = comp
 
 

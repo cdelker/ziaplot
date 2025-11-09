@@ -1,13 +1,26 @@
 ''' Methods for finding intersections between lines, circles, functions, etc. '''
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import math
 
 from ..util import root
-from .geometry import PointType, LineType, CircleType, EllipseType, ArcType, FunctionType, distance, angle_isbetween
+from .geometry import (
+    PointType,
+    LineType,
+    CircleType,
+    ArcType,
+    FunctionType,
+    distance,
+    angle_isbetween
+    )
 from . import line as _line
 
+if TYPE_CHECKING:
+    from ..figures.line import Line
+    from ..figures.shapes import Circle, Arc
 
-def lines(line1: LineType, line2: LineType) -> PointType:
+
+def lines(line1: LineType|'Line', line2: LineType|'Line') -> PointType:
     ''' Find point of intersection of two lines '''
     a1, b1, c1 = line1
     a2, b2, c2 = line2
@@ -19,7 +32,7 @@ def lines(line1: LineType, line2: LineType) -> PointType:
     return (dx/d, dy/d)
 
 
-def line_angle(line1: LineType, line2: LineType) -> float:
+def line_angle(line1: LineType|'Line', line2: LineType|'Line') -> float:
     ''' Find angle (rad) of intersection between the two lines '''
     m1 = _line.slope(line1)
     m2 = _line.slope(line2)
@@ -27,10 +40,10 @@ def line_angle(line1: LineType, line2: LineType) -> float:
     return theta
 
 
-def line_circle(line: LineType, circle: CircleType) -> tuple[Optional[PointType], Optional[PointType]]:
+def line_circle(line: LineType|'Line', circle: CircleType|'Circle') -> tuple[PointType, PointType]:
     ''' Find intersections between line and circle '''
     slope = _line.slope(line)
-    (centerx, centery), radius, *_ = circle
+    centerx, centery, radius, *_ = circle
 
     if not math.isfinite(slope):
         xint = _line.xvalue(line, 0)
@@ -70,19 +83,20 @@ def line_circle(line: LineType, circle: CircleType) -> tuple[Optional[PointType]
     return (x1, y1), (x2, y2)
 
 
-def circles(circle1: CircleType|ArcType, circle2: CircleType|ArcType) -> tuple[Optional[PointType], Optional[PointType]]:
+def circles(circle1: CircleType|ArcType|'Circle',
+            circle2: CircleType|ArcType|'Circle') -> tuple[PointType, PointType]:
     ''' Get points of intersection between two circles '''
-    (x1, y1), r1, *_ = circle1
-    (x2, y2), r2, *_ = circle2
+    x1, y1, r1, *_ = circle1
+    x2, y2, r2, *_ = circle2
     dx, dy = x2 - x1, y2 - y1
     dist = distance((x1, y1), (x2, y2))
 
     if dist > r1 + r2 or dist < abs(r1 - r2):
         # No intersections
-        return None, None
+        return (math.nan, math.nan), (math.nan, math.nan)
     elif dist == 0 and r1 == r2:
         # Identical circles (infinite intersections)
-        return None, None
+        return (math.nan, math.nan), (math.nan, math.nan)
 
     a = (r1*r1 - r2*r2 + dist*dist) / (2*dist)
     h = math.sqrt(r1*r1 - a*a)
@@ -93,12 +107,9 @@ def circles(circle1: CircleType|ArcType, circle2: CircleType|ArcType) -> tuple[O
     ys1 = ym - h*dx/dist
     ys2 = ym + h*dx/dist
 
-    # If circle1 is arc, ensure points fall on the arc
-    try:
-        atheta1, atheta2 = circle1[2], circle1[3]
-    except IndexError:
-        pass
-    else:
+    if len(tuple(circle1)) > 4:
+        # circle1 is arc, ensure points fall on the arc
+        atheta1, atheta2 = circle1[3], circle1[4]  # type: ignore
         thetap1 = math.atan2(ys1-y1, xs1-x1)
         thetap2 = math.atan2(ys2-y1, xs2-x1)
         if not angle_isbetween(thetap1, atheta1, atheta2):
@@ -106,12 +117,9 @@ def circles(circle1: CircleType|ArcType, circle2: CircleType|ArcType) -> tuple[O
         if not angle_isbetween(thetap2, atheta1, atheta2):
             xs2, ys2 = math.nan, math.nan
 
-    # If circle2 is arc, ensure points fall on the arc
-    try:
-        atheta1, atheta2 = circle2[2], circle2[3]
-    except IndexError:
-        pass
-    else:
+    if len(tuple(circle2)) > 4:
+        # circle2 is arc, ensure points fall on the arc
+        atheta1, atheta2 = circle2[3], circle2[4]  # type: ignore
         thetap1 = math.atan2(ys1-y2, xs1-x2)
         thetap2 = math.atan2(ys2-y2, xs2-x2)
         if not angle_isbetween(thetap1, atheta1, atheta2):
@@ -125,10 +133,10 @@ def circles(circle1: CircleType|ArcType, circle2: CircleType|ArcType) -> tuple[O
     return (xs1, ys1), (xs2, ys2)
 
 
-def line_arc(line: LineType, arc: ArcType):
+def line_arc(line: LineType|'Line', arc: ArcType|'Arc'):
     ''' Find intersection of line and arc. Same as circle, but ensures point falls on the arc '''
-    (centerx, centery), radius, atheta1, atheta2 = arc
-    p1, p2 = line_circle(line, ((centerx, centery), radius))
+    centerx, centery, radius, atheta1, atheta2 = arc
+    p1, p2 = line_circle(line, (centerx, centery, radius))
 
     theta1 = math.atan2(p1[1]-centery, p1[0]-centerx)
     theta2 = math.atan2(p2[1]-centery, p2[0]-centerx)
@@ -155,9 +163,7 @@ def functions(f1: FunctionType, f2: FunctionType,
         x = root(lambda x: f1(x) - f2(x),
                  a=x1, b=x2, tol=tol)
     except (ValueError, RecursionError) as exc:
-        raise ValueError('No intersection found')
+        raise ValueError('No intersection found') from exc
 
     y = f1(x)
     return x, y
-
-

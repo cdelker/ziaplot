@@ -1,14 +1,16 @@
 ''' Basic shapes '''
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Iterator, TYPE_CHECKING
 import math
 
-from .. import diagram_stack
 from .. import geometry
 from ..geometry import PointType
 from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from .line import Line, Segment
+
+if TYPE_CHECKING:
+    from .point import Point
 
 
 class Shape(Element):
@@ -35,20 +37,25 @@ class Ellipse(Shape):
             r2: Radius 2
             theta: Angle of rotation (degrees)
     '''
-    def __init__(self, center: PointType,
+    def __init__(self, center: PointType|'Point',
                  r1: float, r2: float,
                  theta: float = 0):
         super().__init__()
-        self.center = center
+        self.center = tuple(center)
+        self.x: float
+        self.y: float
         self.x, self.y = center
         self.r1 = r1
         self.r2 = r2
         self.theta = theta
 
-    def __getitem__(self, idx):
-        return [self.center, self.r1, self.r2, self.theta][idx]
+    def __getitem__(self, item: int) -> float:
+        return (self.x, self.y, self.r1, self.r2, self.theta)[item]
 
-    def tangent(self, p: PointType, which: str = 'top') -> Line:
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y, self.r1, self.r2, self.theta))
+
+    def tangent(self, p: PointType|'Point', which: str = 'top') -> Line:
         ''' Create a tangent line passing through p.
 
             Args:
@@ -57,8 +64,8 @@ class Ellipse(Shape):
                     may be `top`, `bottom`, `left`, or `right` based on the
                     position ot the tangent point on the circle.
         '''
-        t = geometry.ellipse.tangent_points(self, p)
-        t = geometry.select_which(t, which)
+        tangents = geometry.ellipse.tangent_points(self, p)
+        t = geometry.select_which(tangents, which)
         return Line.from_points(t, p)
 
     def datarange(self) -> DataRange:
@@ -103,7 +110,7 @@ class Ellipse(Shape):
                        zorder=self._zorder)
 
 
-class Circle(Ellipse):
+class Circle(Shape):
     ''' Draw a circle
 
         Args:
@@ -113,17 +120,42 @@ class Circle(Ellipse):
     '''
     # Drawn as ellipse because aspect may not always be square
     def __init__(self, center: PointType, radius: float):
-        super().__init__(center, radius, radius)
+        super().__init__()
         self.radius = radius
+        self.center = center
+
+    @property
+    def x(self) -> float:
+        ''' Center X value '''
+        return self.center[0]
+
+    @property
+    def y(self) -> float:
+        ''' Center Y value '''
+        return self.center[1]
 
     def __getitem__(self, idx):
-        return [self.center, self.radius][idx]
+        return (self.x, self.y, self.radius)[idx]
+
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y, self.radius))
+
+    def xy(self, theta: float) -> PointType:
+        ''' Get x, y coordinate on the circle at the angle theta (degrees) '''
+        return self._xy(math.radians(theta))
 
     def _xy(self, theta: float) -> PointType:
         ''' Get x, y coordinate on the circle at the angle theta (radians) '''
-        x = self.x + self.r1 * math.cos(theta)
-        y = self.y + self.r1 * math.sin(theta)
+        x = self.x + self.radius * math.cos(theta)
+        y = self.y + self.radius * math.sin(theta)
         return x, y
+
+    def datarange(self) -> DataRange:
+        ''' Data limits '''
+        return DataRange(self.x-self.radius,
+                         self.x+self.radius,
+                         self.y-self.radius,
+                         self.y+self.radius)
 
     def on_arc_point(self, p: PointType) -> bool:
         ''' Is the angle theta (in degrees) on the circle '''
@@ -137,7 +169,7 @@ class Circle(Ellipse):
                 which: Determines which of the two possible tangents to return.
                     may be `top`, `bottom`, `left`, or `right` based on the
                     position ot the tangent point on the circle.
-    '''
+        '''
         tangents = geometry.circle.tangent(self, p)  # ((x,y), slope) list
         tandict = dict(tangents)
         tanpoints = [t[0] for t in tangents]
@@ -212,14 +244,14 @@ class Circle(Ellipse):
     @classmethod
     def from_ppp(cls, p1: PointType, p2: PointType, p3: PointType) -> 'Circle':
         ''' Create a circle passing through the three given points '''
-        p1 = complex(p1[0], p1[1])
-        p2 = complex(p2[0], p2[1])
-        p3 = complex(p3[0], p3[1])
-        w = (p3-p1)/(p2-p1)
+        c1 = complex(p1[0], p1[1])
+        c2 = complex(p2[0], p2[1])
+        c3 = complex(p3[0], p3[1])
+        w = (c3-c1)/(c2-c1)
         if abs(w.imag) <= 0:
             raise ValueError('Points are colinear')
-        c = (p2-p1)*(w-abs(w)**2)/(2j*w.imag) + p1
-        r = abs(p1 - c)
+        c = (c2-c1)*(w-abs(w)**2)/(2j*w.imag) + c1
+        r = abs(c1 - c)
         return cls((c.real, c.imag), r)
 
     @classmethod
@@ -258,6 +290,18 @@ class Circle(Ellipse):
         radius = geometry.line.normal_distance(line1, center)
         return Circle(center, radius)
 
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        sty = self._build_style()
+        canvas.ellipse(self.x, self.y, self.radius, self.radius,
+                       color=sty.fill_color,
+                       strokecolor=sty.get_color(),
+                       strokewidth=sty.stroke_width,
+                       stroke=sty.stroke,
+                       dataview=databox,
+                       zorder=self._zorder)
+
 
 class Rectangle(Shape):
     ''' Draw a rectangle
@@ -293,7 +337,6 @@ class Rectangle(Shape):
                     zorder=self._zorder)
 
 
-
 class Arc(Circle):
     ''' Draw a circular arc
 
@@ -305,7 +348,7 @@ class Arc(Circle):
             theta2: End angle (degrees)
     '''
     def __init__(self, center: PointType,
-                 radius: float, theta1: float, theta2: float=0):
+                 radius: float, theta1: float, theta2: float = 0):
         super().__init__(center, radius)
         self.theta1 = theta1
         self.theta2 = theta2
@@ -314,7 +357,10 @@ class Arc(Circle):
         self.arc_length_rad = geometry.angle_diff(self.theta1_rad, self.theta2_rad)
 
     def __getitem__(self, idx):
-        return [self.center, self.radius, self.theta1_rad, self.theta2_rad][idx]
+        return (self.x, self.y, self.radius, self.theta1_rad, self.theta2_rad)[idx]
+
+    def __iter__(self) -> Iterator[float]:
+        return iter((self.x, self.y, self.radius, self.theta1_rad, self.theta2_rad))
 
     def on_arc(self, theta: float) -> bool:
         ''' Determine whether angle theta (degrees) falls within the arc '''

@@ -1,14 +1,19 @@
 ''' Calculations on circles '''
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import math
 
 from .geometry import PointType, LineType, CircleType, isclose
 from . import line as _line
 
+if TYPE_CHECKING:
+    from ..figures.shapes import Circle
+    from ..figures.point import Point
 
-def point(circle: CircleType, theta: float) -> PointType:
+
+def point(circle: CircleType|'Circle', theta: float) -> PointType:
     ''' Coordinates of point on circle at angle theta (rad) '''
-    (centerx, centery), radius, *_ = circle
+    centerx, centery, radius, *_ = circle
     x = centerx + radius * math.cos(theta)
     y = centery + radius * math.sin(theta)
     return (x, y)
@@ -19,7 +24,7 @@ def tangent_angle(theta: float) -> float:
     return (theta + math.pi/2 + math.tau) % math.tau
 
 
-def tangent_at(circle: CircleType, theta: float) -> LineType:
+def tangent_at(circle: CircleType|'Circle', theta: float) -> LineType:
     ''' Find tanget to circle at given theta '''
     x, y = point(circle, theta)
     phi = tangent_angle(theta)
@@ -28,11 +33,12 @@ def tangent_at(circle: CircleType, theta: float) -> LineType:
     return _line.new(slope, intercept)
 
 
-def tangent_points(circle: CircleType, p: PointType) -> tuple[PointType, PointType]:
+def tangent_points(circle: CircleType|'Circle',
+                   p: PointType|'Point') -> tuple[PointType, PointType]:
     ''' Find the two points on the circle that form a tangent line through
         the given point
     '''
-    (centerx, centery), radius = circle
+    centerx, centery, radius, *_ = circle
     px, py = p
 
     px = px - centerx
@@ -50,15 +56,17 @@ def tangent_points(circle: CircleType, p: PointType) -> tuple[PointType, PointTy
     return (x1, y1), (x2, y2)
 
 
-def tangent(circle: CircleType, p: PointType) -> tuple[tuple[PointType, float], tuple[PointType, float]]:
+def tangent(circle: CircleType|'Circle',
+            p: PointType|'Point') -> tuple[tuple[PointType, float], tuple[PointType, float]]:
     ''' Find tangent points and slope of the two tangents to the circle through the point p '''
-    (centerx, centery), radius = circle
+    centerx, centery, radius, *_ = circle
     p1, p2 = tangent_points(circle, p)
 
+    x, y = p
     if isclose(p1, p):
         theta = math.atan2(p[1]-centery, p[0]-centerx)
         m1 = math.tan(tangent_angle(theta))
-        return (p, m1), (p, m1)
+        return ((x, y), m1), ((x, y), m1)
 
     try:
         m1 = (p1[1] - p[1]) / (p1[0] - p[0])

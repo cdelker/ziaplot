@@ -8,7 +8,6 @@ import math
 import string
 from collections import namedtuple
 from xml.etree import ElementTree as ET
-import warnings
 
 try:
     import ziamath
@@ -35,13 +34,15 @@ def fmt(f: float) -> str:
     return s.rstrip('0').rstrip('.')  # Strip trailing zeros
 
 
-def text_align_ofst(pos: Optional[TextPosition], ofst: float) -> tuple[float, float, Halign, Valign]:
+def text_align_ofst(
+        pos: Optional[TextPosition],
+        ofst: float) -> tuple[float, float, Halign, Valign]:
     ''' Get text pixel offset and alignment
-    
+
         Args:
             pos: Text Position relative to anchor
             ofst: Pixel offset, directionless
-        
+
         Returns:
             dx: x-offset
             dy: y-offset
@@ -148,7 +149,7 @@ def text_size(st: str, fontsize: float = 14, font: str = 'Arial') -> Size:
     else:
         return text_size_text(st, fontsize, font)
 
-    
+
 def text_size_zia(st: str, fontsize: float = 14, font: str = 'sans') -> Size:
     text = ziamath.Text(st, size=fontsize)
     return Size(*text.getsize())
@@ -172,31 +173,55 @@ def text_size_text(st: str, fontsize: float = 14, font: str = 'Arial') -> Size:
     if 'times' in font.lower() or ('serif' in font.lower() and 'sans' not in font.lower()):
         # Estimates based on Times Roman
         for s in st:
-            if s in 'lij:.,;t': size += 47
-            elif s in '|': size += 37
-            elif s in '![]fI/\\': size += 55
-            elif s in '`-(){}r': size += 60
-            elif s in 'sJ°': size += 68
-            elif s in '"zcae?1': size += 74
-            elif s in '*^kvxyμbdhnopqug#$_α' + string.digits: size += 85
-            elif s in '#$+<>=~FSP': size += 95
-            elif s in 'ELZT': size += 105
-            elif s in 'BRC': size += 112
-            elif s in 'DAwHUKVXYNQGO': size += 122
-            elif s in '&mΩ': size += 130
-            elif s in '%': size += 140
-            elif s in 'MW@∠': size += 155
-            else: size += 60
+            if s in 'lij:.,;t':
+                size += 47
+            elif s in '|':
+                size += 37
+            elif s in '![]fI/\\':
+                size += 55
+            elif s in '`-(){}r':
+                size += 60
+            elif s in 'sJ°':
+                size += 68
+            elif s in '"zcae?1':
+                size += 74
+            elif s in '*^kvxyμbdhnopqug#$_α' + string.digits:
+                size += 85
+            elif s in '#$+<>=~FSP':
+                size += 95
+            elif s in 'ELZT':
+                size += 105
+            elif s in 'BRC':
+                size += 112
+            elif s in 'DAwHUKVXYNQGO':
+                size += 122
+            elif s in '&mΩ':
+                size += 130
+            elif s in '%':
+                size += 140
+            elif s in 'MW@∠':
+                size += 155
+            else:
+                size += 60
 
     else:  # Arial, or other sans fonts
         for s in st:
-            if s in 'lij|\' ': size += 37
-            elif s in '![]fI.,:;/\\t': size += 50
-            elif s in '`-(){}r"': size += 60
-            elif s in '*^zcsJkvxyμ°': size += 85
-            elif s in 'aebdhnopqug#$L+<>=?_~FZTα' + string.digits: size += 95
-            elif s in 'BSPEAKVXY&UwNRCHD': size += 112
-            elif s in 'QGOMm%@Ω': size += 140
-            elif s in 'W∠': size += 155
-            else: size += 75
+            if s in 'lij|\' ':
+                size += 37
+            elif s in '![]fI.,:;/\\t':
+                size += 50
+            elif s in '`-(){}r"':
+                size += 60
+            elif s in '*^zcsJkvxyμ°':
+                size += 85
+            elif s in 'aebdhnopqug#$L+<>=?_~FZTα' + string.digits:
+                size += 95
+            elif s in 'BSPEAKVXY&UwNRCHD':
+                size += 112
+            elif s in 'QGOMm%@Ω':
+                size += 140
+            elif s in 'W∠':
+                size += 155
+            else:
+                size += 75
     return Size(size * 72 / 1000.0 * (fontsize/12), fontsize)  # to points

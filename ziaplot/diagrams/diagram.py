@@ -55,7 +55,7 @@ class Diagram(Container):
     def __enter__(self):
         diagram_stack.push_diagram(self)
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         ''' Exit context manager - save to file and display '''
         diagram_stack.push_component(None)
@@ -128,7 +128,7 @@ class Diagram(Container):
         ''' Specify legend location '''
         self._legend = loc
         return self
-    
+
     def colorfade(self, *clrs: str, stops: Optional[Sequence[float]] = None) -> Diagram:
         ''' Define the color cycle evenly fading between multiple colors.
 
@@ -291,7 +291,7 @@ class Diagram(Container):
         elif self._legend == 'bottomright':
             ytop = diagbox.y + boxh + legsty.margin
             xright = (diagbox.x + diagbox.w - margin)
-        else: # self._legend == 'topleft':
+        else:  # self._legend == 'topleft':
             ytop = diagbox.y + diagbox.h - margin
             xright = (diagbox.x + boxw + margin)
 
@@ -339,7 +339,7 @@ class Diagram(Container):
 
             yyline = yytext + legtxt.font_size/3
             sstyle = comp._build_style()
-            
+
             if comp.legend_square:
                 canvas.text(boxl+square+pad*2, yytext,
                             comp._name,
@@ -429,10 +429,10 @@ class Diagram(Container):
         # Expand data range slightly so strokes aren't cut off
         padx = (rng.xmax-rng.xmin)*.05
         pady = (rng.ymax-rng.ymin)*.05
-        databox = ViewBox(rng.xmin- padx,
+        databox = ViewBox(rng.xmin - padx,
                           rng.ymin - pady,
-                          rng.xmax-rng.xmin + padx*2,
-                          rng.ymax-rng.ymin + pady*2)
+                          rng.xmax - rng.xmin + padx*2,
+                          rng.ymax - rng.ymin + pady*2)
 
         # Adjust aspect ratio
         if self._equal_aspect:

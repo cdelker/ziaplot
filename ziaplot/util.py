@@ -1,6 +1,6 @@
 ''' Utility Functions. Most are pure-python replacements for numpy functions '''
 from __future__ import annotations
-from typing import Sequence, Callable, Tuple
+from typing import Sequence, Callable
 import bisect
 import math
 
@@ -73,7 +73,7 @@ def root_newton(f: Callable, x0: float, tol=1E-4) -> float:
         return root_newton(f, x0 - f(x0)/df, tol)
 
 
-def minimum(f: Callable, a: float, b: float, tolerance: float=1e-5):
+def minimum(f: Callable, a: float, b: float, tolerance: float = 1E-5):
     """
     Golden-section search
     to find the minimum of f on [a,b]
@@ -102,7 +102,7 @@ def minimum(f: Callable, a: float, b: float, tolerance: float=1e-5):
     return (b + a) / 2
 
 
-def maximum(f: Callable, a: float, b: float, tolerance: float=1e-5):
+def maximum(f: Callable, a: float, b: float, tolerance: float = 1E-5):
     """
     Golden-section search
     to find the maxumum of f on [a,b]
@@ -135,8 +135,3 @@ def derivative(f: Callable, a: float):
     ''' Calculate derivative of f at a '''
     h = a/1E6 if a != 0 else 1E-6
     return (f(a+h) - f(a)) / h
-
-
-
-
-

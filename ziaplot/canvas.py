@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 
 from . import text
 from .geometry import PointType
-from .util import linspace
 from .config import config
 from .style import MarkerTypes, DashTypes
 
@@ -116,10 +115,10 @@ class Canvas:
         root = ET.Element(
             'svg',
             attrib={'xmlns': 'http://www.w3.org/2000/svg',
-                   'height': str(self.canvasheight),
-                   'width': str(self.canvaswidth),
-                   'viewBox': f'0 0 {fmt(self.canvaswidth)} {fmt(self.canvasheight)}'})
-        
+                    'height': str(self.canvasheight),
+                    'width': str(self.canvaswidth),
+                    'viewBox': f'0 0 {fmt(self.canvaswidth)} {fmt(self.canvasheight)}'})
+
         if self.defs:
             root.insert(0, self.defs)
 
@@ -134,7 +133,6 @@ class Canvas:
                 root.append(elm.element)
             else:
                 assert isinstance(elm.element, SvgText)
-                txt = elm.element
                 text.draw_text(
                     elm.element.x, elm.element.y, elm.element.s,
                     root,
@@ -529,7 +527,7 @@ class Canvas:
             strokewidth: float = 1,
             stroke: DashTypes = '-',
             dataview: Optional[ViewBox] = None,
-            zorder: int  = 1) -> None:
+            zorder: int = 1) -> None:
         ''' Add an open arc
 
             Args:
@@ -671,13 +669,17 @@ class Canvas:
         set_clip(path, self.clip)
         self.add_element(path, zorder)
 
-    def bezier_spline(self,
-               points: Sequence[PointType],
-               stroke: DashTypes = '-',
-               color: str = 'black', width: float = 2, markerid: Optional[str] = None,
-               startmarker: Optional[str] = None, endmarker: Optional[str] = None,
-               dataview: Optional[ViewBox] = None,
-               zorder: int = 1) -> None:
+    def bezier_spline(
+            self,
+            points: Sequence[PointType],
+            stroke: DashTypes = '-',
+            color: str = 'black',
+            width: float = 2,
+            markerid: Optional[str] = None,
+            startmarker: Optional[str] = None,
+            endmarker: Optional[str] = None,
+            dataview: Optional[ViewBox] = None,
+            zorder: int = 1) -> None:
         ''' Add a multi-bezier curve to the SVG
 
             Args:

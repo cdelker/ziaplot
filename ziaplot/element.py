@@ -92,6 +92,6 @@ class Element(Component):
         self._name = name
         return self
 
-    def _tangent_slope(self, x: float) -> float:
-        ''' Calculate angle tangent to Element at x '''
-        raise NotImplementedError
+#    def _tangent_slope(self, x: float) -> float:
+#        ''' Calculate angle tangent to Element at x '''
+#        raise NotImplementedError

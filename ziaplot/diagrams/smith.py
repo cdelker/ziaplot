@@ -20,7 +20,8 @@ def circle_intersect_theta(c1: tuple[float, float], c2: tuple[float, float],
                            r1: float, r2: float) -> Optional[float]:
     ''' Get end angle of arc for reactance lines '''
     x1, y1 = c1
-    (xs1, ys1), (xs2, ys2) = geometry.intersect.circles((c1, r1), (c2, r2))
+    x2, y2 = c2
+    (xs1, ys1), (xs2, ys2) = geometry.intersect.circles((x1, y1, r1), (x2, y2, r2))
 
     if not math.isfinite(xs1) or not math.isfinite(xs2):
         return None

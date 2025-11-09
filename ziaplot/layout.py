@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Set, Optional
 import xml.etree.ElementTree as ET
 
-from .diagrams import Graph, Diagram
+from .diagrams import Graph
 from .element import Component
 from .canvas import Canvas, ViewBox, Borders
 from .container import Container
@@ -19,7 +19,7 @@ def diag_widths(spec: Optional[str], total: float, gap: float, ndiag: int) -> li
             total: Total width to fill
             gap: Spacing between columns (or rows)
             ndiag: Number of Diagrams
-            
+
         Notes:
             spec uses a similar style to a CSS grid layout. The string is
             space-delimited with each item either 1) a plain number representing
@@ -36,7 +36,7 @@ def diag_widths(spec: Optional[str], total: float, gap: float, ndiag: int) -> li
         specitems = spec.split()
         if len(specitems) < ndiag:
             specitems.extend([specitems[-1]]*(ndiag-len(specitems)))
-        
+
         fixedwidths = [(ndiag-1)*gap]
         useablewidth = total - fixedwidths[0]
         fractions = []
@@ -56,7 +56,7 @@ def diag_widths(spec: Optional[str], total: float, gap: float, ndiag: int) -> li
                 dgwidths.append((useablewidth - fixed) * float(v.rstrip('fr')) / sum(fractions))
             else:
                 dgwidths.append(float(v))
-        
+
     return dgwidths
 
 
@@ -106,7 +106,7 @@ class LayoutGrid(Container):
         diagram_stack.push_component(self)
         diagram_stack.push_diagram(self)
         return self
-        
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         ''' Exit context manager - save to file and display '''
         diagram_stack.push_component(None)
@@ -173,13 +173,14 @@ class LayoutGrid(Container):
                 row, col = row+1, 0
             return row, col
 
-        def usedcells(row_start: int, col_start: int, rowspan: int, colspan: int) -> Set[tuple[int, int]]:
+        def usedcells(row_start: int, col_start: int,
+                      rowspan: int, colspan: int) -> Set[tuple[int, int]]:
             ''' Get all cells covered by the Diagram '''
             return {
                 (row, column)
                 for row in range(row_start, row_start + rowspan)
                 for column in range(col_start, col_start + colspan)}
-        
+
         cellmap: dict[tuple[int, int], Drawable] = {}  # All cells covered
         cellloc: dict[Drawable, tuple[int, int, int, int]] = {}  # Cell to x, y, x+sp, y+sp
         row, col = (0, 0)
@@ -252,7 +253,7 @@ class LayoutEmpty(Container):
 
     def _borders(self, **kwargs) -> Borders:
         ''' Calculate borders around the layout box to fit the ticks and legend '''
-        return Borders(0,0,0,0)
+        return Borders(0, 0, 0, 0)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -276,7 +277,7 @@ class LayoutV(LayoutGrid):
 
 class LayoutH(LayoutGrid):
     ''' Lay out Diagrams in horizontal row
-    
+
         Args:
             diagrams: The Diagrams/Graphs to add
             column_gap: Spacing between columns

@@ -119,10 +119,7 @@ Geometric Figures
 .. autoclass:: ziaplot.figures.point.Point
     :members:
 
-.. autoclass:: ziaplot.figures.bezier.BezierQuad
-    :members:
-
-.. autoclass:: ziaplot.figures.bezier.BezierCubic
+.. autoclass:: ziaplot.figures.bezier.Bezier
     :members:
 
 .. autoclass:: ziaplot.figures.bezier.Curve

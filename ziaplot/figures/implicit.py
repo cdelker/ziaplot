@@ -8,7 +8,7 @@ from ..geometry import PointType
 
 class Implicit(Contour):
     ''' Plot an implicit function
-    
+
         Args:
             f: A function of x and y, to plot
                 f(x, y) = 0.

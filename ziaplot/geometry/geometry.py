@@ -1,21 +1,23 @@
 ''' Geometry calculations '''
 from __future__ import annotations
-from collections import namedtuple
-from typing import Sequence, Callable, Tuple
+from typing import Sequence, Callable, Tuple, TYPE_CHECKING
 import math
 
+if TYPE_CHECKING:
+    from ..figures.line import Line
+    from ..figures.point import Point
 
-PointType = Tuple[float, float]        # (x, y)
-LineType = Tuple[float, float, float]  # (a, b, c), where ax + by + c = 0
-CircleType = Tuple[PointType, float]   # (center, radius)
-EllipseType = Tuple[PointType, float, float, float]   # (center, radius1, radius2, rotation)
-ArcType = Tuple[PointType, float, float, float]   # (center, radius, theta1, theta2)
+
+PointType = Tuple[float, float]           # (x, y)
+LineType = Tuple[float, float, float]     # (a, b, c), where ax + by + c = 0
+CircleType = Tuple[float, float, float]   # (centerx, centery, radius)
+EllipseType = Tuple[float, float, float, float, float]   # (centerx, centery, radius1, radius2, rotation)
+ArcType = Tuple[float, float, float, float, float]       # (centerx, centery, radius, theta1, theta2)
 FunctionType = Callable
-BezierQuadType = Tuple[PointType, PointType, PointType]
-BezierCubicType = Tuple[PointType, PointType, PointType, PointType]
+BezierType = Tuple[PointType, PointType, PointType, PointType]
 
 
-def select_which(points: list, which: str) -> PointType:
+def select_which(points: Sequence[PointType], which: str) -> PointType:
     ''' Choose point from the list with the top-most or bottom-most
         y ccoordinate, or left-most or right-most x coordinate
     '''
@@ -39,43 +41,43 @@ def select_which(points: list, which: str) -> PointType:
     raise ValueError(f'Unknown `which` parameter {which}')
 
 
-def distance(p1: PointType, p2: PointType) -> float:
+def distance(p1: PointType|'Point', p2: PointType|'Point') -> float:
     ''' Distance between two points '''
     return math.sqrt((p1[0]- p2[0])**2 + (p1[1] - p2[1])**2)
 
 
-def midpoint(p1: PointType, p2: PointType) -> PointType:
+def midpoint(p1: PointType|'Point', p2: PointType|'Point') -> PointType:
     ''' Midpoint between two points '''
     x = (p1[0] + p2[0])/2
     y = (p1[1] + p2[1])/2
     return (x, y)
 
 
-def point_slope(p1: PointType, p2: PointType) -> float:
+def point_slope(p1: PointType|'Point', p2: PointType|'Point') -> float:
     ''' Calculate slope between two points '''
     return (p2[1] - p1[1]) / (p2[0] - p1[0])
 
 
-def isclose(p1: PointType, p2: PointType) -> bool:
+def isclose(p1: PointType|'Point', p2: PointType|'Point') -> bool:
     ''' Determine if the points are identical (x and y within math.isclose) '''
     return math.isclose(p1[0], p2[0]) and math.isclose(p1[1], p2[1])
 
 
 def unique_points(points: list[PointType]) -> list[PointType]:
     ''' Remove duplicate (isclose) points from the lits '''
-    unique = []
+    unique: list[PointType] = []
     for item in points:
         if not any([isclose(item, x) for x in unique]):
             unique.append(item)
     return unique
 
 
-def translate(point: PointType, delta: PointType) -> PointType:
+def translate(point: PointType|'Point', delta: PointType|'Point') -> PointType:
     ''' Translate the point by delta '''
     return point[0]+delta[0], point[1]+delta[1]
 
 
-def rotate(point: PointType, theta: float) -> PointType:
+def rotate(point: PointType|'Point', theta: float) -> PointType:
     ''' Rotate the point theta radians about the origin '''
     cth = math.cos(theta)
     sth = math.sin(theta)
@@ -84,7 +86,7 @@ def rotate(point: PointType, theta: float) -> PointType:
     return x, y
 
 
-def reflect(point: PointType, line: LineType) -> PointType:
+def reflect(point: PointType|'Point', line: LineType|'Line') -> PointType:
     ''' Reflect the point over the line '''
     a, b, c = line
     x, y = point
@@ -92,7 +94,7 @@ def reflect(point: PointType, line: LineType) -> PointType:
     return k*a + x, k*b + y
 
 
-def image(point: PointType, line: LineType) -> PointType:
+def image(point: PointType|'Point', line: LineType|'Line') -> PointType:
     ''' Create a new point imaged onto the line (point on line at
         shortest distance to point)
     '''
@@ -100,7 +102,6 @@ def image(point: PointType, line: LineType) -> PointType:
     x, y = point
     k = -(a*x + b*y - c)/(a**2 + b**2)
     return k*a + x, k*b + y
-
 
 
 def angle_diff(theta1: float, theta2: float):
