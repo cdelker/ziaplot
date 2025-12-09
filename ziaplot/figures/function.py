@@ -161,7 +161,8 @@ class Function(Element):
                     startmarker=startmark,
                     endmarker=endmark,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,

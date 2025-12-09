@@ -107,7 +107,8 @@ class Ellipse(Shape):
                        strokewidth=sty.stroke_width,
                        stroke=sty.stroke,
                        dataview=databox,
-                       zorder=self._zorder)
+                       zorder=self._zorder,
+                       attrib=self._attrs)
 
 
 class Circle(Shape):
@@ -300,7 +301,8 @@ class Circle(Shape):
                        strokewidth=sty.stroke_width,
                        stroke=sty.stroke,
                        dataview=databox,
-                       zorder=self._zorder)
+                       zorder=self._zorder,
+                       attrib=self._attrs)
 
 
 class Rectangle(Shape):
@@ -334,7 +336,8 @@ class Rectangle(Shape):
                     stroke=sty.stroke,
                     rcorner=self.cornerradius,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
 
 class Arc(Circle):
@@ -383,7 +386,8 @@ class Arc(Circle):
                    strokewidth=sty.stroke_width,
                    stroke=sty.stroke,
                    dataview=databox,
-                   zorder=self._zorder)
+                   zorder=self._zorder,
+                   attrib=self._attrs)
 
 
 class CompassArc(Arc):

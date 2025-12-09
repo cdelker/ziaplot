@@ -19,6 +19,7 @@ class Drawable:
         self._csscls: str | None = None
         self._span: SpanType = 1, 1
         self._zorder: int = 1
+        self._attrs: dict[str, str] = {}
 
     def cssid(self, idn: str) -> 'Drawable':
         ''' Set the CSS id for the item. Matches items in CSS with #name selector '''
@@ -40,6 +41,11 @@ class Drawable:
     def zorder(self, zorder: int = 1) -> 'Drawable':
         ''' Set zorder for the drawable '''
         self._zorder = zorder
+        return self
+
+    def attribute(self, name: str, value: str) -> 'Drawable':
+        ''' Set an XML attribute to the SVG elemenet '''
+        self._attrs[name] = value
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,

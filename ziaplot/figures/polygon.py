@@ -49,4 +49,5 @@ class Polygon(Shape):
                     strokecolor=sty.get_color(),
                     strokewidth=sty.stroke_width,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)

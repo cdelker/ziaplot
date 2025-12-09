@@ -67,7 +67,8 @@ class IntegralFill(Element):
         canvas.poly(xy, color=fill,
                     strokecolor='none',
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
     @classmethod
     def intersection(cls, f: Function, f2: Function,

@@ -73,7 +73,8 @@ class PolyLine(Discrete):
                     width=sty.stroke_width,
                     markerid=markname,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
 
 class Scatter(Discrete):
@@ -100,7 +101,8 @@ class Scatter(Discrete):
                     color='none',
                     markerid=markname,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
 
 class ErrorBar(PolyLine):
@@ -160,7 +162,8 @@ class ErrorBar(PolyLine):
                             startmarker=yerrmark,
                             endmarker=yerrmark,
                             dataview=databox,
-                            zorder=self._zorder)
+                            zorder=self._zorder,
+                            attrib=self._attrs)
         if self.xerr is not None:
             xmarkstyle = self._build_style('ErrorBar.MarkerXError')
             xcolor = color if xmarkstyle.color == 'auto' else xmarkstyle.get_color()
@@ -178,7 +181,8 @@ class ErrorBar(PolyLine):
                             startmarker=xerrmark,
                             endmarker=xerrmark,
                             dataview=databox,
-                            zorder=self._zorder)
+                            zorder=self._zorder,
+                            attrib=self._attrs)
 
         super()._xml(canvas, databox, borders)
 
@@ -235,20 +239,23 @@ class LineFill(Discrete):
         canvas.poly(xy, color=sty.fill_color,
                     strokecolor='none',
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
         canvas.path(self.x, self.ymax,
                     stroke=sty.stroke,
                     color=sty.get_color(),
                     width=sty.stroke_width,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
         canvas.path(self.x, self.ymin,
                     stroke=sty.stroke,
                     color=sty.get_color(),
                     width=sty.stroke_width,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs)
 
 
 Plot = PolyLine

@@ -86,7 +86,8 @@ class Contour(Element):
                                 color=color,
                                 width=sty.stroke_width,
                                 dataview=databox,
-                                zorder=self._zorder)
+                                zorder=self._zorder,
+                                attrib=self._attrs)
         if self.colorbar:
             self._draw_colorbar(canvas)
 

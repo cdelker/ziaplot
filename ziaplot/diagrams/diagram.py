@@ -50,6 +50,7 @@ class Diagram(Container):
         self.xminordivisions = 0
         self.yminordivisions = 0
         self._pad_datarange = False
+        self._svgdefs = []
         diagram_stack.push_component(self)
 
     def __enter__(self):
@@ -83,6 +84,11 @@ class Diagram(Container):
             return Borders(0, 0, title_size+4, 0)
 
         return Borders(0, 0, 0, 0)
+
+    def add_def(self, svgdef: str) -> Diagram:
+        ''' Add an item to the svg <defs> '''
+        elm = ET.fromstring(svgdef)
+        self._svgdefs.append(elm)
 
     def size(self, w: float = 600, h: float = 400) -> Diagram:
         ''' Set canvas width and height '''
@@ -190,6 +196,9 @@ class Diagram(Container):
         width = self.width if self.width else sty.width
         height = self.height if self.height else sty.height
         canvas = Canvas(width, height, fill=sty.color)
+        for df in self._svgdefs:
+            canvas.add_def(df)
+
         self._xml(canvas)
         xml = canvas.xml()
         if border:
@@ -217,6 +226,11 @@ class Diagram(Container):
             if drange.ymin is not None and drange.ymax is not None:
                 ymin = min(drange.ymin, ymin)
                 ymax = max(drange.ymax, ymax)
+
+        if not math.isfinite(xmin) or not math.isfinite(xmax):
+            xmin, xmax = -1.0, 1.0
+        if not math.isfinite(ymin) or not math.isfinite(ymax):
+            ymin, ymax = -1.0, 1.0
 
         if xmin == xmax:
             xmin -= 1

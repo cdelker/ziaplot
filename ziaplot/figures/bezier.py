@@ -121,7 +121,8 @@ class Bezier(Element):
                       startmarker=startmark,
                       endmarker=endmark,
                       dataview=databox,
-                      zorder=self._zorder)
+                      zorder=self._zorder,
+                      attrib=self._attrs)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
@@ -211,7 +212,8 @@ class BezierSpline(Element):
             color=color,
             width=sty.stroke_width,
             dataview=databox,
-            zorder=self._zorder)
+            zorder=self._zorder,
+            attrib=self._attrs)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

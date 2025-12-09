@@ -151,7 +151,9 @@ class Pie(Diagram):
                           color=slicestyle.get_color(),
                           strokecolor=slicestyle.edge_color,
                           strokewidth=slicestyle.stroke_width,
-                          zorder=slice._zorder)
+                          zorder=slice._zorder,
+                          attrib=slice._attrs
+                          )
 
             if self.labelmode == 'name':
                 labeltext = slice._name
@@ -187,7 +189,8 @@ class Pie(Diagram):
                              color=slicestyle.get_color(),
                              strokecolor=slicestyle.edge_color,
                              strokewidth=slicestyle.stroke_width,
-                             zorder=slice._zorder)
+                             zorder=slice._zorder,
+                             attrib=slice._attrib)
 
                 tstyle = self._build_style('PieSlice.Text')
                 labelx = cxx + (radius+tstyle.margin) * math.cos(thetahalf)

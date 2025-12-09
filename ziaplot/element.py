@@ -39,10 +39,10 @@ class Component(Drawable):
             classes = [name, '*']
 
         return zptheme.style(
-            *classes,
-            cssid=self._cssid,
-            cssclass=self._csscls,
-            container=self._containerstyle,
+#            *classes,
+#            cssid=self._cssid,
+#            cssclass=self._csscls,
+#            container=self._containerstyle,
             instance=self._style)
 
     def color(self, color: str) -> 'Component':
@@ -91,7 +91,3 @@ class Element(Component):
         ''' Sets the element name to include in the legend '''
         self._name = name
         return self
-
-#    def _tangent_slope(self, x: float) -> float:
-#        ''' Calculate angle tangent to Element at x '''
-#        raise NotImplementedError
