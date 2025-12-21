@@ -20,6 +20,7 @@ class Drawable:
         self._span: SpanType = 1, 1
         self._zorder: int = 1
         self._attrs: dict[str, str] = {}
+        self._subelms: list[ET.Element] = []
 
     def cssid(self, idn: str) -> 'Drawable':
         ''' Set the CSS id for the item. Matches items in CSS with #name selector '''
@@ -46,6 +47,13 @@ class Drawable:
     def attribute(self, name: str, value: str) -> 'Drawable':
         ''' Set an XML attribute to the SVG elemenet '''
         self._attrs[name] = value
+        return self
+
+    def subelement(self, element: str|ET.Element) -> 'Drawable':
+        ''' Add an XML/SVG sub element '''
+        if isinstance(element, str):
+            element = ET.fromstring(element)
+        self._subelms.append(element)
         return self
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,

@@ -121,7 +121,8 @@ class Point(Element):
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs)
+                    attrib=self._attrs,
+                    subelm=self._subelms)
 
         if self._text:
             style = self._build_style('Point.Text')

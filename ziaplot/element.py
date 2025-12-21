@@ -39,10 +39,10 @@ class Component(Drawable):
             classes = [name, '*']
 
         return zptheme.style(
-#            *classes,
-#            cssid=self._cssid,
-#            cssclass=self._csscls,
-#            container=self._containerstyle,
+            *classes,
+            cssid=self._cssid,
+            cssclass=self._csscls,
+            container=self._containerstyle,
             instance=self._style)
 
     def color(self, color: str) -> 'Component':

@@ -108,7 +108,8 @@ class Ellipse(Shape):
                        stroke=sty.stroke,
                        dataview=databox,
                        zorder=self._zorder,
-                       attrib=self._attrs)
+                       attrib=self._attrs,
+                       subelm=self._subelms)
 
 
 class Circle(Shape):
@@ -302,7 +303,8 @@ class Circle(Shape):
                        stroke=sty.stroke,
                        dataview=databox,
                        zorder=self._zorder,
-                       attrib=self._attrs)
+                       attrib=self._attrs,
+                       subelm=self._subelms)
 
 
 class Rectangle(Shape):

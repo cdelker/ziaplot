@@ -23,6 +23,7 @@ def merge(style: Style, style2: Style) -> Style:
     if isinstance(style2.font_size, str) and isinstance(style.font_size, int):
         size_adder = NAMED_SIZE_INCREMENTS.get(style2.font_size, 0)
         style2.font_size = style.font_size + size_adder
+
     return replace(style, **style2.values())
 
 
@@ -44,6 +45,9 @@ class CssStyle:
     cssids: dict[str, Style] = field(default_factory=dict)
     cssclasses: dict[str, Style] = field(default_factory=dict)
     drawables: dict[str, Style] = field(default_factory=dict)
+
+    def __bool__(self):
+        return bool(self.cssids) or bool(self.cssclasses) or bool(self.drawables)
 
     def extract(self, classnames: Sequence[str],
                 cssclass: str | None = '', cssid: str | None = '') -> Style:

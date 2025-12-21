@@ -190,7 +190,7 @@ class Pie(Diagram):
                              strokecolor=slicestyle.edge_color,
                              strokewidth=slicestyle.stroke_width,
                              zorder=slice._zorder,
-                             attrib=slice._attrib)
+                             attrib=slice._attrs)
 
                 tstyle = self._build_style('PieSlice.Text')
                 labelx = cxx + (radius+tstyle.margin) * math.cos(thetahalf)

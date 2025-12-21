@@ -58,11 +58,18 @@ def set_clip(elm: ET.Element, clip: str|None) -> None:
         elm.set('clip-path', f'url(#{clip})')
 
 
-def set_attrib(elm: ET.Element, attrib: Optional[dict[str, str]]) -> None:
-    ''' Add custom SVG/XML attributes '''
+def set_attrib(
+    elm: ET.Element,
+    attrib: Optional[dict[str, str]],
+    subelms: Optional[list[ET.Element]] = None
+    ) -> None:
+    ''' Add custom SVG/XML attributes and subelements '''
     if attrib:
         for name, attr in attrib.items():
             elm.set(name, attr)
+    if subelms:
+        for sub in subelms:
+            elm.append(sub)
 
 
 class Transform:
@@ -295,7 +302,9 @@ class Canvas:
              startmarker: Optional[str] = None, endmarker: Optional[str] = None,
              dataview: Optional[ViewBox] = None,
              zorder: int = 1,
-             attrib: Optional[dict[str, str]] = None) -> None:
+             attrib: Optional[dict[str, str]] = None,
+             subelm: Optional[list[ET.Element]] = None,
+            ) -> None:
         ''' Add a path to the SVG
 
             Args:
@@ -335,14 +344,18 @@ class Canvas:
         if stroke not in ['-', 'solid', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
         set_clip(path, self.clip)
-        set_attrib(path, attrib)
+        set_attrib(path, attrib, subelm)
+        if subelm:
+            [path.append(s) for s in subelm]
         self.add_element(path, zorder)
 
     def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
              strokecolor: str = 'black', strokewidth: float = 2, stroke: DashTypes = '-',
              rcorner: float = 0, dataview: Optional[ViewBox] = None,
              zorder: int = 1,
-             attrib: Optional[dict[str, str]] = None) -> None:
+             attrib: Optional[dict[str, str]] = None,
+             subelm: Optional[list[ET.Element]] = None,
+             ) -> None:
         ''' Add a rectangle to the canvas
 
             Args:
@@ -387,14 +400,16 @@ class Canvas:
         if rcorner:
             rect.set('rx', str(rcorner))
         set_clip(rect, self.clip)
-        set_attrib(rect, attrib)
+        set_attrib(rect, attrib, subelm)
         self.add_element(rect, zorder)
 
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
                strokecolor: str = 'red', strokewidth: float = 1,
                stroke: DashTypes = '-', dataview: Optional[ViewBox] = None,
                zorder: int = 1,
-               attrib: Optional[dict[str, str]] = None) -> None:
+               attrib: Optional[dict[str, str]] = None,
+               subelm: Optional[list[ET.Element]] = None,
+               ) -> None:
         ''' Add a circle to the canvas (always a circle, the width/height
             will not be scaled to data coordinates).
 
@@ -422,7 +437,7 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             circ.set('stroke-dasharray', getdash(stroke, strokewidth))
         set_clip(circ, self.clip)
-        set_attrib(path, attrib)
+        set_attrib(circ, attrib, subelm)
         self.add_element(circ, zorder)
 
     def text(self, x: float, y: float, s: str,
@@ -473,7 +488,9 @@ class Canvas:
              stroke: DashTypes = '-',
              dataview: Optional[ViewBox] = None,
              zorder: int = 1,
-             attrib: Optional[dict[str, str]] = None) -> None:
+             attrib: Optional[dict[str, str]] = None,
+             subelm: Optional[list[ET.Element]] = None,
+             ) -> None:
         ''' Add a polygon to the canvas
 
             Args:
@@ -504,14 +521,16 @@ class Canvas:
             poly.set('stroke-dasharray', getdash(stroke, strokewidth))
 
         set_clip(poly, self.clip)
-        set_attrib(path, attrib)
+        set_attrib(poly, attrib, subelm)
         self.add_element(poly, zorder)
 
     def wedge(self, cx: float, cy: float, radius: float, theta: float,
               starttheta: float = 0, color: str = 'red',
               strokecolor: str = 'black', strokewidth: float = 1,
               zorder: int = 1,
-              attrib: Optional[dict[str, str]] = None) -> None:
+              attrib: Optional[dict[str, str]] = None,
+              subelm: Optional[list[ET.Element]] = None,
+              ) -> None:
         ''' Add a wedge/filled arc (ie pie chart slice)
 
             Args:
@@ -540,7 +559,7 @@ class Canvas:
         set_color(color, path, 'fill')
         path.set('stroke-width', str(strokewidth))
         set_clip(path, self.clip)
-        set_attrib(path, attrib)
+        set_attrib(path, attrib, subelm)
         self.add_element(path, zorder)
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
@@ -549,7 +568,9 @@ class Canvas:
             stroke: DashTypes = '-',
             dataview: Optional[ViewBox] = None,
             zorder: int = 1,
-            attrib: Optional[dict[str, str]] = None) -> None:
+            attrib: Optional[dict[str, str]] = None,
+            subelm: Optional[list[ET.Element]] = None,
+            ) -> None:
         ''' Add an open arc
 
             Args:
@@ -593,7 +614,7 @@ class Canvas:
             path.set('stroke-dasharray', getdash(stroke, strokewidth))
         set_color(strokecolor, path, 'stroke')
         set_clip(path, self.clip)
-        set_attrib(path, attrib)
+        set_attrib(path, attrib, subelm)
         self.add_element(path, zorder)
 
     def ellipse(self, cx: float, cy: float, r1: float, r2: float,
@@ -604,7 +625,8 @@ class Canvas:
                 strokewidth: float = 1,
                 dataview: Optional[ViewBox] = None,
                 zorder: int = 1,
-                attrib: Optional[dict[str, str]] = None) -> None:
+                attrib: Optional[dict[str, str]] = None,
+                subelm: Optional[list[ET.Element]] = None) -> None:
         ''' Add an ellipse
 
             Args:
@@ -637,7 +659,10 @@ class Canvas:
         if theta:
             ellipse.set('transform', f'rotate({-theta} {cx} {cy})')
         set_clip(ellipse, self.clip)
-        set_attrib(ellipse, attrib)
+        set_attrib(ellipse, attrib, subelm)
+        if subelm:
+            for s in subelm:
+                ellipse.append(s)
         self.add_element(ellipse, zorder)
 
     def bezier(self,
@@ -648,7 +673,9 @@ class Canvas:
                startmarker: Optional[str] = None, endmarker: Optional[str] = None,
                dataview: Optional[ViewBox] = None,
                zorder: int = 1,
-               attrib: Optional[dict[str, str]] = None) -> None:
+               attrib: Optional[dict[str, str]] = None,
+               subelm: Optional[list[ET.Element]] = None,
+               ) -> None:
         ''' Add a bezier curve to the SVG
 
             Args:
@@ -693,7 +720,7 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
         set_clip(path, self.clip)
-        set_attrib(path, attrb)
+        set_attrib(path, attrib, subelm)
         self.add_element(path, zorder)
 
     def bezier_spline(
@@ -707,7 +734,9 @@ class Canvas:
             endmarker: Optional[str] = None,
             dataview: Optional[ViewBox] = None,
             zorder: int = 1,
-            attrib: Optional[dict[str, str]] = None) -> None:
+            attrib: Optional[dict[str, str]] = None,
+            subelm: Optional[list[ET.Element]] = None,
+            ) -> None:
         ''' Add a multi-bezier curve to the SVG
 
             Args:
@@ -725,14 +754,15 @@ class Canvas:
 
         points = [(p[0], self.flipy(p[1])) for p in points]
 
+        pointstr: list[str] = []
         path = ET.Element('path')
-        pointstr = f'M {fmt(points[0][0])},{fmt(points[0][1])} '
-        pointstr += 'C '  # Always cubic
+        pointstr.append(f'M {fmt(points[0][0])},{fmt(points[0][1])}')
+        pointstr.append('C')  # Always cubic
         for i in range(1, len(points)):
-            pointstr += f'{fmt(points[i][0])},{fmt(points[i][1])} '
+            pointstr.append(f'{fmt(points[i][0])},{fmt(points[i][1])}')
 
         set_color(color, path, 'stroke')
-        path.set('d', pointstr)
+        path.set('d', ' '.join(pointstr))
         path.set('stroke-width', str(width))
         path.set('fill', 'none')
         if startmarker is not None:
@@ -742,5 +772,5 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
         set_clip(path, self.clip)
-        set_attrib(path, attrib)
+        set_attrib(path, attrib, subelm)
         self.add_element(path, zorder)
