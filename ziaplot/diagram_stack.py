@@ -13,6 +13,9 @@ diagram_stack: dict[Container, Optional[Drawable]] = {}
 pause: bool = False
 apply_style: list[str] = []
 
+# Globally track unused ID names for SVG element id= attributes
+svg_element_id: int = -1
+
 
 def push_diagram(diagram: Container) -> None:
     ''' Add a plot to the stack '''
@@ -40,3 +43,10 @@ def current_diagram() -> Optional[Drawable]:
         return list(diagram_stack.keys())[-1]
     except IndexError:
         return None
+
+
+def get_elmid():
+    ''' Get unique ID for use in an SVG id= attribute '''
+    global svg_element_id
+    svg_element_id += 1
+    return f'zp{svg_element_id}'

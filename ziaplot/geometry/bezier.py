@@ -85,7 +85,7 @@ def length(b: BezierType|'Bezier', n: int = 50) -> float:
         Args:
             n: Number of points used for piecewise approximation of curve
     '''
-    t = util.linspace(0, 1, num=50)
+    t = util.linspace(0, 1, num=n)
 
     p = [xy(b, tt) for tt in t]
     dists = [distance(p[i], p[i+1]) for i in range(n-1)]

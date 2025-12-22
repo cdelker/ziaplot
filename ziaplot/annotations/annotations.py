@@ -89,7 +89,10 @@ class Arrow(Annotation):
                     startmarker=tailmark,
                     endmarker=endmark,
                     dataview=databox,
-                    zorder=self._zorder)
+                    zorder=self._zorder,
+                    attrib=self._attrs,
+                    subelm=self._subelms)
+
 
         if self._text:
             dx, dy, halign, valign = text_align_ofst(
@@ -202,8 +205,9 @@ class Angle(Annotation):
                         color=sty.color,
                         width=sty.stroke_width,
                         dataview=databox,
-                        zorder=self._zorder
-                        )
+                        zorder=self._zorder,
+                        attrib=self._attrs,
+                        subelm=self._subelms)
         else:
             dradius = sty.margin * databox.w / canvas.viewbox.w
             for i in range(self.arcs):
@@ -214,8 +218,10 @@ class Angle(Annotation):
                     strokecolor=sty.color,
                     strokewidth=sty.stroke_width,
                     dataview=databox,
-                    zorder=self._zorder
-                    )
+                    zorder=self._zorder,
+                    attrib=self._attrs,
+                    subelm=self._subelms)
+
 
         if self._label:
             textstyle = self._build_style('Angle.Text')

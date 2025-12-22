@@ -7,7 +7,7 @@ from operator import attrgetter
 import xml.etree.ElementTree as ET
 
 from . import text
-from .geometry import PointType
+from .geometry import PointType, bezier
 from .config import config
 from .style import MarkerTypes, DashTypes
 
@@ -15,7 +15,7 @@ ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
 SvgElm = namedtuple('SvgElm', ['element', 'zorder', 'insorder'])
-SvgText = namedtuple('SvgText', 'x y s color font size halign valign rotate')
+SvgText = namedtuple('SvgText', 'x y s color font size halign valign rotate attrib subelm')
 
 
 def fmt(f: float) -> str:
@@ -61,15 +61,42 @@ def set_clip(elm: ET.Element, clip: str|None) -> None:
 def set_attrib(
     elm: ET.Element,
     attrib: Optional[dict[str, str]],
-    subelms: Optional[list[ET.Element]] = None
+    subelms: Optional[list[ET.Element]] = None,
+    length: float = None,
     ) -> None:
     ''' Add custom SVG/XML attributes and subelements '''
     if attrib:
+        if attrib.get('stroke-dasharray', None) == '$length':
+            attrib['stroke-dasharray'] = fmt(length)
+        if attrib.get('stroke-dashoffset', None) == '$length':
+            attrib['stroke-dashoffset'] = fmt(length)
+
         for name, attr in attrib.items():
             elm.set(name, attr)
+
     if subelms:
         for sub in subelms:
+            if sub.get('attributeName') == 'stroke-dashoffset':
+                if sub.get('from') == '$length':
+                    sub.set('from', fmt(length))
+                if sub.get('to') == '$length':
+                    sub.set('to', fmt(length))
+
+        for sub in subelms:
             elm.append(sub)
+
+
+
+
+
+
+def is_animate_move(subelms: Optional[list[ET.Element]] = None):
+    ''' Does the element have <anmimateMotion>? '''
+    if subelms:
+        for elm in subelms:
+            if elm.tag == 'animateMotion':
+                return True
+    return False
 
 
 class Transform:
@@ -91,14 +118,16 @@ class Transform:
         return (f'Transform(scale=({fmt(self.xscale)},{fmt(self.yscale)}); '
                 f'shift=({fmt(self.xshift)},{fmt(self.yshift)}))')
 
-    def apply(self, x: float, y: float) -> PointType:
+    def apply(self, x: float, y: float, shift: bool=True) -> PointType:
         ''' Apply the transformation to the x, y point '''
-        return (x*self.xscale + self.xshift,
-                y*self.yscale + self.yshift)
+        if shift:
+            return (x*self.xscale + self.xshift,
+                    y*self.yscale + self.yshift)
+        return (x*self.xscale, y*self.yscale)
 
-    def apply_list(self, x: Sequence[float], y: Sequence[float]) -> Tuple[list[float], list[float]]:
+    def apply_list(self, x: Sequence[float], y: Sequence[float], shift: bool=True) -> Tuple[list[float], list[float]]:
         ''' Apply the transofrmation to a list of x, y points '''
-        xy = [self.apply(xx, yy) for xx, yy in zip(x, y)]
+        xy = [self.apply(xx, yy, shift=shift) for xx, yy in zip(x, y)]
         x = [z[0] for z in xy if math.isfinite(z[0]) and math.isfinite(z[1])]
         y = [z[1] for z in xy if math.isfinite(z[0]) and math.isfinite(z[1])]
         return x, y
@@ -155,7 +184,9 @@ class Canvas:
                     size=elm.element.size,
                     halign=elm.element.halign,
                     valign=elm.element.valign,
-                    rotate=elm.element.rotate)
+                    rotate=elm.element.rotate,
+                    attrib=elm.element.attrib,
+                    subelm=elm.element.subelm)
         return root
 
     def xml(self) -> ET.Element:
@@ -319,11 +350,13 @@ class Canvas:
                 endmarker: ID name of marker for end point of path
                 dataview: Viewbox for transforming x, y data into SVG coordinates
         '''
+        animated = is_animate_move(subelm)
         if dataview:  # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
-            x, y = xform.apply_list(x, y)
+            x, y = xform.apply_list(x, y, shift=not animated)
 
-        y = [self.flipy(yy) for yy in y]
+        if not animated:
+            y = [self.flipy(yy) for yy in y]
 
         path = ET.Element('path')
         pointstr = f'M {fmt(x[0])},{fmt(y[0])} '
@@ -331,7 +364,7 @@ class Canvas:
         pointstr += ' '.join(f'{fmt(xx)},{fmt(yy)}' for xx, yy in zip(x[1:], y[1:]))
         path.set('d', pointstr)
         set_color(color, path, 'stroke')
-        path.set('stroke-width', str(width))
+        path.set('stroke-width', fmt(width))
         path.set('fill', 'none')
         if markerid is not None:
             path.set('marker-start', f'url(#{markerid})')
@@ -343,10 +376,15 @@ class Canvas:
             path.set('marker-end', f'url(#{endmarker})')
         if stroke not in ['-', 'solid', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
-        set_clip(path, self.clip)
-        set_attrib(path, attrib, subelm)
-        if subelm:
-            [path.append(s) for s in subelm]
+        if not animated:
+            set_clip(path, self.clip)
+
+        length = 0
+        for i in range(1, len(x)):
+            length += math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
+
+        set_attrib(path, attrib, subelm, length)
+
         self.add_element(path, zorder)
 
     def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
@@ -370,6 +408,7 @@ class Canvas:
                 rcorner: Radius of rectangle corners
                 dataview: ViewBox for transforming x, y data into SVG coordinates
         '''
+        animated = is_animate_move(subelm)
         if dataview:
             # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
@@ -377,7 +416,14 @@ class Canvas:
             x, y = xform.apply(x, y)
             w, h = x2-x, y2-y
 
-        y = self.flipy(y) - h  # xy is top-left corner
+            if animated:
+                x -= xform.xshift
+                y -= xform.yshift
+
+        if not animated:
+            y = self.flipy(y) - h  # xy is top-left corner
+        else:
+            y = -y
 
         if w < 0:
             x += w
@@ -399,8 +445,12 @@ class Canvas:
 
         if rcorner:
             rect.set('rx', str(rcorner))
-        set_clip(rect, self.clip)
-        set_attrib(rect, attrib, subelm)
+
+        if not animated:
+            set_clip(rect, self.clip)
+
+        length = w*2 + h*2
+        set_attrib(rect, attrib, subelm, length)
         self.add_element(rect, zorder)
 
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
@@ -422,22 +472,33 @@ class Canvas:
                 strokewidth: Line width of circle border
                 stroke: Stroke/linestyle of circle border
         '''
+        animated = is_animate_move(subelm)
         if dataview:
             xform = Transform(dataview, self.viewbox)
-            x, y = xform.apply(x, y)
+            x, y = xform.apply(x, y, shift=not animated)
             radius = radius * self.viewbox.w/dataview.w
 
-        y = self.flipy(y)
-        circ = ET.Element(
-            'circle',
-            attrib={'cx': fmt(x), 'cy': fmt(y), 'r': fmt(abs(radius)),
-                    'stroke-width': str(strokewidth)})
+        if not animated:
+            y = self.flipy(y)
+        else:
+            y = -y
+
+        circ = ET.Element('circle',)
+        circ.set('cx', fmt(x))
+        circ.set('cy', fmt(y))
+        circ.set('r', fmt(abs(radius)))
+        if strokewidth != 1:
+            circ.set('stroke-width', str(strokewidth))
         set_color(strokecolor, circ, 'stroke')
         set_color(color, circ, 'fill')
         if stroke not in ['-', None, 'none', '']:
             circ.set('stroke-dasharray', getdash(stroke, strokewidth))
-        set_clip(circ, self.clip)
-        set_attrib(circ, attrib, subelm)
+
+        if not animated:
+            set_clip(circ, self.clip)
+
+        length = 2*radius*math.pi
+        set_attrib(circ, attrib, subelm, length)
         self.add_element(circ, zorder)
 
     def text(self, x: float, y: float, s: str,
@@ -449,7 +510,10 @@ class Canvas:
              rotate: Optional[float] = None,
              pixelofst: Optional[PointType] = None,
              dataview: Optional[ViewBox] = None,
-             zorder: int = 10) -> None:
+             zorder: int = 10,
+             attrib: Optional[dict[str, str]] = None,
+             subelm: Optional[list[ET.Element]] = None,
+             ) -> None:
         ''' Add text to the canvas
 
             Args:
@@ -468,18 +532,23 @@ class Canvas:
         if s == '':
             return
 
+        animated = is_animate_move(subelm)
         if dataview:
             xform = Transform(dataview, self.viewbox)
-            x, y = xform.apply(x, y)
+            x, y = xform.apply(x, y, shift=not animated)
 
         if pixelofst:
             # Apply offset in pixel coordinates, without transform
             x += pixelofst[0]
             y += pixelofst[1]
 
-        y = self.flipy(y)
+        if not animated:
+            y = self.flipy(y)
+        else:
+            y = -y
+
         self.add_element(
-            SvgText(x, y, s, color, font, size, halign, valign, rotate),
+            SvgText(x, y, s, color, font, size, halign, valign, rotate, attrib, subelm),
             zorder=zorder)
 
     def poly(self, points: Sequence[PointType], color: str = 'black',
@@ -500,13 +569,18 @@ class Canvas:
                 strokewidth: Width of border
                 stroke: Stroke/linestyle of the path
         '''
+        animated = is_animate_move(subelm)
         x = [p[0] for p in points]
         y = [p[1] for p in points]
         if dataview:
             xform = Transform(dataview, self.viewbox)
-            x, y = xform.apply_list(x, y)
+            x, y = xform.apply_list(x, y, shift=not animated)
 
-        y = [self.flipy(yy) for yy in y]
+        if not animated:
+            y = [self.flipy(yy) for yy in y]
+        else:
+            y = [-yy for yy in y]
+
         pointstr = ''
         for px, py in zip(x, y):
             pointstr += f'{fmt(px)},{fmt(py)} '
@@ -520,8 +594,14 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             poly.set('stroke-dasharray', getdash(stroke, strokewidth))
 
-        set_clip(poly, self.clip)
-        set_attrib(poly, attrib, subelm)
+        if not animated:
+            set_clip(poly, self.clip)
+
+        length = math.sqrt((x[-1]-x[0])**2 + (y[-1]-y[0])**2)
+        for i in range(1, len(x)):
+            length += math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
+
+        set_attrib(poly, attrib, subelm, length)
         self.add_element(poly, zorder)
 
     def wedge(self, cx: float, cy: float, radius: float, theta: float,
@@ -583,12 +663,17 @@ class Canvas:
                 strokewidth: Border width
                 stroke: Stroke/linestyle of the path
         '''
+        animated = is_animate_move(subelm)
         if dataview:
             xform = Transform(dataview, self.viewbox)
-            cx, cy = xform.apply(cx, cy)
+            cx, cy = xform.apply(cx, cy, shift=not animated)
             radiusx = radius * self.viewbox.w / dataview.w
             radiusy = radius * self.viewbox.h / dataview.h
-        cy = self.flipy(cy)
+
+        if not animated:
+            cy = self.flipy(cy)
+        else:
+            cy = -cy
 
         t1 = math.radians(theta1)
         t2 = math.radians(theta2)
@@ -613,8 +698,12 @@ class Canvas:
         if stroke not in ['-', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, strokewidth))
         set_color(strokecolor, path, 'stroke')
-        set_clip(path, self.clip)
-        set_attrib(path, attrib, subelm)
+        if not animated:
+            set_clip(path, self.clip)
+
+        dtheta = t2-t1
+        length = radiusx*(dtheta - ((radiusx-radiusy)/(radiusx+radiusy)) * math.sin(2*dtheta))  # Approximate
+        set_attrib(path, attrib, subelm, length)
         self.add_element(path, zorder)
 
     def ellipse(self, cx: float, cy: float, r1: float, r2: float,
@@ -638,12 +727,17 @@ class Canvas:
                 strokecolor: Border color
                 strokewidth: Border width
         '''
+        animated = is_animate_move(subelm)
         if dataview:
             xform = Transform(dataview, self.viewbox)
-            cx, cy = xform.apply(cx, cy)
+            cx, cy = xform.apply(cx, cy, shift=not animated)
             r1 = r1 * self.viewbox.w / dataview.w
             r2 = r2 * self.viewbox.h / dataview.h
-        cy = self.flipy(cy)
+
+        if not animated:
+            cy = self.flipy(cy)
+        else:
+            cy = -cy
 
         ellipse = ET.Element('ellipse')
         ellipse.set('cx', fmt(cx))
@@ -658,11 +752,13 @@ class Canvas:
 
         if theta:
             ellipse.set('transform', f'rotate({-theta} {cx} {cy})')
-        set_clip(ellipse, self.clip)
-        set_attrib(ellipse, attrib, subelm)
-        if subelm:
-            for s in subelm:
-                ellipse.append(s)
+
+        if not animated:
+            set_clip(ellipse, self.clip)
+
+        # Ramanaujan First Approximation
+        length = math.pi*(3*(r1+r2) - math.sqrt((3*r1+r2)*(r1+3*r2)))
+        set_attrib(ellipse, attrib, subelm, length)
         self.add_element(ellipse, zorder)
 
     def bezier(self,
@@ -688,39 +784,59 @@ class Canvas:
                 endmarker: ID name of marker for end point of path
                 dataview: Viewbox for transforming x, y data into SVG coordinates
         '''
+        animated = is_animate_move(subelm)
         if dataview:  # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
-            p1 = xform.apply(*p1)
-            p2 = xform.apply(*p2)
-            p3 = xform.apply(*p3)
-            p4 = xform.apply(*p4) if p4 is not None else p4
+            p1 = xform.apply(*p1, shift=not animated)
+            p2 = xform.apply(*p2, shift=not animated)
+            p3 = xform.apply(*p3, shift=not animated)
+            p4 = xform.apply(*p4, shift=not animated) if p4 is not None else p4
 
-        p1 = p1[0], self.flipy(p1[1])
-        p2 = p2[0], self.flipy(p2[1])
-        p3 = p3[0], self.flipy(p3[1])
-        if p4 is not None:
-            p4 = p4[0], self.flipy(p4[1])
+        if not animated:
+            p1 = p1[0], self.flipy(p1[1])
+            p2 = p2[0], self.flipy(p2[1])
+            p3 = p3[0], self.flipy(p3[1])
+            if p4 is not None:
+                p4 = p4[0], self.flipy(p4[1])
+        else:
+            p1 = p1[0], -p1[1]
+            p2 = p2[0], -p2[1]
+            p3 = p3[0], -p3[1]
+            if p4 is not None:
+                p4 = p4[0], -p4[1]
 
         path = ET.Element('path')
-        pointstr = f'M {fmt(p1[0])},{fmt(p1[1])} '
-        pointstr += 'C ' if p4 is not None else 'Q '
-        pointstr += f'{fmt(p2[0])},{fmt(p2[1])}'
-        pointstr += f' {fmt(p3[0])},{fmt(p3[1])}'
-        if p4 is not None:
-            pointstr += f' {fmt(p4[0])},{fmt(p4[1])}'
+        if not animated:
+            pointstr = f'M {fmt(p1[0])},{fmt(p1[1])} '
+            pointstr += 'C ' if p4 is not None else 'Q '
+            pointstr += f'{fmt(p2[0])},{fmt(p2[1])}'
+            pointstr += f' {fmt(p3[0])},{fmt(p3[1])}'
+            if p4 is not None:
+                pointstr += f' {fmt(p4[0])},{fmt(p4[1])}'
+        else:
+            # Use relative coords for animated
+            pointstr = 'M 0 0'
+            pointstr += 'c ' if p4 is not None else 'q '
+            pointstr += f'{fmt(p2[0]-p1[0])},{fmt(p2[1]-p1[1])}'
+            pointstr += f' {fmt(p3[0]-p1[0])},{fmt(p3[1]-p1[1])}'
+            if p4 is not None:
+                pointstr += f' {fmt(p4[0]-p1[0])},{fmt(p4[1]-p1[1])}'
 
-        set_color(color, path, 'stroke')
         path.set('d', pointstr)
         path.set('stroke-width', str(width))
         path.set('fill', 'none')
+        set_color(color, path, 'stroke')
         if startmarker is not None:
             path.set('marker-start', f'url(#{startmarker})')
         if endmarker is not None:
             path.set('marker-end', f'url(#{endmarker})')
         if stroke not in ['-', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
-        set_clip(path, self.clip)
-        set_attrib(path, attrib, subelm)
+        if not animated:
+            set_clip(path, self.clip)
+
+        length = bezier.length((p1, p2, p3), n=20) if p4 is None else bezier.length((p1, p2, p3, p4), n=20)
+        set_attrib(path, attrib, subelm, length)
         self.add_element(path, zorder)
 
     def bezier_spline(
@@ -748,11 +864,15 @@ class Canvas:
                 endmarker: ID name of marker for end point of path
                 dataview: Viewbox for transforming x, y data into SVG coordinates
         '''
+        animated = is_animate_move(subelm)
         if dataview:  # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
-            points = [xform.apply(*p) for p in points]
+            points = [xform.apply(*p, shift=not animated) for p in points]
 
-        points = [(p[0], self.flipy(p[1])) for p in points]
+        if not animated:
+            points = [(p[0], self.flipy(p[1])) for p in points]
+        else:
+            points = [(p[0], -p[1]) for p in points]
 
         pointstr: list[str] = []
         path = ET.Element('path')
@@ -771,6 +891,13 @@ class Canvas:
             path.set('marker-end', f'url(#{endmarker})')
         if stroke not in ['-', None, 'none', '']:
             path.set('stroke-dasharray', getdash(stroke, width))
-        set_clip(path, self.clip)
-        set_attrib(path, attrib, subelm)
+        if not animated:
+            set_clip(path, self.clip)
+
+        length = 0
+        for i in range((len(points)-2)//3+1):
+            p = points[i*3:i*3+4]
+            length += bezier.length(p)
+
+        set_attrib(path, attrib, subelm, length)
         self.add_element(path, zorder)

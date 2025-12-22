@@ -56,6 +56,10 @@ class Drawable:
         self._subelms.append(element)
         return self
 
+    def get_attribute(self, name: str) -> str:
+        ''' Get an SVG attribute from the element '''
+        return self._attrs.get(name, None)
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Draw elements to canvas '''

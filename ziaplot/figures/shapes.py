@@ -339,7 +339,8 @@ class Rectangle(Shape):
                     rcorner=self.cornerradius,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs)
+                    attrib=self._attrs,
+                    subelm=self._subelms)
 
 
 class Arc(Circle):
@@ -389,7 +390,8 @@ class Arc(Circle):
                    stroke=sty.stroke,
                    dataview=databox,
                    zorder=self._zorder,
-                   attrib=self._attrs)
+                   attrib=self._attrs,
+                   subelm=self._subelms)
 
 
 class CompassArc(Arc):

@@ -152,8 +152,8 @@ class Pie(Diagram):
                           strokecolor=slicestyle.edge_color,
                           strokewidth=slicestyle.stroke_width,
                           zorder=slice._zorder,
-                          attrib=slice._attrs
-                          )
+                          attrib=self._attrs,
+                          subelm=self._subelms)
 
             if self.labelmode == 'name':
                 labeltext = slice._name

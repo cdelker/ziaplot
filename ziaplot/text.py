@@ -77,16 +77,26 @@ def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
               size: float = 14,
               halign: Halign = 'left',
               valign: Valign = 'bottom',
-              rotate: Optional[float] = None):
+              rotate: Optional[float] = None,
+              attrib: Optional[dict[str, str]] = None,
+              subelm: Optional[list[ET.Element]] = None,
+              ):
 
     if config.text == 'path':
-        draw_text_zia(x, y, s, svgelm=svgelm,
+        elm = draw_text_zia(x, y, s, svgelm=svgelm,
                       color=color, font=font, size=size,
                       halign=halign, valign=valign, rotate=rotate)
     else:
-        draw_text_text(x, y, s, svgelm=svgelm,
+        elm = draw_text_text(x, y, s, svgelm=svgelm,
                        color=color, font=font, size=size,
                        halign=halign, valign=valign, rotate=rotate)
+
+    if attrib:
+        for name, attr in attrib.items():
+            elm.set(name, attr)
+    if subelm:
+        for sub in subelm:
+            elm.append(sub)
 
 
 def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
@@ -102,6 +112,7 @@ def draw_text_zia(x: float, y: float, s: str, svgelm: ET.Element,
 
     if rotate:
         textelm.attrib['transform'] = f' rotate({-rotate} {fmt(x)} {fmt(y)})'
+    return textelm
 
 
 def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
@@ -131,7 +142,7 @@ def draw_text_text(x: float, y: float, s: str, svgelm: ET.Element,
 
     txt = ET.SubElement(svgelm, 'text', attrib=attrib)
     txt.text = s
-
+    return txt
 
 def text_size(st: str, fontsize: float = 14, font: str = 'Arial') -> Size:
     ''' Estimate string width based on individual characters
