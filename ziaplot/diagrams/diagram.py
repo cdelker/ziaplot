@@ -50,7 +50,7 @@ class Diagram(Container):
         self.xminordivisions = 0
         self.yminordivisions = 0
         self._pad_datarange = False
-        self._svgdefs = []
+        self._svgdefs: list[ET.Element] = []
         diagram_stack.push_component(self)
 
     def __enter__(self):
@@ -89,6 +89,7 @@ class Diagram(Container):
         ''' Add an item to the svg <defs> '''
         elm = ET.fromstring(svgdef)
         self._svgdefs.append(elm)
+        return self
 
     def size(self, w: float = 600, h: float = 400) -> Diagram:
         ''' Set canvas width and height '''

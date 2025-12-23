@@ -93,6 +93,7 @@ class Component(Drawable):
         '''
         if not (tag := path.get_attribute('id')):
             tag = diagram_stack.get_elmid()
+            assert tag is not None
             path.attribute('id', tag)
 
         elm = ET.Element('animateMotion')
@@ -110,7 +111,7 @@ class Component(Drawable):
         return self
 
     def animate_in(self, begin: str='', duration: str = '',
-                   repeat: str = ''):
+                   repeat: str = '') -> 'Component':
         ''' Animate the path as if it is being drawn '''
         tag = diagram_stack.get_elmid()
 
@@ -138,7 +139,7 @@ class Component(Drawable):
         return self
 
     def animate_out(self, begin: str='', duration: str = '',
-                    repeat: str = ''):
+                    repeat: str = '') -> 'Component':
         ''' Animate the path as if it is being erased '''
         tag = diagram_stack.get_elmid()
         elm = ET.Element('animate')
@@ -160,6 +161,25 @@ class Component(Drawable):
         elm.set('attributeName', 'stroke-dashoffset')
         elm.set('to', '$length')
         elm.set('begin', f'{tag}.end')
+        self._subelms.append(elm)
+        return self
+
+    def animate(self, attribute: str, to: str, frm: str,
+                begin: str = '', duration: str = '',
+                repeat: str = 'indefinite') -> 'Component':
+        ''' Animate an attribute. (Note parameters are in SVG coordinates, not drawing
+            coordinates)
+        '''
+        elm = ET.Element('animate')
+        elm.set('attributeName', attribute)
+        elm.set('to', to)
+        elm.set('from', frm)
+        if begin:
+            elm.set('begin', str(begin))
+        if duration:
+            elm.set('dur', str(duration))
+        if repeat:
+            elm.set('repeatCount', repeat)
         self._subelms.append(elm)
         return self
 

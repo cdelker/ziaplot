@@ -1,18 +1,18 @@
 ''' Bezier Curve calculations '''
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 import math
 import bisect
 from itertools import accumulate
 
 from .. import util
-from .geometry import PointType, BezierType, distance
+from .geometry import PointType, BezierType, BezierCubicType, BezierQuadType, distance
 
 if TYPE_CHECKING:
     from ..figures.bezier import Bezier
 
 
-def quadratic_xy(b: BezierType|'Bezier', t: float) -> PointType:
+def quadratic_xy(b: BezierQuadType|'Bezier', t: float) -> PointType:
     ''' Point on Quadratic Bezier at parameter t '''
     (p1x, p1y), (p2x, p2y), (p3x, p3y), *_ = b
     x = p2x + (1-t)**2 * (p1x - p2x) + t**2 * (p3x - p2x)
@@ -20,7 +20,7 @@ def quadratic_xy(b: BezierType|'Bezier', t: float) -> PointType:
     return x, y
 
 
-def quadratic_tangent_slope(b: BezierType|'Bezier', t: float) -> float:
+def quadratic_tangent_slope(b: BezierQuadType|'Bezier', t: float) -> float:
     ''' Slope of tanget at parameter t '''
     (p1x, p1y), (p2x, p2y), (p3x, p3y), *_ = b
     bprime_x = 2*(1-t) * (p2x - p1x) + 2*t*(p3x - p2x)
@@ -28,7 +28,7 @@ def quadratic_tangent_slope(b: BezierType|'Bezier', t: float) -> float:
     return bprime_y / bprime_x
 
 
-def quadtratic_tangent_angle(b: BezierType|'Bezier', t: float) -> float:
+def quadtratic_tangent_angle(b: BezierQuadType|'Bezier', t: float) -> float:
     ''' Get angle of tangent at parameter t (radians) '''
     (p1x, p1y), (p2x, p2y), (p3x, p3y), *_ = b
     bprime_x = 2*(1-t) * (p2x - p1x) + 2*t*(p3x - p2x)
@@ -36,7 +36,7 @@ def quadtratic_tangent_angle(b: BezierType|'Bezier', t: float) -> float:
     return math.atan2(bprime_y, bprime_x)
 
 
-def cubic_xy(b: BezierType|'Bezier', t: float) -> PointType:
+def cubic_xy(b: BezierCubicType|'Bezier', t: float) -> PointType:
     ''' Point on cubic Bezier at parameter t '''
     (p1x, p1y), (p2x, p2y), (p3x, p3y), (p4x, p4y) = b
     x = (p1x*(1-t)**3 + p2x*3*t*(1-t)**2 + p3x*3*(1-t)*t**2 + p4x*t**3)
@@ -44,7 +44,7 @@ def cubic_xy(b: BezierType|'Bezier', t: float) -> PointType:
     return (x, y)
 
 
-def cubic_tangent_slope(b: BezierType|'Bezier', t: float) -> float:
+def cubic_tangent_slope(b: BezierCubicType|'Bezier', t: float) -> float:
     ''' Slope of tanget at parameter t '''
     (p1x, p1y), (p2x, p2y), (p3x, p3y), (p4x, p4y) = b
     bprime_x = 3*(1-t)**2 * (p2x-p1x) + 6*(1-t)*t*(p3x-p2x) + 3*t**2*(p4x-p3x)
@@ -52,7 +52,7 @@ def cubic_tangent_slope(b: BezierType|'Bezier', t: float) -> float:
     return bprime_y / bprime_x
 
 
-def cubic_tangent_angle(b: BezierType|'Bezier', t: float) -> float:
+def cubic_tangent_angle(b: BezierCubicType|'Bezier', t: float) -> float:
     ''' Get angle of tangent at parameter t (radians) '''
     (p1x, p1y), (p2x, p2y), (p3x, p3y), (p4x, p4y) = b
     bprime_x = 3*(1-t)**2 * (p2x-p1x) + 6*(1-t)*t*(p3x-p2x) + 3*t**2*(p4x-p3x)
@@ -64,19 +64,19 @@ def xy(b: BezierType | 'Bezier', t: float) -> PointType:
     ''' Point on a Bezier curve at parameter t '''
     if len(b) == 3:
         return quadratic_xy(b, t)  # type: ignore
-    return cubic_xy(b, t)
+    return cubic_xy(cast(BezierCubicType, b), t)
 
 
 def tangent_slope(b: BezierType | 'Bezier', t: float) -> float:
     if len(b) == 3:
         return quadratic_tangent_slope(b, t)  # type: ignore
-    return cubic_tangent_slope(b, t)
+    return cubic_tangent_slope(cast(BezierCubicType, b), t)
 
 
 def tangent_angle(b: BezierType | 'Bezier', t: float) -> float:
     if len(b) == 3:
-        return quadtratic_tangent_angle(b, t)
-    return cubic_tangent_angle(b, t)
+        return quadtratic_tangent_angle(cast(BezierQuadType, b), t)
+    return cubic_tangent_angle(cast(BezierCubicType, b), t)
 
 
 def length(b: BezierType|'Bezier', n: int = 50) -> float:

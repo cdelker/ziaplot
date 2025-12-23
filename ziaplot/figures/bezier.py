@@ -9,7 +9,7 @@ from xml.etree import ElementTree as ET
 
 from .. import util
 from .. import geometry
-from ..geometry import PointType, BezierType, distance
+from ..geometry import PointType, BezierType, BezierCubicType, BezierQuadType, distance
 from ..canvas import Canvas, Borders, ViewBox
 from ..element import Element
 from ..style import MarkerTypes
@@ -199,7 +199,7 @@ class BezierSpline(Element):
         n = len(curves)
         curve_num = int(t * n)
         curve_t = t*n - curve_num
-        return geometry.bezier.cubic_xy(curves[curve_num], curve_t)
+        return geometry.bezier.cubic_xy(cast(BezierCubicType, curves[curve_num]), curve_t)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
@@ -329,12 +329,12 @@ def spline_equal_spaced_t(
             nsegments: Number of segments to split curve into
             n: Number of points used to approximate curve
     '''
-    curves: list[BezierType] = [cast(BezierType, spline.points[i:i+4])
+    curves: list[BezierType] = [cast(BezierCubicType, spline.points[i:i+4])
                                 for i in range(0, len(spline.points)-1, 3)]
     t = util.linspace(0, 1, n)
     dists = []
     for curve in curves:
-        xy = [geometry.bezier.cubic_xy(curve, tt) for tt in t]
+        xy = [geometry.bezier.cubic_xy(cast(BezierCubicType, curve), tt) for tt in t]
         dists.extend([distance(xy[i], xy[i+1]) for i in range(n-1)])
     length = sum(dists)
     delta = length / nsegments

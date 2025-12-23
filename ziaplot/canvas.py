@@ -1,13 +1,13 @@
 ''' SVG-drawing functions '''
 from __future__ import annotations
-from typing import Sequence, Optional, Tuple
+from typing import Sequence, Optional, Tuple, cast
 import math
 from collections import namedtuple
 from operator import attrgetter
 import xml.etree.ElementTree as ET
 
 from . import text
-from .geometry import PointType, bezier
+from .geometry import PointType, BezierCubicType, bezier
 from .config import config
 from .style import MarkerTypes, DashTypes
 
@@ -62,7 +62,7 @@ def set_attrib(
     elm: ET.Element,
     attrib: Optional[dict[str, str]],
     subelms: Optional[list[ET.Element]] = None,
-    length: float = None,
+    length: float = 0.0,
     ) -> None:
     ''' Add custom SVG/XML attributes and subelements '''
     if attrib:
@@ -84,10 +84,6 @@ def set_attrib(
 
         for sub in subelms:
             elm.append(sub)
-
-
-
-
 
 
 def is_animate_move(subelms: Optional[list[ET.Element]] = None):
@@ -379,7 +375,7 @@ class Canvas:
         if not animated:
             set_clip(path, self.clip)
 
-        length = 0
+        length = 0.
         for i in range(1, len(x)):
             length += math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
 
@@ -894,10 +890,10 @@ class Canvas:
         if not animated:
             set_clip(path, self.clip)
 
-        length = 0
+        length = 0.
         for i in range((len(points)-2)//3+1):
-            p = points[i*3:i*3+4]
-            length += bezier.length(p)
+            p = tuple(points[i*3:i*3+4])
+            length += bezier.length(cast(BezierCubicType, p))
 
         set_attrib(path, attrib, subelm, length)
         self.add_element(path, zorder)

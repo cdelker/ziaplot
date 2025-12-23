@@ -14,7 +14,9 @@ CircleType = Tuple[float, float, float]   # (centerx, centery, radius)
 EllipseType = Tuple[float, float, float, float, float]   # (centerx, centery, radius1, radius2, rotation)
 ArcType = Tuple[float, float, float, float, float]       # (centerx, centery, radius, theta1, theta2)
 FunctionType = Callable
-BezierType = Tuple[PointType, PointType, PointType, PointType]
+BezierQuadType = Tuple[PointType, PointType, PointType]
+BezierCubicType = Tuple[PointType, PointType, PointType, PointType]
+BezierType = BezierQuadType | BezierCubicType
 
 
 def select_which(points: Sequence[PointType], which: str) -> PointType:

@@ -56,7 +56,7 @@ class Drawable:
         self._subelms.append(element)
         return self
 
-    def get_attribute(self, name: str) -> str:
+    def get_attribute(self, name: str) -> Optional[str]:
         ''' Get an SVG attribute from the element '''
         return self._attrs.get(name, None)
 

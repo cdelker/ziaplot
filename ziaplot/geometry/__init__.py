@@ -4,6 +4,8 @@ from .geometry import (
     CircleType,
     EllipseType,
     BezierType,
+    BezierCubicType,
+    BezierQuadType,
     distance,
     midpoint,
     isclose,
