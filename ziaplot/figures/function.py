@@ -5,6 +5,7 @@ from xml.etree import ElementTree as ET
 import math
 
 from .. import util
+from ..attributes import Animatable
 from ..geometry import PointType
 from ..element import Element
 from ..style import MarkerTypes
@@ -38,6 +39,9 @@ class Function(Element):
         self.midmark: MarkerTypes = None
         self.__logx = False
         self.__logy = False
+        self.tree.startmark = Animatable()
+        self.tree.endmark = Animatable()
+        self.tree.midmark = Animatable()
 
     def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Function':
         ''' Define markers to show at the start and end of the line. Use defaults
@@ -145,14 +149,16 @@ class Function(Element):
                                             color,
                                             sty.edge_color,
                                             sty.edge_width,
-                                            orient=True)
+                                            orient=True,
+                                            attributes=self.tree.startmark)
         if self.endmark:
             endmark = canvas.definemarker(self.endmark,
                                           sty.radius,
                                           color,
                                           sty.edge_color,
                                           sty.edge_width,
-                                          orient=True)
+                                          orient=True,
+                                          attributes=self.tree.endmark)
 
         canvas.path(x, y,
                     stroke=sty.stroke,
@@ -162,8 +168,7 @@ class Function(Element):
                     endmarker=endmark,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
@@ -171,7 +176,8 @@ class Function(Element):
                                           color,
                                           sty.edge_color,
                                           sty.stroke_width,
-                                          orient=True)
+                                          orient=True,
+                                          attributes=self.tree.midmark)
             midx = (xrange[0]+xrange[1])/2
             midy = self.y(midx)
             slope = self._tangent_slope(0.5)

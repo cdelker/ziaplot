@@ -28,7 +28,7 @@ class Polygon(Shape):
 
     def color(self, color: str) -> 'Polygon':
         ''' Sets the edge color '''
-        self._style.edge_color = color
+        self._style.color = color
         return self
 
     def fill(self, color: str) -> 'Polygon':
@@ -50,5 +50,4 @@ class Polygon(Shape):
                     strokewidth=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)

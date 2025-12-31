@@ -51,6 +51,7 @@ class Diagram(Container):
         self.yminordivisions = 0
         self._pad_datarange = False
         self._svgdefs: list[ET.Element] = []
+        self._display: bool = True
         diagram_stack.push_component(self)
 
     def __enter__(self):
@@ -61,7 +62,7 @@ class Diagram(Container):
         ''' Exit context manager - save to file and display '''
         diagram_stack.push_component(None)
         diagram_stack.pop_diagram(self)
-        if diagram_stack.current_diagram() is None:
+        if self._display and diagram_stack.current_diagram() is None:
             # Display if not inside another layout
             try:
                 display(self)

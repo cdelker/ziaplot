@@ -5,6 +5,7 @@ import math
 
 from ..text import Halign, Valign
 from ..diagrams import Diagram, Ticks
+from ..attributes import Attributes, Animatable
 from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox
 from .. import diagram_stack
@@ -28,6 +29,7 @@ class PieSlice(Element):
         super().__init__()
         self.value = value
         self._extrude: float = 0
+        self.tree.text = Animatable()
 
     def extrude(self, extrude: float = 20) -> 'PieSlice':
         ''' Extrude the slice '''
@@ -56,6 +58,7 @@ class Pie(Diagram):
         ''' '''
         super().__init__()
         self.labelmode = labelmode
+        self.tree.text = Attributes()
 
     @classmethod
     def fromdict(cls,
@@ -142,7 +145,9 @@ class Pie(Diagram):
                         self._title, font=tsty.font,
                         size=tsty.font_size,
                         color=tsty.get_color(),
-                        halign='center', valign='top')
+                        halign='center', valign='top',
+                        attributes=self.tree.text
+                        )
 
         if len(slices) == 1:
             slice = slices[0]
@@ -152,8 +157,7 @@ class Pie(Diagram):
                           strokecolor=slicestyle.edge_color,
                           strokewidth=slicestyle.stroke_width,
                           zorder=slice._zorder,
-                          attrib=self._attrs,
-                          subelm=self._subelms)
+                          attributes=self.tree)
 
             if self.labelmode == 'name':
                 labeltext = slice._name
@@ -170,7 +174,9 @@ class Pie(Diagram):
                             labeltext,
                             font=tsty.font,
                             size=tsty.font_size,
-                            color=tsty.get_color())
+                            color=tsty.get_color(),
+                            attributes=self.tree.text
+                            )
 
         else:
             theta = -math.pi/2  # Current angle, start at top
@@ -190,7 +196,7 @@ class Pie(Diagram):
                              strokecolor=slicestyle.edge_color,
                              strokewidth=slicestyle.stroke_width,
                              zorder=slice._zorder,
-                             attrib=slice._attrs)
+                             attributes=slice.tree)
 
                 tstyle = self._build_style('PieSlice.Text')
                 labelx = cxx + (radius+tstyle.margin) * math.cos(thetahalf)
@@ -212,7 +218,9 @@ class Pie(Diagram):
                                 font=tstyle.font,
                                 size=tstyle.font_size,
                                 color=tstyle.get_color(),
-                                halign=halign, valign=valign)
+                                halign=halign, valign=valign,
+                                attributes=slice.tree.text
+                                )
 
                 theta += thetas[i]
 

@@ -7,6 +7,7 @@ from .. import geometry
 from ..geometry import PointType, LineType
 from ..text import TextPosition, text_align_ofst
 from ..style import MarkerTypes
+from ..attributes import Animatable
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..element import Element
 from .shapes import Circle, Arc
@@ -31,6 +32,9 @@ class Point(Element):
         self._guidex: Optional[float] = None
         self._guidey: Optional[float] = None
         self._zorder: int = 6  # Points should usually be above other things
+        self.tree.text = Animatable()
+        self.tree.guidex = Animatable()
+        self.tree.guidey = Animatable()
 
     def __getitem__(self, idx):
         return [self.x, self.y][idx]
@@ -100,7 +104,8 @@ class Point(Element):
                         stroke=style.stroke,
                         width=style.stroke_width,
                         dataview=databox,
-                        zorder=self._zorder)
+                        zorder=self._zorder,
+                        attributes=self.tree.guidex)
         if self._guidey is not None:
             style = self._build_style('Point.GuideY')
             canvas.path([self._guidey, self.x], [self.y, self.y],
@@ -108,21 +113,22 @@ class Point(Element):
                         stroke=style.stroke,
                         width=style.stroke_width,
                         dataview=databox,
-                        zorder=self._zorder)
-
+                        zorder=self._zorder,
+                        attributes=self.tree.guidey)
         sty = self._build_style()
-        markname = canvas.definemarker(sty.shape,
-                                       sty.radius,
-                                       sty.get_color(),
-                                       sty.edge_color,
-                                       sty.edge_width)
+        markname = canvas.definemarker(
+            sty.shape,
+            sty.radius,
+            sty.get_color(),
+            sty.edge_color,
+            sty.edge_width,
+            attributes=self.tree)
         canvas.path([self.x], [self.y],
                     color=sty.get_color(),
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
         if self._text:
             style = self._build_style('Point.Text')
@@ -136,7 +142,8 @@ class Point(Element):
                         halign=halign,
                         valign=valign,
                         pixelofst=(dx, dy),
-                        dataview=databox)
+                        dataview=databox,
+                        attributes=self.tree.text)
 
     def reflect(self, line: LineType) -> 'Point':
         ''' Create a new point reflected over line '''

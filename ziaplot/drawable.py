@@ -4,6 +4,7 @@ from typing import Optional, Literal, Tuple
 import os
 import xml.etree.ElementTree as ET
 
+from .attributes import Attributes
 from .canvas import Canvas, Borders, ViewBox
 
 
@@ -19,8 +20,7 @@ class Drawable:
         self._csscls: str | None = None
         self._span: SpanType = 1, 1
         self._zorder: int = 1
-        self._attrs: dict[str, str] = {}
-        self._subelms: list[ET.Element] = []
+        self.tree = Attributes()
 
     def cssid(self, idn: str) -> 'Drawable':
         ''' Set the CSS id for the item. Matches items in CSS with #name selector '''
@@ -43,22 +43,6 @@ class Drawable:
         ''' Set zorder for the drawable '''
         self._zorder = zorder
         return self
-
-    def attribute(self, name: str, value: str) -> 'Drawable':
-        ''' Set an XML attribute to the SVG elemenet '''
-        self._attrs[name] = value
-        return self
-
-    def subelement(self, element: str|ET.Element) -> 'Drawable':
-        ''' Add an XML/SVG sub element '''
-        if isinstance(element, str):
-            element = ET.fromstring(element)
-        self._subelms.append(element)
-        return self
-
-    def get_attribute(self, name: str) -> Optional[str]:
-        ''' Get an SVG attribute from the element '''
-        return self._attrs.get(name, None)
 
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:

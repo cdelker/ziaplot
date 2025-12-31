@@ -68,8 +68,7 @@ class IntegralFill(Element):
                     strokecolor='none',
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
     @classmethod
     def intersection(cls, f: Function, f2: Function,

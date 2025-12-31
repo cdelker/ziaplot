@@ -17,8 +17,9 @@ except ImportError:
 else:
     ziamath.config.math.variant = 'sans'
 
-
 from .config import config
+from .attributes import Attributes
+
 
 TextPosition = Literal['N', 'E', 'S', 'W',
                        'NE', 'NW', 'SE', 'SW']
@@ -78,8 +79,7 @@ def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
               halign: Halign = 'left',
               valign: Valign = 'bottom',
               rotate: Optional[float] = None,
-              attrib: Optional[dict[str, str]] = None,
-              subelm: Optional[list[ET.Element]] = None,
+              attributes: Optional['Attributes'] = None
               ):
 
     if config.text == 'path':
@@ -91,11 +91,10 @@ def draw_text(x: float, y: float, s: str, svgelm: ET.Element,
                        color=color, font=font, size=size,
                        halign=halign, valign=valign, rotate=rotate)
 
-    if attrib:
-        for name, attr in attrib.items():
+    if attributes:
+        for name, attr in attributes._attrs.items():
             elm.set(name, attr)
-    if subelm:
-        for sub in subelm:
+        for sub in attributes._subelms:
             elm.append(sub)
 
 

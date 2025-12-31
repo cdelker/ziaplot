@@ -62,6 +62,5 @@ class Text(Component):
                     rotate=self.rotate,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms
+                    attributes=self.tree
                     )

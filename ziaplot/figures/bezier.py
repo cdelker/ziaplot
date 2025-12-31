@@ -11,6 +11,7 @@ from .. import util
 from .. import geometry
 from ..geometry import PointType, BezierType, BezierCubicType, BezierQuadType, distance
 from ..canvas import Canvas, Borders, ViewBox
+from ..attributes import Animatable
 from ..element import Element
 from ..style import MarkerTypes
 from ..diagrams import Graph
@@ -37,6 +38,9 @@ class Bezier(Element):
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
         self.midmark: Optional[MarkerTypes] = None
+        self.tree.startmark = Animatable()
+        self.tree.endmark = Animatable()
+        self.tree.midmark = Animatable()
 
     def __getitem__(self, idx):
         return [self.p1, self.p2, self.p3][idx]
@@ -72,6 +76,7 @@ class Bezier(Element):
         return Line(p, slope)
 
     def normal(self, t: float) -> Line:
+        ''' Create a normal line at parameter t '''
         assert 0 <= t <= 1
         slope = geometry.bezier.tangent_slope(self, t)
         p = self.xy(t)
@@ -82,11 +87,13 @@ class Bezier(Element):
         return Line(p, m)
 
     def secant(self, t1: float, t2: float) -> Line:
+        ''' Create a secant line between parameters t1 and t2 '''
         p1 = self.xy(t1)
         p2 = self.xy(t2)
         return Line.from_points(p1, p2)
 
     def chord(self, t1: float, t2: float) -> Segment:
+        ''' Create a Chord segment between parameters t1 and t2 '''
         p1 = self.xy(t1)
         p2 = self.xy(t2)
         return Segment(p1, p2)
@@ -99,19 +106,24 @@ class Bezier(Element):
         startmark = None
         endmark = None
         if self.startmark:
-            startmark = canvas.definemarker(self.startmark,
-                                            sty.radius,
-                                            color,
-                                            sty.edge_color,
-                                            sty.edge_width,
-                                            orient=True)
+            startmark = canvas.definemarker(
+                self.startmark,
+                sty.radius,
+                color,
+                sty.edge_color,
+                sty.edge_width,
+                orient=True,
+                attributes=self.tree.startmark)
+
         if self.endmark:
-            endmark = canvas.definemarker(self.endmark,
-                                          sty.radius,
-                                          color,
-                                          sty.edge_color,
-                                          sty.edge_width,
-                                          orient=True)
+            endmark = canvas.definemarker(
+                self.endmark,
+                sty.radius,
+                color,
+                sty.edge_color,
+                sty.edge_width,
+                orient=True,
+                attributes=self.tree.endmark)
 
         p4 = self.p4 if len(self) == 4 else None
         canvas.bezier(self.p1, self.p2, self.p3, p4,
@@ -122,16 +134,18 @@ class Bezier(Element):
                       endmarker=endmark,
                       dataview=databox,
                       zorder=self._zorder,
-                      attrib=self._attrs,
-                      subelm=self._subelms)
+                      attributes=self.tree)
 
         if self.midmark:
-            midmark = canvas.definemarker(self.midmark,
-                                          sty.radius,
-                                          color,
-                                          sty.edge_color,
-                                          sty.edge_width,
-                                          orient=True)
+            midmark = canvas.definemarker(
+                self.midmark,
+                sty.radius,
+                color,
+                sty.edge_color,
+                sty.edge_width,
+                orient=True,
+                attributes=self.tree.midmark)
+
             midx, midy = self.xy(0.5)
             slope = geometry.bezier.tangent_slope(self, 0.5)
             dx = midx/1E3
@@ -214,8 +228,7 @@ class BezierSpline(Element):
             width=sty.stroke_width,
             dataview=databox,
             zorder=self._zorder,
-            attrib=self._attrs,
-            subelm=self._subelms)
+            attributes=self.tree)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

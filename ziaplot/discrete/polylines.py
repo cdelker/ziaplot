@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 import math
 
 from ..style import MarkerTypes
+from ..attributes import Animatable
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..diagrams import Graph
 from ..element import Element
@@ -19,6 +20,7 @@ class Discrete(Element):
         self.x = x
         self.y = y
         self._marker_orient = False
+        self.tree.markers = Animatable()
 
     def datarange(self) -> DataRange:
         ''' Get range of data '''
@@ -61,10 +63,11 @@ class PolyLine(Discrete):
         if sty.shape not in [None, 'none']:
             markname = canvas.definemarker(sty.shape,
                                            sty.radius,
-                                           sty.get_color(),
+                                           sty.fill_color if sty.fill_color not in ['none', None] else sty.get_color(),
                                            sty.edge_color,
                                            sty.edge_width,
-                                           orient=self._marker_orient)
+                                           orient=self._marker_orient,
+                                           attributes=self.tree.markers)
             self._markername = markname  # For legend
 
         canvas.path(self.x, self.y,
@@ -74,8 +77,7 @@ class PolyLine(Discrete):
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
 
 class Scatter(Discrete):
@@ -95,7 +97,8 @@ class Scatter(Discrete):
                                        sty.get_color(),
                                        sty.edge_color,
                                        sty.edge_width,
-                                       orient=self._marker_orient)
+                                       orient=self._marker_orient,
+                                       attributes=self.tree.markers)
         self._markername = markname  # For legend
 
         canvas.path(self.x, self.y,
@@ -103,8 +106,7 @@ class Scatter(Discrete):
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
 
 class ErrorBar(PolyLine):
@@ -123,6 +125,8 @@ class ErrorBar(PolyLine):
         super().__init__(x, y)
         self.yerr = yerr
         self.xerr = xerr
+        self.tree.ymarkers = Animatable()
+        self.tree.xmarkers = Animatable()
 
     def datarange(self) -> DataRange:
         ''' Get range of data '''
@@ -154,7 +158,8 @@ class ErrorBar(PolyLine):
                                            ymarkstyle.radius,
                                            ycolor,
                                            ycolor,
-                                           ymarkstyle.edge_width)
+                                           ymarkstyle.edge_width,
+                                           attributes=self.tree.ymarkers)
 
             for x, y, yerr in zip(self.x, self.y, self.yerr):
                 canvas.path([x, x], [y-yerr, y+yerr],
@@ -165,8 +170,7 @@ class ErrorBar(PolyLine):
                             endmarker=yerrmark,
                             dataview=databox,
                             zorder=self._zorder,
-                            attrib=self._attrs,
-                            subelm=self._subelms)
+                            attributes=self.tree.ymarkers)
 
         if self.xerr is not None:
             xmarkstyle = self._build_style('ErrorBar.MarkerXError')
@@ -175,7 +179,8 @@ class ErrorBar(PolyLine):
                                            xmarkstyle.radius,
                                            xcolor,
                                            xcolor,
-                                           xmarkstyle.edge_width)
+                                           xmarkstyle.edge_width,
+                                           attributes=self.tree.xmarkers)
 
             for x, y, xerr in zip(self.x, self.y, self.xerr):
                 canvas.path([x-xerr, x+xerr], [y, y],
@@ -186,9 +191,7 @@ class ErrorBar(PolyLine):
                             endmarker=xerrmark,
                             dataview=databox,
                             zorder=self._zorder,
-                            attrib=self._attrs,
-                            subelm=self._subelms)
-
+                            attributes=self.tree.xmarkers)
 
         super()._xml(canvas, databox, borders)
 
@@ -208,6 +211,7 @@ class LineFill(Discrete):
         if ymin is None:
             ymin = [0] * len(self.ymax)
         self.ymin = ymin
+        self.tree.fill = Animatable()
 
     def datarange(self) -> DataRange:
         ''' Get range of data '''
@@ -246,8 +250,7 @@ class LineFill(Discrete):
                     strokecolor='none',
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree.fill)
 
         canvas.path(self.x, self.ymax,
                     stroke=sty.stroke,
@@ -255,16 +258,14 @@ class LineFill(Discrete):
                     width=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
         canvas.path(self.x, self.ymin,
                     stroke=sty.stroke,
                     color=sty.get_color(),
                     width=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
 
 Plot = PolyLine

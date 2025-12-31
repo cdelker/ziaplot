@@ -7,6 +7,7 @@ from xml.etree import ElementTree as ET
 
 from .. import geometry
 from ..geometry import PointType
+from ..attributes import Animatable
 from ..element import Element
 from ..canvas import Canvas, Borders, ViewBox, DataRange
 from ..text import TextPosition, text_align_ofst
@@ -55,6 +56,9 @@ class Line(Element):
         self.midmark: Optional[MarkerTypes] = None
         self._labels: list[LineLabel] = []
         self.n: int = 200
+        self.tree.startmark = Animatable()
+        self.tree.endmark = Animatable()
+        self.tree.midmark = Animatable()
 
     def __getitem__(self, idx):
         ''' Index a, b, c of standard form '''
@@ -289,7 +293,8 @@ class Line(Element):
                 sty.get_color(),
                 sty.edge_color,
                 sty.edge_width,
-                orient=True)
+                orient=True,
+                attributes=self.tree.startmark)
 
         if self.endmark:
             endmark = canvas.definemarker(
@@ -298,7 +303,8 @@ class Line(Element):
                 sty.get_color(),
                 sty.edge_color,
                 sty.edge_width,
-                orient=True)
+                orient=True,
+                attributes=self.tree.endmark)
 
         canvas.path(x, y,
                     stroke=sty.stroke,
@@ -308,8 +314,7 @@ class Line(Element):
                     endmarker=endmark,
                     dataview=databox,
                     zorder=self._zorder,
-                    attrib=self._attrs,
-                    subelm=self._subelms)
+                    attributes=self.tree)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
@@ -317,7 +322,8 @@ class Line(Element):
                                           sty.get_color(),
                                           sty.edge_color,
                                           sty.edge_width,
-                                          orient=True)
+                                          orient=True,
+                                          attributes=self.tree.midmark)
 
             midx, midy = (x[0]+x[1])/2, (y[0]+y[1])/2
             slope = self._tangent_slope(0.5)
@@ -328,7 +334,8 @@ class Line(Element):
                         color='none',
                         startmarker=midmark,
                         dataview=databox,
-                        zorder=self._zorder)
+                        zorder=self._zorder,
+                        attributes=self.tree.midmark)
 
         self._place_labels(x, y, canvas, databox)
 

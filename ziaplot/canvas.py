@@ -7,6 +7,7 @@ from operator import attrgetter
 import xml.etree.ElementTree as ET
 
 from . import text
+from .attributes import Attributes
 from .geometry import PointType, BezierCubicType, bezier
 from .config import config
 from .style import MarkerTypes, DashTypes
@@ -15,7 +16,7 @@ ViewBox = namedtuple('ViewBox', ['x', 'y', 'w', 'h'])
 Borders = namedtuple('Borders', ['left', 'right', 'top', 'bottom'])
 DataRange = namedtuple('DataRange', ['xmin', 'xmax', 'ymin', 'ymax'])
 SvgElm = namedtuple('SvgElm', ['element', 'zorder', 'insorder'])
-SvgText = namedtuple('SvgText', 'x y s color font size halign valign rotate attrib subelm')
+SvgText = namedtuple('SvgText', 'x y s color font size halign valign rotate attributes')
 
 
 def fmt(f: float) -> str:
@@ -60,36 +61,35 @@ def set_clip(elm: ET.Element, clip: str|None) -> None:
 
 def set_attrib(
     elm: ET.Element,
-    attrib: Optional[dict[str, str]],
-    subelms: Optional[list[ET.Element]] = None,
+    attrib: Optional[Attributes] = None,
     length: float = 0.0,
     ) -> None:
     ''' Add custom SVG/XML attributes and subelements '''
     if attrib:
         if attrib.get('stroke-dasharray', None) == '$length':
-            attrib['stroke-dasharray'] = fmt(length)
+            attrib.set('stroke-dasharray', fmt(length))
         if attrib.get('stroke-dashoffset', None) == '$length':
-            attrib['stroke-dashoffset'] = fmt(length)
+            attrib.set('stroke-dashoffset', fmt(length))
 
-        for name, attr in attrib.items():
+        for name, attr in attrib._attrs.items():
             elm.set(name, attr)
 
-    if subelms:
-        for sub in subelms:
-            if sub.get('attributeName') == 'stroke-dashoffset':
-                if sub.get('from') == '$length':
-                    sub.set('from', fmt(length))
-                if sub.get('to') == '$length':
-                    sub.set('to', fmt(length))
+        if attrib._subelms:
+            for sub in attrib._subelms:
+                if sub.get('attributeName') == 'stroke-dashoffset':
+                    if sub.get('from') == '$length':
+                        sub.set('from', fmt(length))
+                    if sub.get('to') == '$length':
+                        sub.set('to', fmt(length))
 
-        for sub in subelms:
-            elm.append(sub)
+            for sub in attrib._subelms:
+                elm.append(sub)
 
 
-def is_animate_move(subelms: Optional[list[ET.Element]] = None):
+def is_animate_move(attributes: Optional[Attributes] = None):
     ''' Does the element have <anmimateMotion>? '''
-    if subelms:
-        for elm in subelms:
+    if attributes:
+        for elm in attributes._subelms:
             if elm.tag == 'animateMotion':
                 return True
     return False
@@ -181,8 +181,7 @@ class Canvas:
                     halign=elm.element.halign,
                     valign=elm.element.valign,
                     rotate=elm.element.rotate,
-                    attrib=elm.element.attrib,
-                    subelm=elm.element.subelm)
+                    attributes=elm.element.attributes)
         return root
 
     def xml(self) -> ET.Element:
@@ -230,7 +229,9 @@ class Canvas:
     def definemarker(self, shape: MarkerTypes = 'round', radius: float = 4, color: str = 'red',
                      strokecolor: str = 'black', strokewidth: float = 1,
                      orient: bool = False,
-                     align_endpoint: bool = False) -> str:
+                     align_endpoint: bool = False,
+                     attributes: Optional[Attributes] = None
+                     ) -> str:
         ''' Define a new marker in SVG <defs>.
 
             Args:
@@ -311,12 +312,13 @@ class Canvas:
             mark.set('orient', 'auto')
 
         if shape not in ['-', '|', '||', '|||']:
-            set_color(color, sh, 'fill')
-            set_color(strokecolor, sh, 'stroke')
-            sh.set('stroke-width', str(strokewidth))
+            set_color(color, mark, 'fill')
+            set_color(strokecolor, mark, 'stroke')
+            mark.set('stroke-width', str(strokewidth))
         else:
-            set_color(color, sh, 'stroke')
+            set_color(color, mark, 'stroke')
 
+        set_attrib(mark, attributes)
         self.add_def(mark)
         return name
 
@@ -329,8 +331,7 @@ class Canvas:
              startmarker: Optional[str] = None, endmarker: Optional[str] = None,
              dataview: Optional[ViewBox] = None,
              zorder: int = 1,
-             attrib: Optional[dict[str, str]] = None,
-             subelm: Optional[list[ET.Element]] = None,
+             attributes: Optional[Attributes] = None
             ) -> None:
         ''' Add a path to the SVG
 
@@ -346,7 +347,7 @@ class Canvas:
                 endmarker: ID name of marker for end point of path
                 dataview: Viewbox for transforming x, y data into SVG coordinates
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:  # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
             x, y = xform.apply_list(x, y, shift=not animated)
@@ -379,7 +380,7 @@ class Canvas:
         for i in range(1, len(x)):
             length += math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
 
-        set_attrib(path, attrib, subelm, length)
+        set_attrib(path, attributes, length)
 
         self.add_element(path, zorder)
 
@@ -387,8 +388,7 @@ class Canvas:
              strokecolor: str = 'black', strokewidth: float = 2, stroke: DashTypes = '-',
              rcorner: float = 0, dataview: Optional[ViewBox] = None,
              zorder: int = 1,
-             attrib: Optional[dict[str, str]] = None,
-             subelm: Optional[list[ET.Element]] = None,
+             attributes: Optional[Attributes] = None
              ) -> None:
         ''' Add a rectangle to the canvas
 
@@ -404,7 +404,7 @@ class Canvas:
                 rcorner: Radius of rectangle corners
                 dataview: ViewBox for transforming x, y data into SVG coordinates
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:
             # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
@@ -446,15 +446,14 @@ class Canvas:
             set_clip(rect, self.clip)
 
         length = w*2 + h*2
-        set_attrib(rect, attrib, subelm, length)
+        set_attrib(rect, attributes, length)
         self.add_element(rect, zorder)
 
     def circle(self, x: float, y: float, radius: float, color: str = 'black',
                strokecolor: str = 'red', strokewidth: float = 1,
                stroke: DashTypes = '-', dataview: Optional[ViewBox] = None,
                zorder: int = 1,
-               attrib: Optional[dict[str, str]] = None,
-               subelm: Optional[list[ET.Element]] = None,
+               attributes: Optional[Attributes] = None
                ) -> None:
         ''' Add a circle to the canvas (always a circle, the width/height
             will not be scaled to data coordinates).
@@ -468,7 +467,7 @@ class Canvas:
                 strokewidth: Line width of circle border
                 stroke: Stroke/linestyle of circle border
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:
             xform = Transform(dataview, self.viewbox)
             x, y = xform.apply(x, y, shift=not animated)
@@ -494,7 +493,7 @@ class Canvas:
             set_clip(circ, self.clip)
 
         length = 2*radius*math.pi
-        set_attrib(circ, attrib, subelm, length)
+        set_attrib(circ, attributes, length)
         self.add_element(circ, zorder)
 
     def text(self, x: float, y: float, s: str,
@@ -507,8 +506,7 @@ class Canvas:
              pixelofst: Optional[PointType] = None,
              dataview: Optional[ViewBox] = None,
              zorder: int = 10,
-             attrib: Optional[dict[str, str]] = None,
-             subelm: Optional[list[ET.Element]] = None,
+             attributes: Optional[Attributes] = None
              ) -> None:
         ''' Add text to the canvas
 
@@ -528,7 +526,7 @@ class Canvas:
         if s == '':
             return
 
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:
             xform = Transform(dataview, self.viewbox)
             x, y = xform.apply(x, y, shift=not animated)
@@ -544,7 +542,7 @@ class Canvas:
             y = -y
 
         self.add_element(
-            SvgText(x, y, s, color, font, size, halign, valign, rotate, attrib, subelm),
+            SvgText(x, y, s, color, font, size, halign, valign, rotate, attributes),
             zorder=zorder)
 
     def poly(self, points: Sequence[PointType], color: str = 'black',
@@ -553,8 +551,7 @@ class Canvas:
              stroke: DashTypes = '-',
              dataview: Optional[ViewBox] = None,
              zorder: int = 1,
-             attrib: Optional[dict[str, str]] = None,
-             subelm: Optional[list[ET.Element]] = None,
+             attributes: Optional[Attributes] = None
              ) -> None:
         ''' Add a polygon to the canvas
 
@@ -565,7 +562,7 @@ class Canvas:
                 strokewidth: Width of border
                 stroke: Stroke/linestyle of the path
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         x = [p[0] for p in points]
         y = [p[1] for p in points]
         if dataview:
@@ -597,15 +594,14 @@ class Canvas:
         for i in range(1, len(x)):
             length += math.sqrt((x[i]-x[i-1])**2 + (y[i]-y[i-1])**2)
 
-        set_attrib(poly, attrib, subelm, length)
+        set_attrib(poly, attributes, length)
         self.add_element(poly, zorder)
 
     def wedge(self, cx: float, cy: float, radius: float, theta: float,
               starttheta: float = 0, color: str = 'red',
               strokecolor: str = 'black', strokewidth: float = 1,
               zorder: int = 1,
-              attrib: Optional[dict[str, str]] = None,
-              subelm: Optional[list[ET.Element]] = None,
+              attributes: Optional[Attributes] = None
               ) -> None:
         ''' Add a wedge/filled arc (ie pie chart slice)
 
@@ -635,7 +631,7 @@ class Canvas:
         set_color(color, path, 'fill')
         path.set('stroke-width', str(strokewidth))
         set_clip(path, self.clip)
-        set_attrib(path, attrib, subelm)
+        set_attrib(path, attributes)
         self.add_element(path, zorder)
 
     def arc(self, cx: float, cy: float, radius: float, theta1: float = 0,
@@ -644,8 +640,7 @@ class Canvas:
             stroke: DashTypes = '-',
             dataview: Optional[ViewBox] = None,
             zorder: int = 1,
-            attrib: Optional[dict[str, str]] = None,
-            subelm: Optional[list[ET.Element]] = None,
+            attributes: Optional[Attributes] = None
             ) -> None:
         ''' Add an open arc
 
@@ -659,7 +654,7 @@ class Canvas:
                 strokewidth: Border width
                 stroke: Stroke/linestyle of the path
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:
             xform = Transform(dataview, self.viewbox)
             cx, cy = xform.apply(cx, cy, shift=not animated)
@@ -699,7 +694,7 @@ class Canvas:
 
         dtheta = t2-t1
         length = radiusx*(dtheta - ((radiusx-radiusy)/(radiusx+radiusy)) * math.sin(2*dtheta))  # Approximate
-        set_attrib(path, attrib, subelm, length)
+        set_attrib(path, attributes, length)
         self.add_element(path, zorder)
 
     def ellipse(self, cx: float, cy: float, r1: float, r2: float,
@@ -710,8 +705,7 @@ class Canvas:
                 strokewidth: float = 1,
                 dataview: Optional[ViewBox] = None,
                 zorder: int = 1,
-                attrib: Optional[dict[str, str]] = None,
-                subelm: Optional[list[ET.Element]] = None) -> None:
+                attributes: Optional[Attributes] = None) -> None:
         ''' Add an ellipse
 
             Args:
@@ -723,7 +717,7 @@ class Canvas:
                 strokecolor: Border color
                 strokewidth: Border width
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:
             xform = Transform(dataview, self.viewbox)
             cx, cy = xform.apply(cx, cy, shift=not animated)
@@ -754,7 +748,7 @@ class Canvas:
 
         # Ramanaujan First Approximation
         length = math.pi*(3*(r1+r2) - math.sqrt((3*r1+r2)*(r1+3*r2)))
-        set_attrib(ellipse, attrib, subelm, length)
+        set_attrib(ellipse, attributes, length)
         self.add_element(ellipse, zorder)
 
     def bezier(self,
@@ -765,8 +759,7 @@ class Canvas:
                startmarker: Optional[str] = None, endmarker: Optional[str] = None,
                dataview: Optional[ViewBox] = None,
                zorder: int = 1,
-               attrib: Optional[dict[str, str]] = None,
-               subelm: Optional[list[ET.Element]] = None,
+               attributes: Optional[Attributes] = None
                ) -> None:
         ''' Add a bezier curve to the SVG
 
@@ -780,7 +773,7 @@ class Canvas:
                 endmarker: ID name of marker for end point of path
                 dataview: Viewbox for transforming x, y data into SVG coordinates
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:  # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
             p1 = xform.apply(*p1, shift=not animated)
@@ -832,7 +825,7 @@ class Canvas:
             set_clip(path, self.clip)
 
         length = bezier.length((p1, p2, p3), n=20) if p4 is None else bezier.length((p1, p2, p3, p4), n=20)
-        set_attrib(path, attrib, subelm, length)
+        set_attrib(path, attributes, length)
         self.add_element(path, zorder)
 
     def bezier_spline(
@@ -846,8 +839,7 @@ class Canvas:
             endmarker: Optional[str] = None,
             dataview: Optional[ViewBox] = None,
             zorder: int = 1,
-            attrib: Optional[dict[str, str]] = None,
-            subelm: Optional[list[ET.Element]] = None,
+            attributes: Optional[Attributes] = None
             ) -> None:
         ''' Add a multi-bezier curve to the SVG
 
@@ -860,7 +852,7 @@ class Canvas:
                 endmarker: ID name of marker for end point of path
                 dataview: Viewbox for transforming x, y data into SVG coordinates
         '''
-        animated = is_animate_move(subelm)
+        animated = is_animate_move(attributes)
         if dataview:  # apply transform from dataview -> self.viewbox
             xform = Transform(dataview, self.viewbox)
             points = [xform.apply(*p, shift=not animated) for p in points]
@@ -895,5 +887,5 @@ class Canvas:
             p = tuple(points[i*3:i*3+4])
             length += bezier.length(cast(BezierCubicType, p))
 
-        set_attrib(path, attrib, subelm, length)
+        set_attrib(path, attributes, length)
         self.add_element(path, zorder)
