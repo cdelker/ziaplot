@@ -111,6 +111,7 @@ Source code is available on `Github <https://github.com/cdelker/ziaplot>`_.
    discrete.rst
    charts.rst
    layout.rst
+   animate.rst
    style.rst
    examples.rst
    gui.rst

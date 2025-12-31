@@ -68,7 +68,7 @@ class IntegralFill(Element):
                     strokecolor='none',
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
     @classmethod
     def intersection(cls, f: Function, f2: Function,

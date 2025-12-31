@@ -50,4 +50,4 @@ class Polygon(Shape):
                     strokewidth=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)

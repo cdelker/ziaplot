@@ -213,6 +213,13 @@ General Functions
 
 .. autofunction:: ziaplot.container.save
 
+.. autoclass:: ziaplot.attributes.Attributes
+    :members:
+
+.. autoclass:: ziaplot.attributes.Animatable
+    :members:
+
+
 
 Geometric Calculations
 ----------------------

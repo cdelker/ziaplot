@@ -20,7 +20,7 @@ class Drawable:
         self._csscls: str | None = None
         self._span: SpanType = 1, 1
         self._zorder: int = 1
-        self.tree = Attributes()
+        self.svg = Attributes()
 
     def cssid(self, idn: str) -> 'Drawable':
         ''' Set the CSS id for the item. Matches items in CSS with #name selector '''
@@ -44,6 +44,14 @@ class Drawable:
         self._zorder = zorder
         return self
 
+    def attribute(self, name: str, value: str) -> 'Drawable':
+        self.svg.set(name, value)
+        return self
+
+    def subelement(self, element: str|ET.Element) -> 'Drawable':
+        self.svg.subelement(element)
+        return self
+
     def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
              borders: Optional[Borders] = None) -> None:
         ''' Draw elements to canvas '''
@@ -55,13 +63,13 @@ class Drawable:
             canvas.rect(0, 0, 600, 400)
         return canvas.xml()
 
-    def svg(self) -> str:
+    def tosvg(self) -> str:
         ''' Get SVG string representation '''
         return ET.tostring(self.svgxml(), encoding='unicode')
 
     def _repr_svg_(self):
         ''' Representer function for Jupyter '''
-        return self.svg()
+        return self.tosvg()
 
     def imagebytes(self, fmt: Literal['svg', 'eps', 'pdf', 'png'] = 'svg') -> bytes:
         ''' Get byte data for image
@@ -70,7 +78,7 @@ class Drawable:
                 ext: File format extension. Will be extracted from
                     fname if not provided.
         '''
-        img = self.svg().encode()
+        img = self.tosvg().encode()
         if fmt != 'svg':
             import cairosvg  # type: ignore
 

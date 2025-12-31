@@ -108,7 +108,7 @@ class Ellipse(Shape):
                        stroke=sty.stroke,
                        dataview=databox,
                        zorder=self._zorder,
-                       attributes=self.tree)
+                       attributes=self.svg)
 
 
 class Circle(Shape):
@@ -302,7 +302,7 @@ class Circle(Shape):
                        stroke=sty.stroke,
                        dataview=databox,
                        zorder=self._zorder,
-                       attributes=self.tree)
+                       attributes=self.svg)
 
 
 class Rectangle(Shape):
@@ -337,7 +337,7 @@ class Rectangle(Shape):
                     rcorner=self.cornerradius,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
 
 class Arc(Circle):
@@ -387,7 +387,7 @@ class Arc(Circle):
                    stroke=sty.stroke,
                    dataview=databox,
                    zorder=self._zorder,
-                   attributes=self.tree)
+                   attributes=self.svg)
 
 
 class CompassArc(Arc):

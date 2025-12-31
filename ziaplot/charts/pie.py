@@ -29,7 +29,7 @@ class PieSlice(Element):
         super().__init__()
         self.value = value
         self._extrude: float = 0
-        self.tree.text = Animatable()
+        self.svg.text = Animatable()
 
     def extrude(self, extrude: float = 20) -> 'PieSlice':
         ''' Extrude the slice '''
@@ -58,7 +58,7 @@ class Pie(Diagram):
         ''' '''
         super().__init__()
         self.labelmode = labelmode
-        self.tree.text = Attributes()
+        self.svg.text = Attributes()
 
     @classmethod
     def fromdict(cls,
@@ -146,7 +146,7 @@ class Pie(Diagram):
                         size=tsty.font_size,
                         color=tsty.get_color(),
                         halign='center', valign='top',
-                        attributes=self.tree.text
+                        attributes=self.svg.text
                         )
 
         if len(slices) == 1:
@@ -157,7 +157,7 @@ class Pie(Diagram):
                           strokecolor=slicestyle.edge_color,
                           strokewidth=slicestyle.stroke_width,
                           zorder=slice._zorder,
-                          attributes=self.tree)
+                          attributes=self.svg)
 
             if self.labelmode == 'name':
                 labeltext = slice._name
@@ -175,7 +175,7 @@ class Pie(Diagram):
                             font=tsty.font,
                             size=tsty.font_size,
                             color=tsty.get_color(),
-                            attributes=self.tree.text
+                            attributes=self.svg.text
                             )
 
         else:
@@ -196,7 +196,7 @@ class Pie(Diagram):
                              strokecolor=slicestyle.edge_color,
                              strokewidth=slicestyle.stroke_width,
                              zorder=slice._zorder,
-                             attributes=slice.tree)
+                             attributes=slice.svg)
 
                 tstyle = self._build_style('PieSlice.Text')
                 labelx = cxx + (radius+tstyle.margin) * math.cos(thetahalf)
@@ -219,7 +219,7 @@ class Pie(Diagram):
                                 size=tstyle.font_size,
                                 color=tstyle.get_color(),
                                 halign=halign, valign=valign,
-                                attributes=slice.tree.text
+                                attributes=slice.svg.text
                                 )
 
                 theta += thetas[i]

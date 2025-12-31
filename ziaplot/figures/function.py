@@ -1,7 +1,7 @@
 ''' Graph mathematical functions '''
 from __future__ import annotations
 from typing import Optional, Callable, Sequence
-from xml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 import math
 
 from .. import util
@@ -39,9 +39,9 @@ class Function(Element):
         self.midmark: MarkerTypes = None
         self.__logx = False
         self.__logy = False
-        self.tree.startmark = Animatable()
-        self.tree.endmark = Animatable()
-        self.tree.midmark = Animatable()
+        self.svg.startmark = Animatable()
+        self.svg.endmark = Animatable()
+        self.svg.midmark = Animatable()
 
     def endmarkers(self, start: MarkerTypes = '<', end: MarkerTypes = '>') -> 'Function':
         ''' Define markers to show at the start and end of the line. Use defaults
@@ -150,7 +150,7 @@ class Function(Element):
                                             sty.edge_color,
                                             sty.edge_width,
                                             orient=True,
-                                            attributes=self.tree.startmark)
+                                            attributes=self.svg.startmark)
         if self.endmark:
             endmark = canvas.definemarker(self.endmark,
                                           sty.radius,
@@ -158,7 +158,7 @@ class Function(Element):
                                           sty.edge_color,
                                           sty.edge_width,
                                           orient=True,
-                                          attributes=self.tree.endmark)
+                                          attributes=self.svg.endmark)
 
         canvas.path(x, y,
                     stroke=sty.stroke,
@@ -168,7 +168,7 @@ class Function(Element):
                     endmarker=endmark,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
         if self.midmark:
             midmark = canvas.definemarker(self.midmark,
@@ -177,7 +177,7 @@ class Function(Element):
                                           sty.edge_color,
                                           sty.stroke_width,
                                           orient=True,
-                                          attributes=self.tree.midmark)
+                                          attributes=self.svg.midmark)
             midx = (xrange[0]+xrange[1])/2
             midy = self.y(midx)
             slope = self._tangent_slope(0.5)

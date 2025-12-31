@@ -615,3 +615,49 @@ Iridescent
     test_gradientstyle()
 
 |
+
+
+Customizing the SVG
+-------------------
+
+Additional customization is possible by adding attributes or subelements to the generated SVG.
+Each drawing component has an `svg` attribute with methods for setting attributes and subelements.
+Use :py:meth:`ziaplot.attributes.Attributes.set` to set an SVG/XML attribute on the element, and
+:py:meth:`ziaplot.attributes.Attributes.subelement` to add an SVG subelement directly to the element.
+
+.. tip::
+
+    Any coordinates provided to these methods are in SVG coordinate space, not in drawing units.
+
+
+.. jupyter-execute::
+
+    with zp.Diagram().size(300,100).yrange(-.1, .6):
+        zp.Segment((0,0),(1,0)).strokewidth(8)
+        zp.Segment((0,.5),(1,.5)).strokewidth(8).svg.set('stroke-linecap', 'round')
+
+
+.. jupyter-execute::
+
+    zp.config.text = 'text'
+    with zp.Diagram().size(300,200):
+        zp.Bezier((0,0), (1, 1), (2, 0)).strokewidth(1).svg.set('id', 'mypath')
+        text = zp.Text(0,0,'')
+        text.svg.subelement('<textPath href="#mypath">Text along a curved path</textPath>')
+        text.svg.set('x', '0')  # Override drawing coordinates - x and y are now relative to the path
+        text.svg.set('y', '0')
+
+
+SVG Elements may be added to the `<defs>` section using :py:meth:`ziaplot.diagrams.diagram.Diagram.add_def`. For example, a filter may be applied to a circle to add a drop shadow:
+
+.. jupyter-execute::
+
+    texture = '''
+    <filter id="myshadow" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow in="SourceGraphic" dx="4" dy="4"></feDropShadow>
+    </filter>
+    '''
+    with zp.Diagram().xrange(-1, 1).yrange(-1, 1).size(300,300) as d:
+        d.add_def(texture)
+        zp.Circle((0,0), .5).fill('blue 50%').svg.set('filter', 'url(#myshadow)')
+

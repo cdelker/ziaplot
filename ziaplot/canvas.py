@@ -523,9 +523,6 @@ class Canvas:
                 pixelofst: Offset to apply to shift text in SVG/pixel coordinates
                 dataview: ViewBox for transforming x, y into SVG coordinates
         '''
-        if s == '':
-            return
-
         animated = is_animate_move(attributes)
         if dataview:
             xform = Transform(dataview, self.viewbox)

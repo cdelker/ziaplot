@@ -32,9 +32,9 @@ class Point(Element):
         self._guidex: Optional[float] = None
         self._guidey: Optional[float] = None
         self._zorder: int = 6  # Points should usually be above other things
-        self.tree.text = Animatable()
-        self.tree.guidex = Animatable()
-        self.tree.guidey = Animatable()
+        self.svg.text = Animatable()
+        self.svg.guidex = Animatable()
+        self.svg.guidey = Animatable()
 
     def __getitem__(self, idx):
         return [self.x, self.y][idx]
@@ -105,7 +105,7 @@ class Point(Element):
                         width=style.stroke_width,
                         dataview=databox,
                         zorder=self._zorder,
-                        attributes=self.tree.guidex)
+                        attributes=self.svg.guidex)
         if self._guidey is not None:
             style = self._build_style('Point.GuideY')
             canvas.path([self._guidey, self.x], [self.y, self.y],
@@ -114,7 +114,7 @@ class Point(Element):
                         width=style.stroke_width,
                         dataview=databox,
                         zorder=self._zorder,
-                        attributes=self.tree.guidey)
+                        attributes=self.svg.guidey)
         sty = self._build_style()
         markname = canvas.definemarker(
             sty.shape,
@@ -122,13 +122,13 @@ class Point(Element):
             sty.get_color(),
             sty.edge_color,
             sty.edge_width,
-            attributes=self.tree)
+            attributes=self.svg)
         canvas.path([self.x], [self.y],
                     color=sty.get_color(),
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
         if self._text:
             style = self._build_style('Point.Text')
@@ -143,7 +143,7 @@ class Point(Element):
                         valign=valign,
                         pixelofst=(dx, dy),
                         dataview=databox,
-                        attributes=self.tree.text)
+                        attributes=self.svg.text)
 
     def reflect(self, line: LineType) -> 'Point':
         ''' Create a new point reflected over line '''

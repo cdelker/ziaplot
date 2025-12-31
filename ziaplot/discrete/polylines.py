@@ -20,7 +20,7 @@ class Discrete(Element):
         self.x = x
         self.y = y
         self._marker_orient = False
-        self.tree.markers = Animatable()
+        self.svg.markers = Animatable()
 
     def datarange(self) -> DataRange:
         ''' Get range of data '''
@@ -67,7 +67,7 @@ class PolyLine(Discrete):
                                            sty.edge_color,
                                            sty.edge_width,
                                            orient=self._marker_orient,
-                                           attributes=self.tree.markers)
+                                           attributes=self.svg.markers)
             self._markername = markname  # For legend
 
         canvas.path(self.x, self.y,
@@ -77,7 +77,7 @@ class PolyLine(Discrete):
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
 
 class Scatter(Discrete):
@@ -98,7 +98,7 @@ class Scatter(Discrete):
                                        sty.edge_color,
                                        sty.edge_width,
                                        orient=self._marker_orient,
-                                       attributes=self.tree.markers)
+                                       attributes=self.svg.markers)
         self._markername = markname  # For legend
 
         canvas.path(self.x, self.y,
@@ -106,7 +106,7 @@ class Scatter(Discrete):
                     markerid=markname,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
 
 class ErrorBar(PolyLine):
@@ -125,8 +125,8 @@ class ErrorBar(PolyLine):
         super().__init__(x, y)
         self.yerr = yerr
         self.xerr = xerr
-        self.tree.ymarkers = Animatable()
-        self.tree.xmarkers = Animatable()
+        self.svg.ymarkers = Animatable()
+        self.svg.xmarkers = Animatable()
 
     def datarange(self) -> DataRange:
         ''' Get range of data '''
@@ -159,7 +159,7 @@ class ErrorBar(PolyLine):
                                            ycolor,
                                            ycolor,
                                            ymarkstyle.edge_width,
-                                           attributes=self.tree.ymarkers)
+                                           attributes=self.svg.ymarkers)
 
             for x, y, yerr in zip(self.x, self.y, self.yerr):
                 canvas.path([x, x], [y-yerr, y+yerr],
@@ -170,7 +170,7 @@ class ErrorBar(PolyLine):
                             endmarker=yerrmark,
                             dataview=databox,
                             zorder=self._zorder,
-                            attributes=self.tree.ymarkers)
+                            attributes=self.svg.ymarkers)
 
         if self.xerr is not None:
             xmarkstyle = self._build_style('ErrorBar.MarkerXError')
@@ -180,7 +180,7 @@ class ErrorBar(PolyLine):
                                            xcolor,
                                            xcolor,
                                            xmarkstyle.edge_width,
-                                           attributes=self.tree.xmarkers)
+                                           attributes=self.svg.xmarkers)
 
             for x, y, xerr in zip(self.x, self.y, self.xerr):
                 canvas.path([x-xerr, x+xerr], [y, y],
@@ -191,7 +191,7 @@ class ErrorBar(PolyLine):
                             endmarker=xerrmark,
                             dataview=databox,
                             zorder=self._zorder,
-                            attributes=self.tree.xmarkers)
+                            attributes=self.svg.xmarkers)
 
         super()._xml(canvas, databox, borders)
 
@@ -211,7 +211,7 @@ class LineFill(Discrete):
         if ymin is None:
             ymin = [0] * len(self.ymax)
         self.ymin = ymin
-        self.tree.fill = Animatable()
+        self.svg.fill = Animatable()
 
     def datarange(self) -> DataRange:
         ''' Get range of data '''
@@ -250,7 +250,7 @@ class LineFill(Discrete):
                     strokecolor='none',
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree.fill)
+                    attributes=self.svg.fill)
 
         canvas.path(self.x, self.ymax,
                     stroke=sty.stroke,
@@ -258,14 +258,14 @@ class LineFill(Discrete):
                     width=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
         canvas.path(self.x, self.ymin,
                     stroke=sty.stroke,
                     color=sty.get_color(),
                     width=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
 
 Plot = PolyLine

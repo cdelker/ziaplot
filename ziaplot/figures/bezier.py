@@ -5,7 +5,7 @@ import math
 import cmath
 import bisect
 from itertools import accumulate
-from xml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 from .. import util
 from .. import geometry
@@ -38,9 +38,9 @@ class Bezier(Element):
         self.startmark: Optional[MarkerTypes] = None
         self.endmark: Optional[MarkerTypes] = None
         self.midmark: Optional[MarkerTypes] = None
-        self.tree.startmark = Animatable()
-        self.tree.endmark = Animatable()
-        self.tree.midmark = Animatable()
+        self.svg.startmark = Animatable()
+        self.svg.endmark = Animatable()
+        self.svg.midmark = Animatable()
 
     def __getitem__(self, idx):
         return [self.p1, self.p2, self.p3][idx]
@@ -113,7 +113,7 @@ class Bezier(Element):
                 sty.edge_color,
                 sty.edge_width,
                 orient=True,
-                attributes=self.tree.startmark)
+                attributes=self.svg.startmark)
 
         if self.endmark:
             endmark = canvas.definemarker(
@@ -123,7 +123,7 @@ class Bezier(Element):
                 sty.edge_color,
                 sty.edge_width,
                 orient=True,
-                attributes=self.tree.endmark)
+                attributes=self.svg.endmark)
 
         p4 = self.p4 if len(self) == 4 else None
         canvas.bezier(self.p1, self.p2, self.p3, p4,
@@ -134,7 +134,7 @@ class Bezier(Element):
                       endmarker=endmark,
                       dataview=databox,
                       zorder=self._zorder,
-                      attributes=self.tree)
+                      attributes=self.svg)
 
         if self.midmark:
             midmark = canvas.definemarker(
@@ -144,7 +144,7 @@ class Bezier(Element):
                 sty.edge_color,
                 sty.edge_width,
                 orient=True,
-                attributes=self.tree.midmark)
+                attributes=self.svg.midmark)
 
             midx, midy = self.xy(0.5)
             slope = geometry.bezier.tangent_slope(self, 0.5)
@@ -155,7 +155,8 @@ class Bezier(Element):
                         color='none',
                         startmarker=midmark,
                         dataview=databox,
-                        zorder=self._zorder)
+                        zorder=self._zorder,
+                        attributes=self.svg.midmark)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''
@@ -228,7 +229,7 @@ class BezierSpline(Element):
             width=sty.stroke_width,
             dataview=databox,
             zorder=self._zorder,
-            attributes=self.tree)
+            attributes=self.svg)
 
     def svgxml(self, border: bool = False) -> ET.Element:
         ''' Generate XML for standalone SVG '''

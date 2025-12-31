@@ -8,17 +8,18 @@ Contains breaking changes:
 - Removed `index` parameter from intersection functions, replaced with smarter `which` parameter.
 - Changed Point, Circle, and Ellipse to take PointType (tuple) instead of separate x and y values.
 - Renamed `cssclass` method to `cls`.
+- Renamed `svg()` method to `tosvg()` to avoid naming clash.
 - Merged `BezierQuad` and `BezierCubic` into single `Bezier` class.
 
+Enhancements:
 
-Other enhancements:
-
-- Added Arc and ArcCompass geometric figures
-- Added Css context manager for temporarily applying a style
+- Added rudimentary animation via SVG SMIL animation tags
+- Ability to set SVG attributes and subelements on drawing components
+- Added `Arc` and `ArcCompass` geometric figures
+- Added `Css` context manager for temporarily applying a style
 - Apply stroke style to ellipses, rectangles, and arcs
 - Added `fill_color` css attribute for fill of geometric shapes
 - Added methods to bisect two points, and image and reflect points over lines
-
 
 
 ### 0.8 - 2025-03-02

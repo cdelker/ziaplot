@@ -4,7 +4,7 @@
     Element: Geometric element made of points, lines, planes
 '''
 from __future__ import annotations
-from xml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 from . import diagram_stack
 from .drawable import Drawable
@@ -26,7 +26,7 @@ class Component(Drawable):
         self._name: str|None = None
         self._zorder: int = 2  # Components draw on top of containers
         self._erased: bool = False
-        self.tree = Animatable()
+        self.svg = Animatable()
         diagram_stack.push_component(self)
 
     def style(self, style: str) -> 'Component':

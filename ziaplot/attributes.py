@@ -1,6 +1,6 @@
 ''' SVG Attributes and SubElements, including SMIL animations '''
 from typing import Optional, TYPE_CHECKING
-from xml.etree import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 from . import diagram_stack
 if TYPE_CHECKING:
@@ -23,16 +23,30 @@ class Attributes:
         raise AttributeError
 
     def set(self, name: str, value: str) -> 'Attributes':
-        ''' Set an XML attribute to the SVG elemenet '''
+        ''' Set an XML attribute to the SVG elemenet
+
+            Args:
+                name: The SVG/XML attribute name to set
+                value: Value of the attribute
+        '''
         self._attrs[name] = value
         return self
 
     def get(self, name: str, default: Optional[str] = None) -> Optional[str]:
-        ''' Get an SVG attribute from the element '''
+        ''' Get an SVG attribute from the element
+
+            Args:
+                name: The SVG/XML attribute name to get
+                default: Default value to return if the attribute does not exist
+        '''
         return self._attrs.get(name, default)
 
     def subelement(self, element: str|ET.Element) -> 'Attributes':
-        ''' Add an XML/SVG sub element '''
+        ''' Add an XML/SVG sub element
+
+            Args:
+                element: The element to add, either as text or an ET.Element instance.
+        '''
         if isinstance(element, str):
             element = ET.fromstring(element)
         self._subelms.append(element)
@@ -43,7 +57,16 @@ class Animatable(Attributes):
     ''' SVG attributes and subelements, with functions for adding SMIL annimation elements '''
     def animate_set(self, attribute: str, to: str,
                     begin: str = '', duration: str = '') -> 'Animatable':
-        ''' Animate an attribute value of the element (using svg <set> tag) '''
+        ''' Animate an attribute value of the element (using svg <set> tag)
+
+            Args:
+                attribute: name of the attribute to set
+                to: Value to set the attribute
+                begin: Time or other criteria at which to set the attribute.
+                    Should be a string with units, e.g. '2s'.
+                    (see https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/begin)
+                duration: Length of time to leave the attribute set, or 'indefinite'.
+        '''
         elm = ET.Element('set')
         elm.set('attributeName', attribute)
         elm.set('to', str(to))
@@ -60,11 +83,20 @@ class Animatable(Attributes):
                      ) -> 'Animatable':
         ''' Animate the object, moving it along path defined by the `path` component.
             Sets the <animateMotion> svg tag.
+
+            Args:
+                path: Another drawing component, containing a path (such as a Segment, Bezier, or PolyLine)
+                begin: Time or other criteria at which to set the attribute.
+                    Should be a string with units, e.g. '2s'.
+                    (see https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/begin)
+                duration: Length of time from start to end of the path
+                repeat: Number of times to repeat, or 'indefinite'
+                rotate: Whether to rotate the element in the direction of motion, may be 'auto', 'auto-reverse', or '0'
         '''
-        if not (tag := path.tree.get('id')):
+        if not (tag := path.svg.get('id')):
             tag = diagram_stack.get_elmid()
             assert tag is not None
-            path.tree.set('id', tag)
+            path.svg.set('id', tag)
 
         elm = ET.Element('animateMotion')
         mpath = ET.SubElement(elm, 'mpath')
@@ -82,7 +114,15 @@ class Animatable(Attributes):
 
     def animate_in(self, begin: str='', duration: str = '',
                    repeat: str = '') -> 'Animatable':
-        ''' Animate the path as if it is being drawn '''
+        ''' Animate the path as if it is being drawn
+
+            Args:
+                begin: Time or other criteria at which to set the attribute.
+                    Should be a string with units, e.g. '2s'.
+                    (see https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/begin)
+                duration: Length of time from start to end of the path
+                repeat: Number of times to repeat, or 'indefinite'
+        '''
         tag = diagram_stack.get_elmid()
 
         elm = ET.Element('animate')
@@ -110,7 +150,15 @@ class Animatable(Attributes):
 
     def animate_out(self, begin: str='', duration: str = '',
                     repeat: str = '') -> 'Animatable':
-        ''' Animate the path as if it is being erased '''
+        ''' Animate the path as if it is being erased
+
+            Args:
+                begin: Time or other criteria at which to set the attribute.
+                    Should be a string with units, e.g. '2s'.
+                    (see https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/begin)
+                duration: Length of time from start to end of the path
+                repeat: Number of times to repeat, or 'indefinite'
+        '''
         tag = diagram_stack.get_elmid()
         elm = ET.Element('animate')
         elm.set('attributeName', 'stroke-dashoffset')
@@ -139,6 +187,16 @@ class Animatable(Attributes):
                 repeat: str = 'indefinite') -> 'Animatable':
         ''' Animate an attribute. (Note parameters are in SVG coordinates, not drawing
             coordinates)
+
+            Args:
+                attribute: name of the attribute to set
+                to: Value to set the attribute
+                frm: Initial value of the attribute
+                begin: Time or other criteria at which to set the attribute.
+                    Should be a string with units, e.g. '2s'.
+                    (see https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/begin)
+                duration: Length of time from start to end of the path
+                repeat: Number of times to repeat, or 'indefinite'
         '''
         elm = ET.Element('animate')
         elm.set('attributeName', attribute)
@@ -154,9 +212,14 @@ class Animatable(Attributes):
         return self
 
     def animate_show(self, begin: str = '',
-                     duration: str = '',
-                     repeat: str = '') -> 'Animatable':
+                     duration: str = '') -> 'Animatable':
         ''' Animate the visibile attribute
+
+            Args:
+                begin: Time or other criteria at which to set the attribute.
+                    Should be a string with units, e.g. '2s'.
+                    (see https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/begin)
+                duration: Length of time from start to end of the path
         '''
         elm = ET.Element('set')
         elm.set('attributeName', 'visibility')

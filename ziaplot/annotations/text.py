@@ -62,5 +62,5 @@ class Text(Component):
                     rotate=self.rotate,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree
+                    attributes=self.svg
                     )

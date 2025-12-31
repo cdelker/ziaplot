@@ -41,9 +41,9 @@ class Arrow(Annotation):
         self._tailmarker = tailmarker
         self._endmarker = marker
         self._zorder: int = 8
-        self.tree.text = Animatable()
-        self.tree.headmarker = Animatable()
-        self.tree.tailmarker = Animatable()
+        self.svg.text = Animatable()
+        self.svg.headmarker = Animatable()
+        self.svg.tailmarker = Animatable()
 
     def label(self, text: str,
               pos: TextPosition = 'NE') -> 'Arrow':
@@ -76,7 +76,7 @@ class Arrow(Annotation):
                                            edgecolor,
                                            sty.edge_width,
                                            orient=True,
-                                           attributes=self.tree.tailmarker)
+                                           attributes=self.svg.tailmarker)
 
         if self._endmarker:
             endmark = canvas.definemarker(self._endmarker,
@@ -85,7 +85,7 @@ class Arrow(Annotation):
                                           edgecolor,
                                           sty.edge_width,
                                           orient=True,
-                                          attributes=self.tree.endmarker)
+                                          attributes=self.svg.headmarker)
 
         x = self.xytail[0], self.xy[0]
         y = self.xytail[1], self.xy[1]
@@ -97,7 +97,7 @@ class Arrow(Annotation):
                     endmarker=endmark,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
         if self._text:
             dx, dy, halign, valign = text_align_ofst(
@@ -112,7 +112,7 @@ class Arrow(Annotation):
                         valign=valign,
                         pixelofst=(dx, dy),
                         dataview=databox,
-                        attributes=self.tree.text)
+                        attributes=self.svg.text)
 
 
 class Angle(Annotation):
@@ -126,7 +126,7 @@ class Angle(Annotation):
         self._label: Optional[LineLabel] = None
         self.square_right = True
         self._zorder: int = 8
-        self.tree.text = Animatable()
+        self.svg.text = Animatable()
 
     def label(self, label: str, color: Optional[str] = None,
               size: Optional[float] = None) -> 'Angle':
@@ -213,7 +213,7 @@ class Angle(Annotation):
                         width=sty.stroke_width,
                         dataview=databox,
                         zorder=self._zorder,
-                        attributes=self.tree)
+                        attributes=self.svg)
         else:
             dradius = sty.margin * databox.w / canvas.viewbox.w
             for i in range(self.arcs):
@@ -225,7 +225,7 @@ class Angle(Annotation):
                     strokewidth=sty.stroke_width,
                     dataview=databox,
                     zorder=self._zorder,
-                    attributes=self.tree)
+                    attributes=self.svg)
 
 
         if self._label:
@@ -259,4 +259,4 @@ class Angle(Annotation):
                         valign=cast(Valign, valign),
                         pixelofst=(dx, dy),
                         dataview=databox,
-                        attributes=self.tree.text)
+                        attributes=self.svg.text)
