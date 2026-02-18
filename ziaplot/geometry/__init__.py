@@ -17,8 +17,8 @@ from .geometry import (
     angle_mean,
     angle_diff,
     angle_isbetween,
-    select_which
-
+    select_which,
+    poly_clockwise
     )
 from . import circle
 from . import ellipse

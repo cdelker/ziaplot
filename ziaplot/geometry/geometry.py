@@ -127,3 +127,20 @@ def angle_mean(theta1: float, theta2: float) -> float:
     cosine = math.cos(theta1) + math.cos(theta2)
     mean = math.atan2(sine, cosine)
     return (mean + math.tau) % math.tau
+
+
+def poly_clockwise(points: Sequence[PointType], polar=False):
+    if polar:
+        points = [(p[0]*math.cos(p[1]), p[0]*math.sin(p[1])) for p in points]
+
+    idx, point_a = min(enumerate(points), key=lambda k: (k[1][1], -k[1][0]))
+    point_b = points[idx-1]
+    try:
+        point_c = points[idx+1]
+    except IndexError:
+        point_c = points[0]
+
+    det = ((point_a[0]-point_b[0])*(point_c[1]-point_b[1]) -
+           (point_c[0]-point_b[0])*(point_a[1]-point_b[1]))
+
+    return bool(det < 0)

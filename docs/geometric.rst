@@ -324,6 +324,28 @@ Draw a rectangle at (x, y) with a width and height.
 :py:class:`ziaplot.figures.shapes.Rectangle`.
 
 
+Polygon
+-------
+
+Draw a closed polygon from the given vertices.
+
+.. jupyter-execute::
+
+    with zp.Diagram() as d:
+        p1 = ((0,0), (.5, 0), (1, 1), (0, 1))
+        zp.Polygon(p1).fill('purple 20%')
+
+Multiple lists of vertices can be used, where the extra lists are cut as "holes" in the Polygon.
+
+.. jupyter-execute::
+
+    with zp.Diagram() as d:
+        p1 = ((0,0), (.5, 0), (1, 1), (0, 1))
+        p2 = ((.25,.5), (.5, .5), (.5, .75), (.25, .75))
+        zp.Polygon(p1, p2).fill('purple 20%')
+
+
+
 |
 
 Tangents and Normals

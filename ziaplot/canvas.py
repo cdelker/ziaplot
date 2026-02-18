@@ -384,6 +384,61 @@ class Canvas:
 
         self.add_element(path, zorder)
 
+    def path_multi(self,
+             *paths: Sequence[PointType],
+             stroke: DashTypes = '-',
+             strokecolor: str = 'black',
+             fillcolor: str = 'none',
+             width: float = 2,
+             dataview: Optional[ViewBox] = None,
+             zorder: int = 1,
+             attributes: Optional[Attributes] = None
+            ) -> None:
+        ''' Add a multi-part path to the SVG
+
+            Args:
+                paths: lists of (x,y) vertices defining the polygon
+                stroke: Stroke/linestyle of the path
+                strokecolor: Color of polygon outline
+                fillcolor: Color inside polygon
+                width: Width of path line
+                dataview: Viewbox for transforming x, y data into SVG coordinates
+        '''
+        animated = is_animate_move(attributes)
+        xs = []
+        ys = []
+        if dataview:  # apply transform from dataview -> self.viewbox
+            xform = Transform(dataview, self.viewbox)
+            for path in paths:
+                x = [p[0] for p in path]
+                y = [p[1] for p in path]
+                x, y = xform.apply_list(x, y, shift=not animated)
+                xs.append(x)
+                ys.append(y)
+
+        if not animated:
+            ys = [[self.flipy(yy) for yy in y] for y in ys]
+
+        path = ET.Element('path')
+        pointstr = ''
+        for x, y in zip(xs, ys):
+            pointstr += f'M {fmt(x[0])},{fmt(y[0])} '
+            pointstr += 'L '
+            pointstr += ' '.join(f'{fmt(xx)},{fmt(yy)}' for xx, yy in zip(x[1:], y[1:]))
+            pointstr += ' Z '  # Close path
+
+        path.set('d', pointstr)
+        set_color(strokecolor, path, 'stroke')
+        set_color(fillcolor, path, 'fill')
+        path.set('stroke-width', fmt(width))
+        if stroke not in ['-', 'solid', None, 'none', '']:
+            path.set('stroke-dasharray', getdash(stroke, width))
+        if not animated:
+            set_clip(path, self.clip)
+
+        set_attrib(path, attributes)
+        self.add_element(path, zorder)
+
     def rect(self, x: float, y: float, w: float, h: float, fill: Optional[str] = None,
              strokecolor: str = 'black', strokewidth: float = 2, stroke: DashTypes = '-',
              rcorner: float = 0, dataview: Optional[ViewBox] = None,
