@@ -28,3 +28,22 @@ class Implicit(Contour):
         y = linspace(*ylim, n)
         z = [[f(xx, yy) for xx in x] for yy in y]
         super().__init__(x, y, z, levels=(0,))
+
+    def _xml(self, canvas: Canvas, databox: Optional[ViewBox] = None,
+             borders: Optional[Borders] = None) -> None:
+        ''' Add XML elements to the canvas '''
+        segments = self._build_contours()
+        sty = self._build_style()
+        color = sty.get_color()
+        if color in [None, 'none']:
+            color = self.get_color_steps()[0]
+        for (xsegs, ysegs) in segments:
+            if len(xsegs) > 0:
+                for xs, ys in zip(xsegs, ysegs):
+                    canvas.path(xs, ys,
+                                stroke=sty.stroke,
+                                color=color,
+                                width=sty.stroke_width,
+                                dataview=databox,
+                                zorder=self._zorder,
+                                attributes=self.svg)
