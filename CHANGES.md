@@ -1,6 +1,6 @@
 # Release notes
 
-### 0.9 - In progress
+### 0.9 - 2026-05-30
 
 Contains breaking changes:
 

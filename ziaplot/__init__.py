@@ -59,4 +59,4 @@ from .container import save
 from . import geometry
 
 
-__version__ = '0.9a0'
+__version__ = '0.9'
