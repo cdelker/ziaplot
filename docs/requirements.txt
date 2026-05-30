@@ -3,3 +3,4 @@ ipykernel
 ziamath>=0.6
 ziafont>=0.4
 latex2mathml
+sphinx_autodoc_typehints

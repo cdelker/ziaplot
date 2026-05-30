@@ -19,7 +19,7 @@ import importlib
 # -- Project information -----------------------------------------------------
 
 project = 'ziaplot'
-copyright = '2021-2025, Collin J. Delker'
+copyright = '2021-2026, Collin J. Delker'
 author = 'Collin J. Delker'
 
 release = importlib.metadata.version('ziaplot')
@@ -33,8 +33,8 @@ release = importlib.metadata.version('ziaplot')
 extensions = [
     'jupyter_sphinx',
     'sphinx.ext.autodoc',
-    'sphinx.ext.autodoc.typehints',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx_autodoc_typehints',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
