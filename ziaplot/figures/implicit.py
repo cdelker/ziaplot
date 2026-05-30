@@ -1,4 +1,5 @@
 ''' Implicit Function '''
+from __future__ import annotations
 from typing import Callable
 
 from ..util import linspace
