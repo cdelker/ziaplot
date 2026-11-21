@@ -1,3 +1,5 @@
+**This repository has moved to [codeberg](https://codeberg.org/cdelker/ziaplot).**
+
 # ziaplot
 
 Ziaplot is for easy, lightweight, and Pythonic plotting of geometric diagrams and discrete data in SVG format.
